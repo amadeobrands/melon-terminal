@@ -45,8 +45,8 @@ export const PriceToleranceConfiguration: React.FC<PriceToleranceConfigurationPr
   });
 
   const submit = form.handleSubmit(async data => {
-    // const tx = PriceTolerance.deploy(environment, PriceToleranceBytecode, account.address!, data.priceTolerance!);
-    // props.startTransaction(tx, 'Deploy PriceTolerance Contract');
+    const tx = PriceTolerance.deploy(environment, PriceToleranceBytecode, account.address!, data.priceTolerance!);
+    props.startTransaction(tx, 'Deploy PriceTolerance Contract');
   });
 
   return (
@@ -59,16 +59,11 @@ export const PriceToleranceConfiguration: React.FC<PriceToleranceConfigurationPr
           previous asset price update.
         </NotificationContent>
       </NotificationBar>
-      <NotificationBar kind="error">
-        <NotificationContent>It is currently not possible to set up price tolerance policies.</NotificationContent>
-      </NotificationBar>
       <FormContext {...form}>
         <form onSubmit={submit}>
           <Input name="priceTolerance" label="Price tolerance (%)" type="number" step="any" id="priceTolerance" />
           <BlockActions>
-            <Button type="submit" disabled={true}>
-              Add Price Tolerance Policy
-            </Button>
+            <Button type="submit">Add Price Tolerance Policy</Button>
           </BlockActions>
         </form>
       </FormContext>

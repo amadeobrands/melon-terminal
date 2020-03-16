@@ -37,7 +37,7 @@ export const FundMelonEngineTrading: React.FC<FundMelonEngineTradingProps> = pro
 
   const loading = query.loading;
   const value = props.quantity.multipliedBy(price ?? new BigNumber('NaN'));
-  const valid = !value.isNaN() && !value.isZero() && value.isLessThanOrEqualTo(liquid.dividedBy('1e18'));
+  const valid = !value.isNaN() && !value.isZero() && value.isLessThanOrEqualTo(liquid);
   const rate = valid ? price : new BigNumber('NaN');
   const ready = !loading && valid;
 
