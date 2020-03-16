@@ -45,11 +45,12 @@ export const FundExchanges: React.FC<ExchangesProps> = ({ address }) => {
     validationSchema: Yup.object().shape({
       exchanges: Yup.array<string>()
         .compact()
-        .test('at-least-one', "You didn't select a new exchange.", value => {
-          return value.length > exchangesRef.current.length;
+        .test('at-least-one', "You didn't select a new exchange.", (value: string[]) => {
+          return value.some(selected => selected && !exchanges.some(available => available.id === selected))!;
         })
-        .test('only-one', 'You can only add one exchange at a time.', value => {
-          return value.length === exchangesRef.current.length + 1;
+        .test('only-one', 'You can only add one exchange at a time.', (value: string[]) => {
+          const add = value.find(selected => selected && !exchanges.some(available => available.id === selected))!;
+          return add.length === 1;
         }),
     }),
   });
