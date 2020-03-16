@@ -111,13 +111,13 @@ export const config: ConfigMap = {
         exchange: '0x39755357759cE0d7f32dC8dC45414CCa409AE24e',
         historic: true,
       },
-      {
-        name: 'Uniswap',
-        id: 'UniswapOld',
-        adapter: '0x3FDA51D218919B96a850E7b66D412A4604E4901D',
-        exchange: '0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95',
-        historic: true,
-      },
+      // {
+      //   name: 'Uniswap',
+      //   id: 'UniswapOld',
+      //   adapter: '0x3FDA51D218919B96a850E7b66D412A4604E4901D',
+      //   exchange: '0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95',
+      //   historic: true,
+      // },
     ],
   },
   [NetworkEnum.KOVAN]: {

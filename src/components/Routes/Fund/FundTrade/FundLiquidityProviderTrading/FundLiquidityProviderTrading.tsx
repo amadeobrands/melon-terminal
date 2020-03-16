@@ -14,9 +14,7 @@ import { Block } from '~/storybook/components/Block/Block';
 import { Grid, GridRow, GridCol } from '~/storybook/components/Grid/Grid';
 import { SectionTitle } from '~/storybook/components/Title/Title';
 import { NotificationBar, NotificationContent } from '~/storybook/components/NotificationBar/NotificationBar';
-import { useFund } from '~/hooks/useFund';
 import { Link } from '~/storybook/components/Link/Link';
-import { getNetworkName } from '~/config';
 
 export interface FundLiquidityProviderTradingProps {
   trading: string;
