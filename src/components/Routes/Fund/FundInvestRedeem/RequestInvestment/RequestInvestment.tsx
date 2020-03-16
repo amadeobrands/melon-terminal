@@ -87,15 +87,18 @@ export const RequestInvestment = forwardRef(
       return totalSupply?.isZero() ? new BigNumber(1) : new BigNumber(1.1);
     }, [totalSupply]);
 
-    const gav = props.holdings?.reduce(
-      (carry, item) => carry.plus(item.value || new BigNumber(0)),
-      new BigNumber(0)
-    ) as BigNumber;
-
     const validationSchema = Yup.object().shape({
       investmentAmount: Yup.mixed<BigNumber>()
         .transform((value, _) => new BigNumber(value).decimalPlaces(initialAsset?.token?.decimals || 18))
-        .test('positive', 'Investment amount has to be positive', (value: BigNumber) => value.isGreaterThan(0)),
+        .test('positive', 'Investment amount has to be positive', (value: BigNumber) => value.isGreaterThan(0))
+        .test(
+          'sufficientEth',
+          'Your ETH balance is not sufficient (you need about 0.014 ETH to pay for the incentive amount, asset management gas, and gas and you only own' +
+            `${fromTokenBaseUnit(account?.eth || new BigNumber(0), 18).toFixed(4)} ETH`,
+          () => {
+            return !!account.eth?.isGreaterThanOrEqualTo('1.4e16');
+          }
+        ),
       requestedShares: Yup.mixed<BigNumber>()
         .transform((value, _) => new BigNumber(value))
         .test('positive', 'Number of shares has to be positive', (value: BigNumber) => value.isGreaterThan(0)),
