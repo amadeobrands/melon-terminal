@@ -46,10 +46,12 @@ export const FundExchanges: React.FC<ExchangesProps> = ({ address }) => {
       exchanges: Yup.array<string>()
         .compact()
         .test('at-least-one', "You didn't select a new exchange.", (value: string[]) => {
-          return value.some(selected => selected && !exchanges.some(available => available.id === selected))!;
+          const options = exchangesRef.current;
+          return value.some(selected => selected && !options.some(available => available.id === selected))!;
         })
         .test('only-one', 'You can only add one exchange at a time.', (value: string[]) => {
-          const add = value.find(selected => selected && !exchanges.some(available => available.id === selected))!;
+          const options = exchangesRef.current;
+          const add = value.find(selected => selected && !options.some(available => available.id === selected))!;
           return add.length === 1;
         }),
     }),
