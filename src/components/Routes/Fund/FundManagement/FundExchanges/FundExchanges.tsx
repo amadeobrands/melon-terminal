@@ -51,7 +51,7 @@ export const FundExchanges: React.FC<ExchangesProps> = ({ address }) => {
         })
         .test('only-one', 'You can only add one exchange at a time.', (value: string[]) => {
           const options = exchangesRef.current;
-          const add = value.find(selected => selected && !options.some(available => available.id === selected))!;
+          const add = value.filter(selected => selected && !options.some(available => available.id === selected))!;
           return add.length === 1;
         }),
     }),
