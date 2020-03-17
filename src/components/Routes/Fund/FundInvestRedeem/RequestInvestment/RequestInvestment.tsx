@@ -12,15 +12,7 @@ import {
   Participation,
   Environment,
 } from '@melonproject/melonjs';
-import {
-  AllowedInvestmentAsset,
-  Account,
-  Holding,
-  Policy,
-  MaxPositions,
-  Token,
-  MaxConcentration,
-} from '@melonproject/melongql';
+import { AllowedInvestmentAsset, Account, Holding, Policy, MaxPositions, Token } from '@melonproject/melongql';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 import { useAccountAllowanceQuery } from '~/components/Routes/Fund/FundInvestRedeem/RequestInvestment/AccountAllowance.query';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';

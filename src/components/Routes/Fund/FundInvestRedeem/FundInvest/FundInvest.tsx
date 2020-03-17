@@ -17,8 +17,7 @@ import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 import { RequiresFundNotShutDown } from '~/components/Gates/RequiresFundNotShutDown/RequiresFundNotShutDown';
 import { UserWhitelist, AssetWhitelist, AssetBlacklist } from '@melonproject/melongql';
-import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
-import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
+import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 
 export interface FundInvestProps {
   address: string;
@@ -174,14 +173,19 @@ export const FundInvest: React.FC<FundInvestProps> = ({ address }) => {
                 <br />
                 Investment amount: <TokenValue value={request?.investmentAmount} /> {symbol}
                 <br />
-                Request date: {format(request?.timestamp || 0, 'yyyy-MM-dd hh:mm a')}
+                Request date: <FormattedDate timestamp={request?.timestamp}></FormattedDate>
               </p>
 
-              <p>Wait for the execution window to execute your investment request.</p>
               <p>
-                Execution window start: {format(nextUpdate, 'yyyy-MM-dd hh:mm a')}
-                <br />
-                Execution window end:&nbsp;&nbsp;&nbsp;{format(twentyFourHoursAfterRequest, 'yyyy-MM-dd hh:mm a')}
+                Your investment request will be automatically executed after the next price update, which will be around{' '}
+                <FormattedDate timestamp={nextUpdate}></FormattedDate>.
+              </p>
+
+              <p>
+                If you come back during the execution window (which starts at around{' '}
+                <FormattedDate timestamp={nextUpdate}></FormattedDate> and ends at{' '}
+                <FormattedDate timestamp={twentyFourHoursAfterRequest}></FormattedDate>), and your invesment request
+                hasn't been automatically executed, you will see here the option to execute it yourself.
               </p>
             </>
           )}
