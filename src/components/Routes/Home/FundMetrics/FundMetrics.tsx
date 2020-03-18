@@ -38,7 +38,7 @@ export const FundMetrics: React.FC = () => {
       <SectionTitle>Network Metrics</SectionTitle>
       <Grid>
         <GridRow justify="space-around">
-          <GridCol xs={8} sm={4}>
+          <GridCol xs={12} sm={4}>
             {funds && (
               <DictionaryEntry>
                 <DictionaryLabel>Number of funds</DictionaryLabel>
@@ -54,7 +54,7 @@ export const FundMetrics: React.FC = () => {
               </DictionaryEntry>
             )}
           </GridCol>
-          <GridCol xs={8} sm={5}>
+          <GridCol xs={12} sm={5}>
             <DictionaryEntry>
               <DictionaryLabel>Total AUM (in ETH)</DictionaryLabel>
               <DictionaryData textAlign="right">

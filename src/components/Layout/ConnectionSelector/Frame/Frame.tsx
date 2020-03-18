@@ -27,12 +27,12 @@ import { networkFromId } from '~/utils/networkFromId';
 import { SectionTitle } from '~/storybook/components/Title/Title';
 import { Button } from '~/storybook/components/Button/Button';
 
-interface EthResource extends Rx.Unsubscribable {
+interface Resource extends Rx.Unsubscribable {
   eth: Eth;
 }
 
 const connect = (): Rx.Observable<ConnectionAction> => {
-  const create = (): EthResource => {
+  const create = (): Resource => {
     const provider = new HttpProvider('http://localhost:1248');
     const eth = new Eth(provider, undefined, {
       transactionConfirmationBlocks: 1,
@@ -42,7 +42,7 @@ const connect = (): Rx.Observable<ConnectionAction> => {
   };
 
   return Rx.using(create, resource => {
-    const eth = (resource as EthResource).eth;
+    const eth = (resource as Resource).eth;
     const connect$ = Rx.defer(async () => {
       const [id, accounts] = await Promise.all([eth.net.getId(), eth.getAccounts().catch(() => [])]);
       const network = networkFromId(id);

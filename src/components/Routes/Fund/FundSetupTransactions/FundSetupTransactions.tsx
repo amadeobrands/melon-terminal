@@ -22,7 +22,8 @@ import {
   CheckboxIcon,
   CheckboxLabel,
 } from '~/storybook/components/Checkbox/Checkbox';
-import { NotificationBar, NotificationContent } from '~/storybook/components/NotificationBar/NotificationBar';
+import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
+import { getNetworkName } from '~/config';
 
 interface TransactionPipelineItem {
   previous: string;
@@ -149,7 +150,8 @@ export const FundSetupTransactions: React.FC = () => {
     setChecked(newChecked);
 
     if (fund && acknowledged && progress === 'COMPLETE') {
-      return history.push(`/fund/${fund!.address}`);
+      const prefix = getNetworkName(environment.network)!;
+      return history.push(`/${prefix}/fund/${fund!.address}`);
     }
 
     if (acknowledged && next) {
@@ -205,12 +207,7 @@ export const FundSetupTransactions: React.FC = () => {
             )}
 
             <TransactionModal transaction={transaction}>
-              <NotificationBar kind="neutral">
-                <NotificationContent>
-                  <p>{step?.notificationHeader}</p>
-                  <p>{step?.notificationBody}</p>
-                </NotificationContent>
-              </NotificationBar>
+              <TransactionDescription title={step?.notificationHeader}>{step?.notificationBody}</TransactionDescription>
             </TransactionModal>
           </Block>
         </GridCol>

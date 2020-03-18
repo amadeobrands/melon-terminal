@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import BigNumber from 'bignumber.js';
 import * as Yup from 'yup';
 import { useForm, FormContext } from 'react-hook-form';
-import { Participation } from '@melonproject/melonjs';
+import { Participation, sameAddress } from '@melonproject/melonjs';
 import { useEnvironment } from '~/hooks/useEnvironment';
-import { useFundInvestQuery } from './FundInvest.query';
+import { useFundRedeemQuery } from './FundRedeem.query';
 import { useTransaction } from '~/hooks/useTransaction';
 import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
 import { Spinner } from '~/storybook/components/Spinner/Spinner';
@@ -22,6 +22,11 @@ import {
 } from '~/storybook/components/Checkbox/Checkbox';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
+import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
+import { useFund } from '~/hooks/useFund';
+import { RequiresFundManager } from '~/components/Gates/RequiresFundManager/RequiresFundManager';
+import { Link } from 'react-router-dom';
+import { getNetworkName } from '~/config';
 
 export interface FundRedeemProps {
   address: string;
@@ -30,11 +35,15 @@ export interface FundRedeemProps {
 export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
   const environment = useEnvironment()!;
   const account = useAccount();
-  const [result, query] = useFundInvestQuery(address);
+  const [result, query] = useFundRedeemQuery(address);
+  const fund = useFund();
 
   const participationAddress = result?.account?.participation?.address;
   const hasInvested = result?.account?.participation?.hasInvested;
   const shares = result?.account?.shares;
+
+  const lockedAssets = result?.fund?.routes?.trading?.lockedAssets;
+  const prefix = getNetworkName(environment.network)!;
 
   const participationContract = new Participation(environment, participationAddress);
 
@@ -66,6 +75,7 @@ export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
   });
 
   const redeemAll = form.watch('redeemAll') as boolean;
+  const shareQuantity = form.watch('shareQuantity') as BigNumber;
 
   useEffect(() => {
     if (redeemAll) {
@@ -90,6 +100,19 @@ export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
       <Block>
         <SectionTitle>Redeem</SectionTitle>
         <Spinner />
+      </Block>
+    );
+  }
+
+  if (lockedAssets?.length) {
+    return (
+      <Block>
+        <SectionTitle>Redeem</SectionTitle>
+        <p>Redemption is currently not possible, because the fund has assets locked in the trading contract.</p>
+        <RequiresFundManager fallback={false}>
+          As the fund manager, you can on <Link to={`/${prefix}/fund/${address}/manage`}>move the assets to vault</Link>
+          .
+        </RequiresFundManager>
       </Block>
     );
   }
@@ -128,8 +151,23 @@ export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
         </>
       )}
       {(!hasInvested || shares?.balanceOf?.isZero() || !shares?.balanceOf) && <>You don't own any shares.</>}
-
-      <TransactionModal transaction={transaction} />
+      <TransactionModal transaction={transaction}>
+        <TransactionDescription title="Redeem shares">
+          You are redeeming{' '}
+          {redeemAll ? (
+            <>
+              all your <FormattedNumber value={shares?.balanceOf} />
+              shares{' '}
+            </>
+          ) : (
+            <>
+              <FormattedNumber value={shareQuantity} /> shares (of your total of{' '}
+              <FormattedNumber value={shares?.balanceOf} /> shares){' '}
+            </>
+          )}{' '}
+          of the fund &laquo;{fund.name}.&raquo; You will you receive a slice of the fund's assets.
+        </TransactionDescription>
+      </TransactionModal>
     </Block>
   );
 };

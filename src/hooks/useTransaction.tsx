@@ -23,6 +23,7 @@ export interface TransactionFormValues extends FieldValues {
 export interface TransactionError extends Error {
   customMessage?: string;
   dismiss?: boolean;
+  issueUri?: string;
 }
 
 export interface TransactionState {

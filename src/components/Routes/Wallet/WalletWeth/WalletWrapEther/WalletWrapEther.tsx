@@ -16,6 +16,8 @@ import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
 import { NotificationBar, NotificationContent } from '~/storybook/components/NotificationBar/NotificationBar';
+import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
+import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 
 export const WalletWrapEther: React.FC = () => {
   const environment = useEnvironment()!;
@@ -93,7 +95,12 @@ export const WalletWrapEther: React.FC = () => {
         </form>
       </FormContext>
 
-      <TransactionModal transaction={transaction}></TransactionModal>
+      <TransactionModal transaction={transaction}>
+        <TransactionDescription title="Wrap ether">
+          This transaction converts <FormattedNumber value={amount} suffix="ETH" /> into{' '}
+          <FormattedNumber value={amount} suffix="WETH (wrapped ether)" />
+        </TransactionDescription>
+      </TransactionModal>
     </Block>
   );
 };

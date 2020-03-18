@@ -1,33 +1,32 @@
-import React from 'react';
-import TooltipTrigger from 'react-popper-tooltip';
+import React, { useState } from 'react';
+import { Manager, Reference, Popper } from 'react-popper';
 import * as S from './Tooltip.styles';
-
-const Trigger = (children: React.ReactNode) => ({ triggerRef, getTriggerProps }: any) => (
-  <span
-    {...getTriggerProps({
-      ref: triggerRef,
-    })}
-  >
-    {children}
-  </span>
-);
-
-const TooltipBase = (tooltip: React.ReactNode) => ({ tooltipRef, getTooltipProps }: any) => (
-  <S.Container
-    {...getTooltipProps({
-      ref: tooltipRef,
-    })}
-  >
-    {tooltip}
-  </S.Container>
-);
 
 export interface TooltipProps {
   value?: string | number | React.ReactNode;
 }
 
-export const Tooltip: React.FC<TooltipProps> = ({ value, children, ...props }) => (
-  <TooltipTrigger {...props} tooltip={TooltipBase(value)}>
-    {Trigger(children)}
-  </TooltipTrigger>
-);
+export const Tooltip: React.FC<TooltipProps> = ({ value, children }) => {
+  const [position, setPosition] = useState(false);
+
+  return (
+    <Manager>
+      <Reference>
+        {({ ref }) => (
+          <span ref={ref} onMouseEnter={() => setPosition(true)} onMouseLeave={() => setPosition(false)}>
+            {children}
+          </span>
+        )}
+      </Reference>
+      {position && (
+        <Popper placement="right">
+          {({ ref, style, placement }) => (
+            <S.Container ref={ref} style={style} data-placement={placement}>
+              {value}
+            </S.Container>
+          )}
+        </Popper>
+      )}
+    </Manager>
+  );
+};

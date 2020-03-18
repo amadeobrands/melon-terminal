@@ -63,28 +63,29 @@ module.exports = override(
       'process.env.MELON_MAX_EXPOSURE': JSON.stringify(process.env.MELON_MAX_EXPOSURE),
       'process.env.MELON_API_GATEWAY': JSON.stringify(process.env.MELON_API_GATEWAY),
       'process.env.MELON_FORTMATIC_KEY': JSON.stringify(process.env.MELON_FORTMATIC_KEY),
-      'process.env.MELON_FORTMATIC_PROVIDER': JSON.stringify(process.env.MELON_FORTMATIC_PROVIDER),
-      'process.env.MELON_FORTMATIC_NETWORK': JSON.stringify(process.env.MELON_FORTMATIC_NETWORK),
+      'process.env.MELON_WALLETCONNECT_INFURA_ID': JSON.stringify(process.env.MELON_WALLETCONNECT_INFURA_ID),
       'process.env.MELON_INCLUDE_GRAPHIQL': JSON.stringify(process.env.MELON_INCLUDE_GRAPHIQL),
-      'process.env.MELON_DEFAULT_PROVIDER': JSON.stringify(process.env.MELON_DEFAULT_PROVIDER),
       'process.env.MELON_MAINNET': JSON.stringify(mainnet),
       'process.env.MELON_KOVAN': JSON.stringify(kovan),
       'process.env.MELON_RINKEBY': JSON.stringify(rinkeby),
       'process.env.MELON_TESTNET': JSON.stringify(testnet),
       ...(mainnet && {
         'process.env.MELON_MAINNET_SUBGRAPH': JSON.stringify(process.env.MELON_MAINNET_SUBGRAPH),
+        'process.env.MELON_MAINNET_PROVIDER': JSON.stringify(process.env.MELON_MAINNET_PROVIDER),
         ...(!mainnetDeploymentAlias && {
           'process.env.MELON_MAINNET_DEPLOYMENT': JSON.stringify(process.env.MELON_MAINNET_DEPLOYMENT),
         }),
       }),
       ...(rinkeby && {
         'process.env.MELON_RINKEBY_SUBGRAPH': JSON.stringify(process.env.MELON_RINKEBY_SUBGRAPH),
+        'process.env.MELON_RINKEBY_PROVIDER': JSON.stringify(process.env.MELON_RINKEBY_PROVIDER),
         ...(!rinkebyDeploymentAlias && {
           'process.env.MELON_RINKEBY_DEPLOYMENT': JSON.stringify(process.env.MELON_RINKEBY_DEPLOYMENT),
         }),
       }),
       ...(kovan && {
         'process.env.MELON_KOVAN_SUBGRAPH': JSON.stringify(process.env.MELON_KOVAN_SUBGRAPH),
+        'process.env.MELON_KOVAN_PROVIDER': JSON.stringify(process.env.MELON_KOVAN_PROVIDER),
         ...(!kovanDeploymentAlias && {
           'process.env.MELON_KOVAN_DEPLOYMENT': JSON.stringify(process.env.MELON_KOVAN_DEPLOYMENT),
         }),

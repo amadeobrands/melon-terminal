@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const Container = styled.div`
+export const Container = styled.span`
   background-color: ${props => props.theme.mainColors.primary};
   color: ${props => props.theme.mainColors.textColor};
   border-radius: 3px;

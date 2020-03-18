@@ -24,6 +24,8 @@ import { useVersionQuery } from '~/components/Layout/Version.query';
 import * as S from './Layout.styles';
 import { DarkModeSwitch } from '~/storybook/components/DarkModeSwitch/DarkModeSwitch';
 import { FormattedDate } from '../Common/FormattedDate/FormattedDate';
+import { useConnectionState } from '~/hooks/useConnectionState';
+import { getNetworkName } from '~/config';
 
 const graphiql = JSON.parse(process.env.MELON_INCLUDE_GRAPHIQL || 'false');
 
@@ -37,6 +39,8 @@ export const Layout: React.FC<LayoutProps> = props => {
   const environment = useEnvironment();
   const account = useAccount();
   const [version] = useVersionQuery();
+  const connection = useConnectionState();
+  const prefix = getNetworkName(connection.network);
 
   const home = location.pathname === '/';
 
@@ -63,9 +67,9 @@ export const Layout: React.FC<LayoutProps> = props => {
             </LogoContainer>
             <ConnectionInfo>
               <DarkModeSwitch />
-              {!account.loading && account.fund && (
+              {!account.loading && account.fund && prefix && (
                 <ConnectionInfoItem>
-                  <NavLink to={`/fund/${account.fund}`} title={account.fund} activeClassName="active">
+                  <NavLink to={`/${prefix}/fund/${account.fund}`} title={account.fund} activeClassName="active">
                     My Fund
                   </NavLink>
                 </ConnectionInfoItem>
@@ -138,8 +142,6 @@ export const Layout: React.FC<LayoutProps> = props => {
             {environment?.network && <FooterItem>{NetworkEnum[environment.network]}</FooterItem>}
 
             {version && <FooterItem>Protocol {version.name}</FooterItem>}
-
-            <FooterItem>Staging</FooterItem>
           </FooterNavigation>
         </Footer>
       </SkeletonFeet>

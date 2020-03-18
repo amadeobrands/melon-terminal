@@ -29,6 +29,23 @@ const FundInvestQuery = gql`
     }
     fund(address: $fund) {
       routes {
+        accounting {
+          address
+          denominationAsset {
+            address
+            symbol
+            decimals
+          }
+          holdings {
+            token {
+              address
+              symbol
+              price
+            }
+            amount
+            value
+          }
+        }
         participation {
           address
           allowedAssets {
@@ -40,6 +57,38 @@ const FundInvestQuery = gql`
               decimals
             }
             shareCostInAsset
+          }
+        }
+        policyManager {
+          address
+          policies {
+            type: __typename
+            address
+            identifier
+
+            ... on MaxConcentration {
+              maxConcentration
+            }
+
+            ... on MaxPositions {
+              maxPositions
+            }
+
+            ... on PriceTolerance {
+              priceTolerance
+            }
+
+            ... on AssetWhitelist {
+              assetWhitelist
+            }
+
+            ... on AssetBlacklist {
+              assetBlacklist
+            }
+
+            ... on UserWhitelist {
+              isWhitelisted(address: $account)
+            }
           }
         }
         shares {

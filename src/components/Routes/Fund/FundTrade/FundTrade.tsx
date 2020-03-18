@@ -20,7 +20,7 @@ export interface FundTradeProps {
 
 export const FundTrade: React.FC<FundTradeProps> = ({ address }) => {
   const environment = useEnvironment()!;
-  const [exchanges, trading, exchangesQuery] = useFundTrading(address);
+  const [exchanges, denominationAsset, trading, policies, exchangesQuery] = useFundTrading(address);
   const [holdings, holdingsQuery] = useFundHoldingsQuery(address);
   const loading = exchangesQuery.loading || holdingsQuery.loading;
 
@@ -31,7 +31,8 @@ export const FundTrade: React.FC<FundTradeProps> = ({ address }) => {
 
   const providers = exchanges.filter(exchange => {
     const supported = [ExchangeIdentifier.KyberNetwork, ExchangeIdentifier.Uniswap, ExchangeIdentifier.MelonEngine];
-    return supported.includes(exchange.id as ExchangeIdentifier);
+    const legacy = ['UniswapOld'];
+    return [...supported, ...legacy].includes(exchange.id as ExchangeIdentifier);
   });
 
   const rfq =
@@ -52,21 +53,39 @@ export const FundTrade: React.FC<FundTradeProps> = ({ address }) => {
               {!!markets.length && !!trading && (
                 <GridRow>
                   <GridCol>
-                    <FundOrderbookTrading trading={trading} exchanges={markets} holdings={holdings} />
+                    <FundOrderbookTrading
+                      trading={trading}
+                      denominationAsset={denominationAsset}
+                      exchanges={markets}
+                      policies={policies}
+                      holdings={holdings}
+                    />
                   </GridCol>
                 </GridRow>
               )}
               {!!providers.length && !!trading && (
                 <GridRow>
                   <GridCol>
-                    <FundLiquidityProviderTrading trading={trading} exchanges={providers} holdings={holdings} />
+                    <FundLiquidityProviderTrading
+                      trading={trading}
+                      denominationAsset={denominationAsset}
+                      exchanges={providers}
+                      policies={policies}
+                      holdings={holdings}
+                    />
                   </GridCol>
                 </GridRow>
               )}
               {!!rfq && !!trading && (
                 <GridRow>
                   <GridCol>
-                    <FundRequestForQuoteTrading trading={trading} exchange={rfq} holdings={holdings} />
+                    <FundRequestForQuoteTrading
+                      trading={trading}
+                      denominationAsset={denominationAsset}
+                      exchange={rfq}
+                      policies={policies}
+                      holdings={holdings}
+                    />
                   </GridCol>
                 </GridRow>
               )}

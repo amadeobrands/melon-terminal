@@ -7,7 +7,7 @@ import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory';
 import { ApolloProvider as BaseApolloProvider } from '@apollo/react-hooks';
 import { createSchemaLink, createSchema, createQueryContext } from '@melonproject/melongql';
 import { useEnvironment } from '~/hooks/useEnvironment';
-import { config } from '~/config';
+import { getConfig } from '~/config';
 import { DeployedEnvironment } from '@melonproject/melonjs';
 import { NetworkEnum } from '~/types';
 
@@ -94,7 +94,8 @@ const useTheGraphApollo = (environment?: DeployedEnvironment) => {
   const client = useMemo(() => {
     // TODO: Fix network enum.
     const network = (environment?.network as any) as undefined | NetworkEnum;
-    const subgraph = !!(network && config[network]) ? config[network]!.subgraph : undefined;
+    const config = getConfig(network);
+    const subgraph = !!config ? config.subgraph : undefined;
     const data = subgraph
       ? createHttpLink({
           uri: subgraph,

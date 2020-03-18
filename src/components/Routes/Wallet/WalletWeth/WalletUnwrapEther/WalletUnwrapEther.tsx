@@ -16,6 +16,7 @@ import * as S from './WalletUnwrapEther.styles';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 
 export const WalletUnwrapEther: React.FC = () => {
   const environment = useEnvironment()!;
@@ -53,6 +54,8 @@ export const WalletUnwrapEther: React.FC = () => {
     transaction.start(tx, 'Unwrap Ether');
   });
 
+  const amount = form.watch('quantityWeth') as BigNumber;
+
   return (
     <Block>
       <Title>Unwrap Ether</Title>
@@ -76,7 +79,12 @@ export const WalletUnwrapEther: React.FC = () => {
         </form>
       </FormContext>
 
-      <TransactionModal transaction={transaction} />
+      <TransactionModal transaction={transaction}>
+        <TransactionDescription title="Unwrap ether">
+          This transaction converts <FormattedNumber value={amount} suffix="WETH (wrapped ether)" /> into{' '}
+          <FormattedNumber value={amount} suffix="ETH" />
+        </TransactionDescription>
+      </TransactionModal>
     </Block>
   );
 };

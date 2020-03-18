@@ -15,6 +15,10 @@ export const HeaderContent = styled(Container)`
   justify-content: space-between;
   align-items: center;
   height: ${props => props.theme.skeleton.headerHeight};
+  padding: 0px;
+  @media (${props => props.theme.mediaQueries.s}) {
+    padding: 0px 16px;
+  }
 `;
 
 export const LogoContainer = styled.div`

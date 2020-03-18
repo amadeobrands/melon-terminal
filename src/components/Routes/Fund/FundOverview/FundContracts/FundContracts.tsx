@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { useFundDetailsQuery } from '../FundDetails.query';
 import { Spinner } from '~/storybook/components/Spinner/Spinner';
 import { SectionTitle } from '~/storybook/components/Title/Title';
@@ -27,7 +27,6 @@ export const FundContracts: React.FC<FundContractsProps> = ({ address }) => {
     { name: 'Vault', field: 'vault' },
     { name: 'Registry', field: 'registry' },
     { name: 'Version', field: 'version' },
-    { name: 'Price Source', field: 'priceSource' },
   ];
 
   const routes = fund?.routes;
@@ -38,6 +37,8 @@ export const FundContracts: React.FC<FundContractsProps> = ({ address }) => {
     })
     .filter(item => !!item.address);
 
+  addresses.unshift({ name: 'Fund', address, field: 'fund' });
+
   return (
     <Dictionary>
       <SectionTitle>Fund Contracts</SectionTitle>
@@ -45,12 +46,20 @@ export const FundContracts: React.FC<FundContractsProps> = ({ address }) => {
 
       {!query.loading &&
         addresses.map(a => (
-          <DictionaryEntry key={a.address}>
-            <DictionaryLabel>{a.name}</DictionaryLabel>
-            <DictionaryData>
-              <EtherscanLink address={a.address} />
-            </DictionaryData>
-          </DictionaryEntry>
+          <Fragment key={a.address}>
+            <DictionaryEntry>
+              <DictionaryLabel>{a.name}</DictionaryLabel>
+              <DictionaryData>
+                <EtherscanLink address={a.address} />
+              </DictionaryData>
+            </DictionaryEntry>
+            {(a.name === 'Fund' || a.name === 'Vault') && (
+              <DictionaryEntry>
+                <DictionaryLabel>&nbsp;</DictionaryLabel>
+                <DictionaryData>&nbsp;</DictionaryData>
+              </DictionaryEntry>
+            )}
+          </Fragment>
         ))}
     </Dictionary>
   );

@@ -1,34 +1,37 @@
 import React from 'react';
 // @ts-ignore
-import Fortmatic from 'fortmatic';
+import WalletConnectProvider from '@walletconnect/web3-provider';
 import { Eth } from 'web3-eth';
-import { retryWhen, delay, switchMap, startWith, catchError } from 'rxjs/operators';
+import { map, switchMap, startWith, mapTo } from 'rxjs/operators';
 import * as Rx from 'rxjs';
 import {
+  networkChanged,
+  accountsChanged,
   connectionEstablished,
   ConnectionMethodProps,
   ConnectionMethod,
-  connectionLost,
 } from '~/components/Contexts/Connection/Connection';
 import { SectionTitle } from '~/storybook/components/Title/Title';
 import { Button } from '~/storybook/components/Button/Button.styles';
 import { networkFromId } from '~/utils/networkFromId';
-import { NetworkEnum } from '~/types';
 
 interface Resource extends Rx.Unsubscribable {
   eth: Eth;
   provider: any;
 }
 
+// melon default provider
 const connect = () => {
   const create = () => {
-    const fm = new Fortmatic(process.env.MELON_FORTMATIC_KEY);
-    const provider = fm.getProvider();
+    const provider = new WalletConnectProvider({
+      infuraId: process.env.MELON_WALLETCONNECT_INFURA_ID,
+    });
+
     const eth = new Eth(provider, undefined, {
       transactionConfirmationBlocks: 1,
     });
 
-    return { eth, provider, unsubscribe: () => fm.user.logout() };
+    return { eth, provider, unsubscribe: () => provider.close() };
   };
 
   return Rx.using(create, resource => {
@@ -40,25 +43,25 @@ const connect = () => {
       switchMap(async accounts => {
         const network = networkFromId(await eth.net.getId());
         return connectionEstablished(eth, network, accounts);
-      }),
-      catchError(error => {
-        if (error?.code === 4001) {
-          return Rx.of(connectionLost());
-        }
-
-        return Rx.throwError(error);
-      }),
-      retryWhen(error => error.pipe(delay(1000)))
+      })
     );
 
-    return Rx.concat(initial$, Rx.NEVER);
+    const network$ = Rx.fromEvent<string>(provider, 'networkChanged').pipe(
+      map(id => networkChanged(networkFromId(parseInt(id, 10))))
+    );
+
+    const accounts$ = Rx.concat(enable$, Rx.fromEvent<string[]>(provider, 'accountsChanged')).pipe(
+      map(accounts => accountsChanged(accounts))
+    );
+
+    return Rx.concat(initial$, Rx.merge(accounts$, network$));
   });
 };
 
-export const FortmaticComponent: React.FC<ConnectionMethodProps> = ({ connect, disconnect, active }) => {
+export const WalletConnectComponent: React.FC<ConnectionMethodProps> = ({ connect, disconnect, active }) => {
   return (
     <>
-      <SectionTitle>Fortmatic</SectionTitle>
+      <SectionTitle>WalletConnect</SectionTitle>
 
       {!active ? (
         <Button length="stretch" onClick={() => connect()}>
@@ -75,9 +78,11 @@ export const FortmaticComponent: React.FC<ConnectionMethodProps> = ({ connect, d
 
 export const method: ConnectionMethod = {
   connect,
-  supported: () => !!process.env.MELON_FORTMATIC_KEY,
-  component: FortmaticComponent,
-  icon: 'FORTMATIC',
-  name: 'fortmatic',
-  label: 'Fortmatic',
+  // TODO: Re-enable this connection method once it's confirmed to work fully.
+  // supported: () => !!process.env.MELON_WALLETCONNECT_INFURA_ID,
+  supported: () => false,
+  component: WalletConnectComponent,
+  icon: 'WALLETCONNECT',
+  name: 'walletconnect',
+  label: 'WalletConnect',
 };

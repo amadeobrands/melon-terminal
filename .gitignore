@@ -23,5 +23,7 @@ build/
 !.env.schema
 !.env.example
 
-* Ignore SVGR
+# Ignore SVGR
 svgr/
+
+.now

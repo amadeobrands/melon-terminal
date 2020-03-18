@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ExchangeDefinition } from '@melonproject/melonjs';
-import { Holding } from '@melonproject/melongql';
+import { Holding, Policy, Token } from '@melonproject/melongql';
 import { FundOrderbook } from '../FundOrderbook/FundOrderbook';
 import { OrderbookItem } from '../FundOrderbook/utils/aggregatedOrderbook';
 import { useEnvironment } from '~/hooks/useEnvironment';
@@ -12,12 +12,15 @@ import * as S from './FundOrderbookTrading.styles';
 
 export interface FundOrderbookTradingProps {
   trading: string;
+  denominationAsset?: Token;
   exchanges: ExchangeDefinition[];
   holdings: Holding[];
+  policies?: Policy[];
 }
 
 export const FundOrderbookTrading: React.FC<FundOrderbookTradingProps> = props => {
   const environment = useEnvironment()!;
+
   const weth = environment.getToken('WETH');
 
   const [asset, setAsset] = useState(environment.getToken('DAI'));
@@ -27,11 +30,12 @@ export const FundOrderbookTrading: React.FC<FundOrderbookTradingProps> = props =
     setOrder(undefined);
   }, [asset]);
 
-  const tokens = environment.tokens.filter(token => token !== weth && !token.historic);
-  const tokenOptions = tokens.map(token => ({
-    value: token.address,
-    name: `${token.symbol} / ${weth.symbol}`,
-  }));
+  const tokenOptions = environment.tokens
+    .filter(token => token !== weth && !token.historic)
+    .map(token => ({
+      value: token.address,
+      name: `${token.symbol} / ${weth.symbol}`,
+    }));
 
   return (
     <Block>
@@ -50,10 +54,12 @@ export const FundOrderbookTrading: React.FC<FundOrderbookTradingProps> = props =
           {asset && (
             <FundOrderbookMarketForm
               trading={props.trading}
+              denominationAsset={props.denominationAsset}
               asset={asset}
               order={order}
               unsetOrder={() => setOrder(undefined)}
               holdings={props.holdings}
+              policies={props.policies}
               exchanges={props.exchanges}
             />
           )}

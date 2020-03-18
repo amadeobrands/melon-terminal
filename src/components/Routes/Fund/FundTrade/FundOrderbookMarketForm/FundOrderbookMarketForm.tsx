@@ -12,6 +12,8 @@ import {
   OasisDexExchange,
   toBigNumber,
   ZeroExV3TradingAdapter,
+  sameAddress,
+  IPriceSource,
 } from '@melonproject/melonjs';
 import { Dropdown } from '~/storybook/components/Dropdown/Dropdown';
 import { Button } from '~/storybook/components/Button/Button';
@@ -23,22 +25,35 @@ import { useForm, FormContext } from 'react-hook-form';
 import { BlockActions } from '~/storybook/components/Block/Block';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 import { NotificationBar, NotificationContent } from '~/storybook/components/NotificationBar/NotificationBar';
-import { Holding } from '@melonproject/melongql';
+import {
+  Holding,
+  Policy,
+  MaxPositions,
+  MaxConcentration,
+  PriceTolerance,
+  Token,
+  AssetWhitelist,
+  AssetBlacklist,
+} from '@melonproject/melongql';
 import BigNumber from 'bignumber.js';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 import { SignedOrder } from '@0x/order-utils';
+import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 
 export interface FundOrderbookMarketFormProps {
   trading: string;
+  denominationAsset?: Token;
   asset: TokenDefinition;
   exchanges: ExchangeDefinition[];
   holdings: Holding[];
+  policies?: Policy[];
   order?: OrderbookItem;
   unsetOrder: () => void;
 }
 
 interface FundOrderbookMarketFormValues {
   quantity: string;
+  price: string;
   total: string;
 }
 
@@ -48,6 +63,29 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
   const transaction = useTransaction(environment, {
     onAcknowledge: () => props.unsetOrder(),
   });
+
+  const assetWhitelists = props.policies?.filter(policy => policy.identifier === 'AssetWhitelist') as
+    | AssetWhitelist[]
+    | undefined;
+  const assetBlacklists = props.policies?.filter(policy => policy.identifier === 'AssetBlacklist') as
+    | AssetBlacklist[]
+    | undefined;
+  const maxPositionsPolicies = props.policies?.filter(policy => policy.identifier === 'MaxPositions') as
+    | MaxPositions[]
+    | undefined;
+  const maxConcentrationPolicies = props.policies?.filter(policy => policy.identifier === 'MaxConcentration') as
+    | MaxConcentration[]
+    | undefined;
+  const priceTolerancePolicies = props.policies?.filter(policy => policy.identifier === 'PriceTolerance') as
+    | PriceTolerance[]
+    | undefined;
+
+  const nonZeroHoldings = props.holdings.filter(holding => !holding.amount?.isZero());
+
+  const gav = nonZeroHoldings?.reduce(
+    (carry, item) => carry.plus(item.value || new BigNumber(0)),
+    new BigNumber(0)
+  ) as BigNumber;
 
   const exchanges = props.exchanges.map(item => ({
     value: item.id,
@@ -71,7 +109,7 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
   const base = props.asset;
   const order = props.order;
   const holdings = props.holdings;
-  const price = props.order?.price ?? new BigNumber('NaN');
+  const price = props.order?.price.decimalPlaces(18) ?? new BigNumber('NaN');
 
   // TODO: These refs are used for validation. Fix this after https://github.com/react-hook-form/react-hook-form/pull/817
   const orderRef = useRef(order);
@@ -90,9 +128,95 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
     mode: 'onChange',
     defaultValues: {
       quantity: '',
+      price: '',
       total: '',
     },
     validationSchema: Yup.object().shape({
+      direction: Yup.string()
+        .test(
+          'maxPositions',
+          'Investing with this asset would violate the maximum number of positions policy',
+          value => {
+            const newAsset = value === 'buy' ? base.address : quote.address;
+            return (
+              // no policies
+              !maxPositionsPolicies?.length ||
+              // new investment is in denomination asset
+              sameAddress(props.denominationAsset?.address, value) ||
+              // already existing token
+              !!nonZeroHoldings?.some(holding => sameAddress(holding.token?.address, newAsset)) ||
+              // max positions larger than holdings (so new token would still fit in)
+              maxPositionsPolicies.every(
+                policy => policy.maxPositions && nonZeroHoldings && policy.maxPositions > nonZeroHoldings?.length
+              )
+            );
+          }
+        )
+        .test('assetWhitelist', 'You cannot invest with this asset because it is not on the asset whitelist', value => {
+          const newAsset = value === 'buy' ? base.address : quote.address;
+          return (
+            // no policies
+            !assetWhitelists?.length ||
+            // asset is on whitelist
+            assetWhitelists.every(list => list.assetWhitelist?.some(item => sameAddress(item, newAsset)))
+          );
+        })
+        .test('assetBlacklist', 'You cannot invest with this asset because it is on the asset blacklist', value => {
+          const newAsset = value === 'buy' ? base.address : quote.address;
+          return (
+            // no policies
+            !assetBlacklists?.length ||
+            // asset is on whitelist
+            !assetBlacklists.some(list => list.assetBlacklist?.some(item => sameAddress(item, newAsset)))
+          );
+        }),
+      price: Yup.string().test(
+        'priceTolerance',
+        'This price is outside the price tolerance set by the price tolerance policy',
+        async function(value) {
+          const exchange = environment.getExchange(order!.exchange);
+
+          if (!priceTolerancePolicies?.length) {
+            return true;
+          }
+
+          const trading = new Trading(environment, props.trading);
+          const priceSourceAddress = await trading.getPriceSource();
+          const priceSource = new IPriceSource(environment, priceSourceAddress);
+
+          const taker = order!.side === 'bid' ? base : quote;
+          const maker = order!.side === 'bid' ? quote : base;
+
+          const takerQuantity =
+            order!.side === 'bid'
+              ? toTokenBaseUnit(this.parent.quantity, taker.decimals)
+              : toTokenBaseUnit(this.parent.total, maker.decimals);
+
+          let makerQuantity = new BigNumber(0);
+
+          if (exchange.id === ExchangeIdentifier.OasisDex) {
+            const market = new OasisDexExchange(environment, exchange.exchange);
+            const offer = await market.getOffer((order as OasisDexOrderbookItem).order.id);
+            makerQuantity = takerQuantity.multipliedBy(offer.makerQuantity).dividedBy(offer.takerQuantity);
+          } else if (exchange.id === ExchangeIdentifier.ZeroExV3) {
+            const offer = order?.order.order as SignedOrder;
+            makerQuantity = takerQuantity.multipliedBy(offer.makerAssetAmount).dividedBy(offer.takerAssetAmount);
+          }
+
+          const [referencePrice, orderPrice] = await Promise.all([
+            priceSource.getReferencePriceInfo(taker.address, maker.address),
+            priceSource.getOrderPriceInfo(taker.address, takerQuantity, makerQuantity),
+          ]);
+
+          return priceTolerancePolicies?.every(
+            policy =>
+              policy.priceTolerance &&
+              orderPrice.isGreaterThan(
+                referencePrice.price.minus(policy.priceTolerance.multipliedBy(referencePrice.price).dividedBy('1e18'))
+              )
+          );
+        }
+      ),
       quantity: Yup.string()
         .required('Missing quantity.')
         .test('valid-number', 'The given value is not a valid number.', value => {
@@ -114,6 +238,36 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
           }
 
           return true;
+        })
+        .test('maxConcentration', 'This investment amount would violate the maximum concentration policy', function(
+          value
+        ) {
+          if (order?.side === 'bid') {
+            return true;
+          }
+
+          if (
+            !maxConcentrationPolicies?.length ||
+            sameAddress(this.parent.investmentAsset, props.denominationAsset?.address)
+          ) {
+            return true;
+          }
+
+          const holdings = holdingsRef.current;
+          const asset = baseRef.current;
+
+          const investmentAsset = holdings?.find(holding => sameAddress(holding.token?.address, asset.address));
+          const investmentAmountInDenominationAsset = new BigNumber(value)
+            .multipliedBy(investmentAsset?.token?.price || new BigNumber(0))
+            .multipliedBy('1e18');
+
+          const futureGav = (gav || new BigNumber(0)).plus(investmentAmountInDenominationAsset);
+          const futureAssetGav = (investmentAsset?.value || new BigNumber(0)).plus(investmentAmountInDenominationAsset);
+          const concentration = futureAssetGav.multipliedBy('1e18').dividedBy(futureGav);
+
+          return !!maxConcentrationPolicies?.every(
+            policy => policy.maxConcentration && policy.maxConcentration.isGreaterThanOrEqualTo(concentration)
+          );
         }),
       total: Yup.string()
         .required('Missing total.')
@@ -139,8 +293,9 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
     const quantity = order?.quantity ?? new BigNumber('NaN');
     const total = quantity.multipliedBy(price);
 
-    form.setValue('quantity', !quantity.isNaN() ? quantity.toString() : '');
-    form.setValue('total', !total.isNaN() ? total.toString() : '');
+    form.setValue('quantity', !quantity.isNaN() ? quantity.decimalPlaces(base.decimals).toFixed(base.decimals) : '');
+    form.setValue('price', !price.isNaN() ? price.decimalPlaces(base.decimals).toFixed(base.decimals) : '');
+    form.setValue('total', !total.isNaN() ? total.decimalPlaces(18).toFixed(18) : '');
     form.triggerValidation().catch(() => {});
   }, [order]);
 
@@ -160,14 +315,14 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
       const adapter = await OasisDexTradingAdapter.create(environment, exchange.exchange, trading);
       const offer = await market.getOffer((order as OasisDexOrderbookItem).order.id);
       const tx = adapter.takeOrder(account.address!, order!.order.id, offer, quantity);
-      return transaction.start(tx, 'Take order');
+      return transaction.start(tx, 'Take order on OasisDEX');
     }
 
     if (order!.exchange === ExchangeIdentifier.ZeroExV3) {
       const adapter = await ZeroExV3TradingAdapter.create(environment, exchange.exchange, trading);
       const offer = order?.order.order as SignedOrder;
       const tx = adapter.takeOrder(account.address!, offer, quantity);
-      return transaction.start(tx, 'Take order');
+      return transaction.start(tx, 'Take order on 0x');
     }
   });
 
@@ -175,16 +330,16 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
   const total = toBigNumber(form.watch('total'));
 
   const changeQuantity = async (change: BigNumber.Value) => {
-    const quantity = toBigNumber(change);
-    const total = quantity.multipliedBy(price);
+    const quantity = toBigNumber(change).decimalPlaces(quote.decimals);
+    const total = quantity.multipliedBy(price).decimalPlaces(base.decimals);
 
     form.setValue('total', !total.isNaN() ? total.toString() : '', true);
     form.triggerValidation().catch(() => {});
   };
 
   const changeTotal = async (change: BigNumber.Value) => {
-    const total = toBigNumber(change);
-    const quantity = total.dividedBy(price);
+    const total = toBigNumber(change).decimalPlaces(base.decimals);
+    const quantity = total.dividedBy(price).decimalPlaces(quote.decimals);
 
     form.setValue('quantity', !quantity.isNaN() ? quantity.toString() : '', true);
     form.triggerValidation().catch(() => {});
@@ -248,7 +403,14 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
         </NotificationBar>
       )}
 
-      <TransactionModal transaction={transaction} />
+      <TransactionModal transaction={transaction}>
+        {transaction.state.name === 'Take order on OasisDEX' && (
+          <TransactionDescription title="Take order on OasisDEX">{description}</TransactionDescription>
+        )}
+        {transaction.state.name === 'Take order on 0x' && (
+          <TransactionDescription title="Take order on OasisDEX">{description}</TransactionDescription>
+        )}
+      </TransactionModal>
     </FormContext>
   );
 };

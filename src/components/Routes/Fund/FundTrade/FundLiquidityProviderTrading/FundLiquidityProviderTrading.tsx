@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import BigNumber from 'bignumber.js';
 import * as Yup from 'yup';
 import { useForm, FormContext } from 'react-hook-form';
-import { Holding } from '@melonproject/melongql';
+import { Holding, Policy, AssetWhitelist, AssetBlacklist, MaxPositions, Token } from '@melonproject/melongql';
 import { ExchangeDefinition, ExchangeIdentifier, sameAddress } from '@melonproject/melonjs';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { Dropdown } from '~/storybook/components/Dropdown/Dropdown';
@@ -13,11 +13,15 @@ import { FundUniswapTrading } from '../FundUniswapTrading/FundUniswapTrading';
 import { Block } from '~/storybook/components/Block/Block';
 import { Grid, GridRow, GridCol } from '~/storybook/components/Grid/Grid';
 import { SectionTitle } from '~/storybook/components/Title/Title';
+import { NotificationBar, NotificationContent } from '~/storybook/components/NotificationBar/NotificationBar';
+import { Link } from '~/storybook/components/Link/Link';
 
 export interface FundLiquidityProviderTradingProps {
   trading: string;
+  denominationAsset?: Token;
   exchanges: ExchangeDefinition[];
   holdings: Holding[];
+  policies?: Policy[];
 }
 
 interface FundLiquidityProviderTradingFormValues {
@@ -28,8 +32,40 @@ interface FundLiquidityProviderTradingFormValues {
 
 export const FundLiquidityProviderTrading: React.FC<FundLiquidityProviderTradingProps> = props => {
   const environment = useEnvironment()!;
-  const options = environment.tokens
+
+  const assetWhitelists = props.policies?.filter(policy => policy.identifier === 'AssetWhitelist') as
+    | AssetWhitelist[]
+    | undefined;
+  const assetBlacklists = props.policies?.filter(policy => policy.identifier === 'AssetBlacklist') as
+    | AssetBlacklist[]
+    | undefined;
+  const maxPositionsPolicies = props.policies?.filter(policy => policy.identifier === 'MaxPositions') as
+    | MaxPositions[]
+    | undefined;
+
+  const nonZeroHoldings = props.holdings.filter(holding => !holding.amount?.isZero());
+
+  const takerOptions = environment.tokens
     .filter(item => !item.historic)
+    .map(token => ({
+      value: token.address,
+      name: token.symbol,
+    }));
+
+  const makerOptions = environment.tokens
+    .filter(item => !item.historic)
+    .filter(
+      asset =>
+        sameAddress(asset.address, props.denominationAsset?.address) ||
+        !assetWhitelists?.length ||
+        assetWhitelists.every(list => list.assetWhitelist?.some(item => sameAddress(item, asset.address)))
+    )
+    .filter(
+      asset =>
+        sameAddress(asset.address, props.denominationAsset?.address) ||
+        !assetBlacklists?.length ||
+        !assetBlacklists.some(list => list.assetBlacklist?.some(item => sameAddress(item, asset.address)))
+    )
     .map(token => ({
       value: token.address,
       name: token.symbol,
@@ -45,12 +81,28 @@ export const FundLiquidityProviderTrading: React.FC<FundLiquidityProviderTrading
     mode: 'onChange',
     reValidateMode: 'onChange',
     defaultValues: {
-      makerAsset: weth.address,
-      takerAsset: mln.address,
+      makerAsset: makerOptions?.[0]?.value,
+      takerAsset: takerOptions?.[1]?.value,
       takerQuantity: '1',
     },
     validationSchema: Yup.object().shape({
-      makerAsset: Yup.string().required(),
+      makerAsset: Yup.string()
+        .required()
+        .test(
+          'maxPositions',
+          'Investing with this asset would violate the maximum number of positions policy',
+          (value: string) =>
+            // no policies
+            !maxPositionsPolicies?.length ||
+            // new investment is in denomination asset
+            sameAddress(props.denominationAsset?.address, value) ||
+            // already existing token
+            !!nonZeroHoldings?.some(holding => sameAddress(holding.token?.address, value)) ||
+            // max positions larger than holdings (so new token would still fit)
+            maxPositionsPolicies.every(
+              policy => policy.maxPositions && nonZeroHoldings && policy.maxPositions > nonZeroHoldings?.length
+            )
+        ),
       takerAsset: Yup.string().required(),
       takerQuantity: Yup.string()
         .required('Missing sell quantity.')
@@ -60,7 +112,7 @@ export const FundLiquidityProviderTrading: React.FC<FundLiquidityProviderTrading
           return !bn.isNaN() && !bn.isZero() && bn.isPositive();
         })
         // tslint:disable-next-line
-        .test('balance-too-low', 'The balance of the is lower than the provided value.', function(value) {
+        .test('balance-too-low', 'Your balance of the token is lower than the provided value.', function(value) {
           const holding = holdingsRef.current.find(item => sameAddress(item.token!.address, this.parent.takerAsset))!;
           const divisor = holding ? new BigNumber(10).exponentiatedBy(holding.token!.decimals!) : new BigNumber('NaN');
           const balance = holding ? holding.amount!.dividedBy(divisor) : new BigNumber('NaN');
@@ -101,9 +153,35 @@ export const FundLiquidityProviderTrading: React.FC<FundLiquidityProviderTrading
     })
     .filter(value => !!value) as [ExchangeDefinition, React.ElementType][];
 
+  if (takerOptions?.length < 2) {
+    return (
+      <Block>
+        <SectionTitle>Liquidity Pool Trading</SectionTitle>
+        <p>
+          Liquidity pool trading is not possible because the fund's risk management policies prevent the investment in
+          any asset.
+        </p>
+      </Block>
+    );
+  }
+
+  const uniswapLegacyWarning =
+    props.exchanges.includes(environment.getExchange('UniswapOld')) &&
+    !props.exchanges.includes(environment.getExchange(ExchangeIdentifier.Uniswap));
+
   return (
     <Block>
       <SectionTitle>Liquidity Pool Trading</SectionTitle>
+
+      {uniswapLegacyWarning && (
+        <NotificationBar kind="error">
+          <NotificationContent>
+            We have deployed a bug fix for the Uniswap adapter. To continue trading on Uniswap, you have to{' '}
+            <Link to={`manage`}>register</Link> the new adapter in the <Link to={`manage`}>admin section</Link> of your
+            fund.
+          </NotificationContent>
+        </NotificationBar>
+      )}
 
       <FormContext {...form}>
         <Grid>
@@ -113,13 +191,13 @@ export const FundLiquidityProviderTrading: React.FC<FundLiquidityProviderTrading
               <Dropdown
                 name="takerAsset"
                 label="Sell this asset"
-                options={options}
+                options={takerOptions}
                 onChange={() => form.triggerValidation().catch(() => {})}
               />
               <Dropdown
                 name="makerAsset"
                 label="To buy this asset"
-                options={options}
+                options={makerOptions}
                 onChange={() => form.triggerValidation().catch(() => {})}
               />
             </GridCol>
@@ -143,6 +221,8 @@ export const FundLiquidityProviderTrading: React.FC<FundLiquidityProviderTrading
                           active={ready}
                           trading={props.trading}
                           holdings={props.holdings}
+                          denominationAsset={props.denominationAsset}
+                          policies={props.policies}
                           exchange={exchange}
                           maker={makerAsset}
                           taker={takerAsset}

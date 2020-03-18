@@ -43,6 +43,11 @@ export interface AssetWhitelistPolicy extends FundPolicy {
   assetWhitelist: string[];
 }
 
+export interface UserWhitelistPolicy extends FundPolicy {
+  type: 'UserWhitelist';
+  isWhitelisted: boolean;
+}
+
 export interface FundPoliciesQueryVariables {
   address: string;
 }

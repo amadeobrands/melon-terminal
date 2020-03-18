@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 import { useTheGraphQuery } from '~/hooks/useQuery';
-import { ExchangeDefinition, TokenDefinition } from '@melonproject/melonjs';
+import { ExchangeDefinition, TokenDefinition, sameAddress } from '@melonproject/melonjs';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 
@@ -71,8 +71,8 @@ export const useFundTradeHistoryQuery = (address: string) => {
         }
 
         const buyQuantity = buyAsset && fromTokenBaseUnit(buyAmount, buyAsset.decimals);
-
         const sellQuantity = sellAsset && fromTokenBaseUnit(sellAmount, sellAsset.decimals);
+        const exchange = environment.exchanges.find(exchange => sameAddress(exchange.exchange, item.exchange?.id));
 
         return {
           buyAsset,
@@ -82,7 +82,7 @@ export const useFundTradeHistoryQuery = (address: string) => {
           id: item.id,
           timestamp: item.timestamp,
           methodName: item.methodName,
-          exchange: environment.getExchange(item.exchange?.id),
+          exchange,
         } as CallOnExchange;
       }) as CallOnExchange[],
     [result.data]

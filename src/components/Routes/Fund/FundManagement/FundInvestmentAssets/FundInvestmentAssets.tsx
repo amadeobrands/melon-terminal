@@ -13,6 +13,7 @@ import { Spinner } from '~/storybook/components/Spinner/Spinner';
 import { Checkboxes } from '~/storybook/components/Checkbox/Checkbox';
 import { useAccount } from '~/hooks/useAccount';
 import { useFundInvestmentAssetsQuery } from './FundInvestmentAssets.query';
+import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 
 export interface InvestmentAssetsProps {
   address: string;
@@ -118,7 +119,20 @@ export const InvestmentAssets: React.FC<InvestmentAssetsProps> = ({ address }) =
         </form>
       </FormContext>
 
-      <TransactionModal transaction={transaction} />
+      <TransactionModal transaction={transaction}>
+        {transaction.state.name === 'Remove assets' && (
+          <TransactionDescription title="Remove assets">
+            You are removing {removeAssets.length} asset{removeAssets.length > 1 && 's'} from the list of allowed
+            investment assets.
+          </TransactionDescription>
+        )}
+        {transaction.state.name === 'Add assets' && (
+          <TransactionDescription title="Add assets">
+            You are adding {addAssets.length} asset{addAssets.length > 1 && 's'} from the list of allowed investment
+            assets.
+          </TransactionDescription>
+        )}
+      </TransactionModal>
     </Block>
   );
 };

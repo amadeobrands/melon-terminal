@@ -34,6 +34,8 @@ import {
 } from '~/storybook/components/Checkbox/Checkbox';
 import styled from 'styled-components';
 import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { getNetworkName } from '~/config';
+import { useConnectionState } from '~/hooks/useConnectionState';
 
 interface SortChoice {
   key: keyof typeof sortChoice;
@@ -177,6 +179,7 @@ const ToggleCheckboxLabel = styled(CheckboxLabel)`
 `;
 
 export const FundOverview: React.FC = () => {
+  const connection = useConnectionState();
   const history = useHistory();
   const [funds, query] = useFundOverviewQuery();
   const [search, setSearch] = useState('');
@@ -186,6 +189,7 @@ export const FundOverview: React.FC = () => {
   const sorted = useSortedFunds(filtered.funds);
   const pagination = usePagination(sorted.funds, 15);
   const account = useAccount();
+  const prefix = getNetworkName(connection.network);
 
   useEffect(() => {
     pagination.setOffset(0);
@@ -287,7 +291,11 @@ export const FundOverview: React.FC = () => {
           <tbody>
             {pagination.data.length ? (
               pagination.data.map((fund, key) => (
-                <BodyRowHover key={fund.id} title={fund.name} onClick={() => history.push(`/fund/${fund.id}`)}>
+                <BodyRowHover
+                  key={fund.id}
+                  title={fund.name}
+                  onClick={() => history.push(`/${prefix}/fund/${fund.id}`)}
+                >
                   <BodyCell>{pagination.offset + (key + 1)}</BodyCell>
                   <BodyCell maxWidth="200px">{fund.name}</BodyCell>
                   <BodyCell>

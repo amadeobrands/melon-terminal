@@ -11,13 +11,16 @@ export const ConnectionSelectorToggle = styled.div`
 export const ConnectionSelectorBox = styled.div`
   position: absolute;
   top: 100%;
-  width: 400px;
+  width: 360px;
   right: -${props => props.theme.spaceUnits.s};
   margin-top: ${props => props.theme.spaceUnits.s};
   background: ${props => props.theme.mainColors.primary};
   padding: ${props => props.theme.spaceUnits.l};
   border: ${props => props.theme.border.borderDefault};
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5);
+  @media (${props => props.theme.mediaQueries.s}) {
+    width: 400px;
+  }
 `;
 
 export const ConnectionLabel = styled.a`

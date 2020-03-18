@@ -12,6 +12,7 @@ import { Spinner } from '~/storybook/components/Spinner/Spinner';
 import { Checkboxes } from '~/storybook/components/Checkbox/Checkbox';
 import { useAccount } from '~/hooks/useAccount';
 import { useFundExchangesQuery } from './FundExchanges.query';
+import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 
 export interface ExchangesProps {
   address: string;
@@ -30,7 +31,7 @@ export const FundExchanges: React.FC<ExchangesProps> = ({ address }) => {
 
   const exchanges = useMemo(() => {
     const exchanges = details?.fund?.routes?.trading?.exchanges || [];
-    return exchanges.map(exchange => environment.getExchange(exchange.exchange!)).filter(exchange => !!exchange);
+    return exchanges.map(exchange => environment.getExchange(exchange as any)).filter(exchange => !!exchange);
   }, [details?.fund?.routes?.trading?.exchanges]);
 
   const exchangesRef = useRef(exchanges);
@@ -44,11 +45,14 @@ export const FundExchanges: React.FC<ExchangesProps> = ({ address }) => {
     validationSchema: Yup.object().shape({
       exchanges: Yup.array<string>()
         .compact()
-        .test('at-least-one', "You didn't select a new exchange.", value => {
-          return value.length > exchangesRef.current.length;
+        .test('at-least-one', "You didn't select a new exchange.", (value: string[]) => {
+          const options = exchangesRef.current;
+          return value.some(selected => selected && !options.some(available => available.id === selected))!;
         })
-        .test('only-one', 'You can only add one exchange at a time.', value => {
-          return value.length === exchangesRef.current.length + 1;
+        .test('only-one', 'You can only add one exchange at a time.', (value: string[]) => {
+          const options = exchangesRef.current;
+          const add = value.filter(selected => selected && !options.some(available => available.id === selected))!;
+          return add.length === 1;
         }),
     }),
   });
@@ -63,14 +67,12 @@ export const FundExchanges: React.FC<ExchangesProps> = ({ address }) => {
   }
 
   const options = environment.exchanges
-    .filter(exchange => {
-      return !exchange.historic || exchanges?.some(allowed => allowed.id === exchange.id);
-    })
+    .filter(exchange => !exchange.historic)
     .map(exchange => ({
       label: exchange.name,
       value: exchange.id,
       checked: !!exchanges?.some(allowed => allowed.id === exchange.id),
-      disabled: !!exchanges?.some(allowed => allowed.id === exchange.id) || exchange.historic,
+      disabled: !!exchanges?.some(allowed => allowed.id === exchange.id),
     }));
 
   const submit = form.handleSubmit(async data => {
@@ -99,7 +101,11 @@ export const FundExchanges: React.FC<ExchangesProps> = ({ address }) => {
         </form>
       </FormContext>
 
-      <TransactionModal transaction={transaction} />
+      <TransactionModal transaction={transaction}>
+        <TransactionDescription title="Add exchange">
+          You are adding an exchange to the list of allowed exchanges.
+        </TransactionDescription>
+      </TransactionModal>
     </Block>
   );
 };

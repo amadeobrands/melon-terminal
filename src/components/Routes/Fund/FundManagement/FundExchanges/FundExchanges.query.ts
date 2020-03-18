@@ -14,7 +14,6 @@ const FundExchangesQuery = gql`
           exchanges {
             exchange
             adapter
-            takesCustody
           }
         }
       }

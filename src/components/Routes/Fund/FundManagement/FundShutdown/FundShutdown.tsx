@@ -8,6 +8,7 @@ import { useAccount } from '~/hooks/useAccount';
 import { Block, BlockActions } from '~/storybook/components/Block/Block';
 import { SectionTitle } from '~/storybook/components/Title/Title';
 import { useFundShutdownQuery } from '~/components/Routes/Fund/FundManagement/FundShutdown/FundShutdown.query';
+import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 
 export interface ShutdownProps {
   address: string;
@@ -59,7 +60,19 @@ export const Shutdown: React.FC<ShutdownProps> = ({ address }) => {
         </Button>
       </BlockActions>
 
-      <TransactionModal transaction={transaction} />
+      <TransactionModal transaction={transaction}>
+        {transaction.state.name === 'Return assets to vault' && (
+          <TransactionDescription title="Return assets to Vault">
+            This transaction returns all assets to the Vault contract, which is a prerequisit for shutting down a fund.
+          </TransactionDescription>
+        )}
+        {transaction.state.name === 'Shutdown fund' && (
+          <TransactionDescription title="Shutdown fund">
+            This transaction shuts down your fund. The fund will be closed for new investors and trades will no longer
+            be possible. Investors can still redeem their shares whenever they want.
+          </TransactionDescription>
+        )}
+      </TransactionModal>
     </Block>
   );
 };

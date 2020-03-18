@@ -17,6 +17,7 @@ import { RequiresNoSharesCreated } from '~/components/Gates/RequiresNoSharesCrea
 import { Link } from '~/storybook/components/Link/Link';
 import { RequiresNoPoliciesDeployed } from '~/components/Gates/RequiresNoPoliciesDeployed/RequiresNoPoliciesDeployed';
 import { RequiresFundDeployedWithCurrentVersion } from '~/components/Gates/RequiresFundDeployedWithCurrentVersion/RequiresFundDeployedWithCurrentVersion';
+import { RequiresFundNotShutDown } from '~/components/Gates/RequiresFundNotShutDown/RequiresFundNotShutDown';
 
 const NoMatch = React.lazy(() => import('~/components/Routes/NoMatch/NoMatch'));
 const FundSetupTransactions = React.lazy(() => import('./FundSetupTransactions/FundSetupTransactions'));
@@ -29,6 +30,7 @@ const ShareFund = React.lazy(() => import('./ShareFund/ShareFund'));
 
 export interface FundRouteParams {
   address: string;
+  network: string;
 }
 
 export const Fund: React.FC = () => {
@@ -38,7 +40,7 @@ export const Fund: React.FC = () => {
     <FundProvider address={match.params.address}>
       <FundHeader address={match.params.address} />
       <RequiresFundSetupComplete fallback={false}>
-        <FundNavigation address={match.params.address} />
+        <FundNavigation prefix={match.url} address={match.params.address} />
       </RequiresFundSetupComplete>
       <Container>
         <RequiresFundShutDown fallback={false}>
@@ -48,17 +50,19 @@ export const Fund: React.FC = () => {
         </RequiresFundShutDown>
         <RequiresFundDeployedWithCurrentVersion address={match.params.address} fallback={true} />
         <RequiresFundManager fallback={false}>
-          <RequiresFundDeployedWithCurrentVersion
-            address={match.params.address}
-            fallback={
-              <NotificationBar kind="neutral">
-                <NotificationContent>
-                  Please <Link to={`/fund/${match.params.address}/manage`}>shut down your fund</Link> and{' '}
-                  <Link to={`/wallet/setup`}>set up a new fund.</Link>
-                </NotificationContent>
-              </NotificationBar>
-            }
-          />
+          <RequiresFundNotShutDown fallback={false}>
+            <RequiresFundDeployedWithCurrentVersion
+              address={match.params.address}
+              fallback={
+                <NotificationBar kind="neutral">
+                  <NotificationContent>
+                    Please <Link to={`${match.url}/manage`}>shut down your fund</Link> and{' '}
+                    <Link to={`/wallet/setup`}>set up a new fund.</Link>
+                  </NotificationContent>
+                </NotificationBar>
+              }
+            />
+          </RequiresFundNotShutDown>
         </RequiresFundManager>
         <RequiresFundSetupInProgress>
           <NotificationBar kind="neutral">
@@ -77,27 +81,29 @@ export const Fund: React.FC = () => {
         </RequiresFundSetupInProgress>
 
         <RequiresFundSetupComplete fallback={false}>
-          <RequiresFundManager fallback={false}>
-            <RequiresNoSharesCreated fallback={false} address={match.params.address}>
-              <NotificationBar kind="neutral">
-                <NotificationContent>
-                  You have not invested into your fund yet. Go to{' '}
-                  <Link to={`/fund/${match.params.address}/invest`}>Invest &amp; redeem</Link> to invest.
-                </NotificationContent>
-              </NotificationBar>
-            </RequiresNoSharesCreated>
-            <RequiresFundJustCreated fallback={false}>
-              <RequiresNoPoliciesDeployed fallback={false} address={match.params.address}>
+          <RequiresFundNotShutDown fallback={false}>
+            <RequiresFundManager fallback={false}>
+              <RequiresNoSharesCreated fallback={false} address={match.params.address}>
                 <NotificationBar kind="neutral">
                   <NotificationContent>
-                    You have not defined any policies for your fund. Go to{' '}
-                    <Link to={`/fund/${match.params.address}/policies`}>Ruleset</Link> to define your policies.
+                    You have not invested into your fund yet. Go to{' '}
+                    <Link to={`${match.url}/invest`}>Invest &amp; redeem</Link> to invest.
                   </NotificationContent>
                 </NotificationBar>
-              </RequiresNoPoliciesDeployed>
-              <ShareFund address={match.params.address} />
-            </RequiresFundJustCreated>
-          </RequiresFundManager>
+              </RequiresNoSharesCreated>
+              <RequiresFundJustCreated fallback={false}>
+                <RequiresNoPoliciesDeployed fallback={false} address={match.params.address}>
+                  <NotificationBar kind="neutral">
+                    <NotificationContent>
+                      You have not defined any policies for your fund. Go to{' '}
+                      <Link to={`${match.url}/policies`}>Ruleset</Link> to define your policies.
+                    </NotificationContent>
+                  </NotificationBar>
+                </RequiresNoPoliciesDeployed>
+                <ShareFund address={match.params.address} />
+              </RequiresFundJustCreated>
+            </RequiresFundManager>
+          </RequiresFundNotShutDown>
 
           <ErrorBoundary FallbackComponent={ErrorFallback}>
             <Suspense fallback={<Spinner />}>

@@ -7,8 +7,8 @@ export interface FundInvestQueryVariables {
   account?: string;
 }
 
-const FundInvestQuery = gql`
-  query useFundInvestQuery($account: Address!, $fund: Address!) {
+const FundRedeemQuery = gql`
+  query FundRedeemQuery($account: Address!, $fund: Address!) {
     account(address: $account) {
       participation(address: $fund) {
         address
@@ -23,34 +23,23 @@ const FundInvestQuery = gql`
     }
     fund(address: $fund) {
       routes {
-        participation {
-          address
-          allowedAssets {
-            token {
-              address
-              symbol
-              name
-              price
-              decimals
-            }
-            shareCostInAsset
+        trading {
+          lockedAssets {
+            address
           }
-        }
-        shares {
-          totalSupply
         }
       }
     }
   }
 `;
 
-export const useFundInvestQuery = (fund: string) => {
+export const useFundRedeemQuery = (fund: string) => {
   const account = useAccount();
   const options = {
     skip: !account.address,
     variables: { fund, account: account.address },
   };
 
-  const result = useOnChainQuery<FundInvestQueryVariables>(FundInvestQuery, options);
+  const result = useOnChainQuery<FundInvestQueryVariables>(FundRedeemQuery, options);
   return [result.data, result] as [typeof result.data, typeof result];
 };

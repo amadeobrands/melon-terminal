@@ -2,20 +2,22 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import BigNumber from 'bignumber.js';
 import * as Yup from 'yup';
 import { useForm, FormContext } from 'react-hook-form';
-import { Holding } from '@melonproject/melongql';
+import { Holding, Policy, AssetWhitelist, AssetBlacklist, MaxPositions, Token } from '@melonproject/melongql';
 import { ExchangeDefinition, sameAddress, TokenDefinition } from '@melonproject/melonjs';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { Dropdown } from '~/storybook/components/Dropdown/Dropdown';
 import { Input } from '~/storybook/components/Input/Input';
 import { Block } from '~/storybook/components/Block/Block';
 import { Grid, GridRow, GridCol } from '~/storybook/components/Grid/Grid';
-import { SectionTitle, Subtitle } from '~/storybook/components/Title/Title';
+import { SectionTitle } from '~/storybook/components/Title/Title';
 import { FundRequestForQuoteOffer } from './FundRequestForQuoteOffer';
 
 export interface FundRequestForQuoteTradingProps {
   trading: string;
+  denominationAsset?: Token;
   exchange: ExchangeDefinition;
   holdings: Holding[];
+  policies?: Policy[];
 }
 
 interface FundRequestForQuoteTradingFormValues {
@@ -89,6 +91,18 @@ export const FundRequestForQuoteTrading: React.FC<FundRequestForQuoteTradingProp
   const [markets, loading] = useMarkets();
   const environment = useEnvironment()!;
 
+  const assetWhitelists = props.policies?.filter(policy => policy.identifier === 'AssetWhitelist') as
+    | AssetWhitelist[]
+    | undefined;
+  const assetBlacklists = props.policies?.filter(policy => policy.identifier === 'AssetBlacklist') as
+    | AssetBlacklist[]
+    | undefined;
+  const maxPositionsPolicies = props.policies?.filter(policy => policy.identifier === 'MaxPositions') as
+    | MaxPositions[]
+    | undefined;
+
+  const nonZeroHoldings = props.holdings.filter(holding => !holding.amount?.isZero());
+
   // TODO: These refs are used for validation. Fix this after https://github.com/react-hook-form/react-hook-form/pull/817
   const holdingsRef = useRef(props.holdings);
 
@@ -98,16 +112,30 @@ export const FundRequestForQuoteTrading: React.FC<FundRequestForQuoteTradingProp
       takerQuantity: '1',
     },
     validationSchema: Yup.object().shape({
-      makerAsset: Yup.string().required('Missing required buy asset.'),
+      makerAsset: Yup.string()
+        .required('Missing required buy asset.')
+        .test(
+          'maxPositions',
+          'Investing with this asset would violate the maximum number of positions policy',
+          value =>
+            // no policies
+            !maxPositionsPolicies?.length ||
+            // new investment is in denomination asset
+            sameAddress(props.denominationAsset?.address, value) ||
+            // already existing token
+            !!nonZeroHoldings?.some(holding => sameAddress(holding.token?.address, value)) ||
+            // max positions larger than holdings (so new token would still fit in)
+            maxPositionsPolicies.every(
+              policy => policy.maxPositions && nonZeroHoldings && policy.maxPositions > nonZeroHoldings?.length
+            )
+        ),
       takerAsset: Yup.string().required('Missing required sell asset.'),
       takerQuantity: Yup.string()
         .required('Missing sell quantity.')
-        // tslint:disable-next-line
         .test('valid-number', 'The given value is not a valid number.', function(value) {
           const bn = new BigNumber(value);
           return !bn.isNaN() && !bn.isZero() && bn.isPositive();
         })
-        // tslint:disable-next-line
         .test('balance-too-low', 'The balance of the fund is lower than the provided value.', function(value) {
           const holding = holdingsRef.current.find(item => sameAddress(item.token!.address, this.parent.takerAsset))!;
           const divisor = holding ? new BigNumber(10).exponentiatedBy(holding.token!.decimals!) : new BigNumber('NaN');
@@ -155,10 +183,21 @@ export const FundRequestForQuoteTrading: React.FC<FundRequestForQuoteTradingProp
     name: token.symbol,
   }));
 
-  const makerOptions = makerCandidates.map(token => ({
-    value: token.address,
-    name: token.symbol,
-  }));
+  const makerOptions = makerCandidates
+    .filter(
+      asset =>
+        !assetWhitelists?.length ||
+        assetWhitelists.every(list => list.assetWhitelist?.some(item => sameAddress(item, asset.address)))
+    )
+    .filter(
+      asset =>
+        !assetBlacklists?.length ||
+        !assetBlacklists.some(list => list.assetBlacklist?.some(item => sameAddress(item, asset.address)))
+    )
+    .map(token => ({
+      value: token.address,
+      name: token.symbol,
+    }));
 
   const handleTakerAssetChange = (value: string) => {
     const token = environment.getToken(value)!;
@@ -171,6 +210,27 @@ export const FundRequestForQuoteTrading: React.FC<FundRequestForQuoteTradingProp
   const [market, side] = markets.get(takerAsset)?.get(makerAsset) ?? [];
   const amount = new BigNumber(form.watch('takerQuantity') ?? 'NaN');
   const ready = !!(form.formState.isValid && market && amount && !amount.isNaN());
+
+  if (!takerCandidates.length) {
+    return (
+      <Block>
+        <SectionTitle>Request a Quote on 0x</SectionTitle>
+        <p>Request a quote on 0x trading is currently not possible. Please check back later.</p>
+      </Block>
+    );
+  }
+
+  if (!makerOptions.length) {
+    return (
+      <Block>
+        <SectionTitle>Request a Quote on 0x</SectionTitle>
+        <p>
+          Request a quote on 0x trading is not possible because the fund's risk management policies prevent the
+          investment in any asset.
+        </p>
+      </Block>
+    );
+  }
 
   return (
     <Block>

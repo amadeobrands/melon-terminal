@@ -11,6 +11,7 @@ import {
   AssetWhitelist,
   AssetBlacklist,
   PolicyDefinition,
+  Transaction,
 } from '@melonproject/melonjs';
 import { useTransaction } from '~/hooks/useTransaction';
 import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
@@ -31,6 +32,9 @@ import {
   RadioButtonIcon,
   RadioButtonLabel,
 } from '~/storybook/components/RadioButton/RadioButton';
+import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
+import { FundPolicyTransactionDescriptions } from './FundPolicyTransactionDescriptions';
+import { TransactionReceipt } from 'web3-core';
 
 export interface FundRegisterPoliciesProps {
   address: string;
@@ -58,7 +62,9 @@ export const FundRegisterPolicies: React.FC<FundRegisterPoliciesProps> = ({ addr
   });
 
   const startTransaction = (
-    tx: Deployment<PriceTolerance | MaxPositions | MaxConcentration | UserWhitelist | AssetWhitelist | AssetBlacklist>,
+    tx:
+      | Transaction<TransactionReceipt>
+      | Deployment<PriceTolerance | MaxPositions | MaxConcentration | UserWhitelist | AssetWhitelist | AssetBlacklist>,
     name: string
   ) => transaction.start(tx, name);
 
@@ -99,7 +105,7 @@ export const FundRegisterPolicies: React.FC<FundRegisterPoliciesProps> = ({ addr
       </ul>
       <p>&nbsp;</p>
 
-      {policyManager && selectedPolicy && selectedPolicy.id === 'priceTolerance' && (
+      {policyManager && selectedPolicy?.id === 'priceTolerance' && (
         <PriceToleranceConfiguration
           policyManager={policyManager.address!}
           policy={selectedPolicy}
@@ -107,7 +113,7 @@ export const FundRegisterPolicies: React.FC<FundRegisterPoliciesProps> = ({ addr
         />
       )}
 
-      {policyManager && selectedPolicy && selectedPolicy.id === 'maxPositions' && (
+      {policyManager && selectedPolicy?.id === 'maxPositions' && (
         <MaxPositionsConfiguration
           policyManager={policyManager.address!}
           policy={selectedPolicy}
@@ -115,7 +121,7 @@ export const FundRegisterPolicies: React.FC<FundRegisterPoliciesProps> = ({ addr
         />
       )}
 
-      {policyManager && selectedPolicy && selectedPolicy.id === 'maxConcentration' && (
+      {policyManager && selectedPolicy?.id === 'maxConcentration' && (
         <MaxConcentrationConfiguration
           policyManager={policyManager.address!}
           policy={selectedPolicy}
@@ -123,31 +129,36 @@ export const FundRegisterPolicies: React.FC<FundRegisterPoliciesProps> = ({ addr
         />
       )}
 
-      {policyManager && selectedPolicy && selectedPolicy.id === 'userWhitelist' && (
+      {policyManager && selectedPolicy?.id === 'userWhitelist' && (
         <UserWhitelistConfiguration
           policyManager={policyManager.address!}
           policy={selectedPolicy}
+          allPolicies={policyManager.policies}
           startTransaction={startTransaction}
         />
       )}
 
-      {policyManager && selectedPolicy && selectedPolicy.id === 'assetWhitelist' && (
+      {policyManager && selectedPolicy?.id === 'assetWhitelist' && (
         <AssetWhitelistConfiguration
           policyManager={policyManager.address!}
           policy={selectedPolicy}
+          allPolicies={policyManager.policies}
           startTransaction={startTransaction}
         />
       )}
 
-      {policyManager && selectedPolicy && selectedPolicy.id === 'assetBlacklist' && (
+      {policyManager && selectedPolicy?.id === 'assetBlacklist' && (
         <AssetBlacklistConfiguration
           policyManager={policyManager.address!}
           policy={selectedPolicy}
+          allPolicies={policyManager.policies}
           startTransaction={startTransaction}
         />
       )}
 
-      <TransactionModal transaction={transaction} />
+      <TransactionModal transaction={transaction}>
+        <FundPolicyTransactionDescriptions transaction={transaction} />
+      </TransactionModal>
     </Block>
   );
 };

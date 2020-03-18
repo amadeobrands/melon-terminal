@@ -10,6 +10,7 @@ import { Input } from '~/storybook/components/Input/Input';
 import { Button } from '~/storybook/components/Button/Button';
 import { SectionTitle } from '~/storybook/components/Title/Title';
 import { BlockActions } from '~/storybook/components/Block/Block';
+import { NotificationBar, NotificationContent } from '~/storybook/components/NotificationBar/NotificationBar';
 
 interface MaxConcentrationConfigurationForm {
   maxConcentration: number;
@@ -57,7 +58,13 @@ export const MaxConcentrationConfiguration: React.FC<MaxConcentrationConfigurati
   return (
     <>
       <SectionTitle>Configure Max Concentration Policy</SectionTitle>
-
+      <NotificationBar kind="neutral">
+        <NotificationContent>
+          The maximum concentration policy imposes a maximum concentration for each asset in the portfolio (except for
+          the denomination asset). E.g. a maximum concentration of 33% means that a single asset in the portfolio can
+          make up at most 33% of the fund's total asset value.
+        </NotificationContent>
+      </NotificationBar>
       <FormContext {...form}>
         <form onSubmit={submit}>
           <Input

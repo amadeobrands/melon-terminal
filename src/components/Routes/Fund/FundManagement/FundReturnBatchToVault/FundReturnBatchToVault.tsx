@@ -8,6 +8,7 @@ import { useAccount } from '~/hooks/useAccount';
 import { Block, BlockActions } from '~/storybook/components/Block/Block';
 import { SectionTitle } from '~/storybook/components/Title/Title';
 import { useFundReturnBatchToVaultQuery } from './FundReturnBatchToVaultQuery.query';
+import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 
 export interface ReturnBatchToVaultProps {
   address: string;
@@ -23,7 +24,7 @@ export const ReturnBatchToVault: React.FC<ReturnBatchToVaultProps> = ({ address 
     const td = (await hub.getRoutes()).trading;
     const trading = new Trading(environment, td);
     const tx = trading.returnBatchToVault(account.address!, addresses);
-    transaction.start(tx, 'Return assets to vault');
+    transaction.start(tx, 'Move assets to vault');
   };
 
   if (!(addresses && addresses.length)) {
@@ -44,7 +45,11 @@ export const ReturnBatchToVault: React.FC<ReturnBatchToVaultProps> = ({ address 
         </Button>
       </BlockActions>
 
-      <TransactionModal transaction={transaction} />
+      <TransactionModal transaction={transaction}>
+        <TransactionDescription title="Move assets to Vault">
+          This transaction moves all assets to the Vault contract.
+        </TransactionDescription>
+      </TransactionModal>
     </Block>
   );
 };

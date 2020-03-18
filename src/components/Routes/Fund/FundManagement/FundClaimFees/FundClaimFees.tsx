@@ -10,9 +10,11 @@ import { useAccount } from '~/hooks/useAccount';
 import { Block, BlockActions } from '~/storybook/components/Block/Block';
 import { SectionTitle } from '~/storybook/components/Title/Title';
 import { DictionaryData, DictionaryEntry, DictionaryLabel } from '~/storybook/components/Dictionary/Dictionary';
-import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
+import BigNumber from 'bignumber.js';
+import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 
 export interface ClaimFeesProps {
   address: string;
@@ -38,7 +40,7 @@ export const ClaimFees: React.FC<ClaimFeesProps> = ({ address }) => {
 
   const submitManagementFees = () => {
     const tx = feeManager.rewardManagementFee(account.address!);
-    transaction.start(tx, 'Claim management fee');
+    transaction.start(tx, 'Claim management fees');
   };
 
   if (query.loading) {
@@ -78,7 +80,35 @@ export const ClaimFees: React.FC<ClaimFeesProps> = ({ address }) => {
         </Button>
       </BlockActions>
 
-      <TransactionModal transaction={transaction} />
+      <TransactionModal transaction={transaction}>
+        {transaction.state.name === 'Claim all fees' && (
+          <TransactionDescription title="Claim all fees">
+            You are claiming all accrued fees (
+            <FormattedNumber
+              value={fromTokenBaseUnit(feeManagerInfo!.managementFeeAmount, 18)}
+              suffix="WETH"
+              tooltip={true}
+            />
+            ) for this fund.
+          </TransactionDescription>
+        )}
+        {transaction.state.name === 'Claim management fees' && (
+          <TransactionDescription title="Claim management fee">
+            You are claiming the accrued management fees (
+            <FormattedNumber
+              value={fromTokenBaseUnit(
+                new BigNumber(feeManagerInfo!.managementFeeAmount).plus(
+                  new BigNumber(feeManagerInfo!.performanceFeeAmount)
+                ),
+                18
+              )}
+              suffix="WETH"
+              tooltip={true}
+            />
+            ) for this fund.
+          </TransactionDescription>
+        )}
+      </TransactionModal>
     </Block>
   );
 };

@@ -4,6 +4,8 @@ import { Fund } from '~/components/Routes/Wallet/WalletOverview/FundParticipatio
 import { BodyCell, BodyRowHover, BodyCellRightAlign } from '~/storybook/components/Table/Table';
 import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { getNetworkName } from '~/config';
+import { useConnectionState } from '~/hooks/useConnectionState';
 
 export interface WalletOverviewInvestedFundProps {
   fund: Fund;
@@ -15,9 +17,11 @@ export interface WalletOverviewInvestedFundProps {
 
 export const WalletOverviewInvestedFund: React.FC<WalletOverviewInvestedFundProps> = ({ fund, version }) => {
   const history = useHistory();
+  const connection = useConnectionState();
+  const prefix = getNetworkName(connection.network);
 
   return (
-    <BodyRowHover onClick={() => history.push(`/fund/${fund.address}`)}>
+    <BodyRowHover onClick={() => history.push(`/${prefix}/fund/${fund.address}`)}>
       <BodyCell>{fund.name}</BodyCell>
       <BodyCell>
         <FormattedDate timestamp={fund.inception} />

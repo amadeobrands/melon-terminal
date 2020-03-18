@@ -1,7 +1,7 @@
 import * as Rx from 'rxjs';
 import React, { createContext, useReducer, useEffect, useMemo } from 'react';
 import { createEnvironment } from '~/environment';
-import { config } from '~/config';
+import { getConfig } from '~/config';
 import { Address, DeploymentOutput, DeployedEnvironment, sameAddress } from '@melonproject/melonjs';
 import { NetworkEnum } from '~/types';
 import { Eth } from 'web3-eth';
@@ -326,14 +326,14 @@ export const ConnectionProvider: React.FC<ConnectionProviderProps> = props => {
 
   // Load the deployment based on the current network whenever it changes.
   useEffect(() => {
-    const current = state.network ? config[state.network] : undefined;
-    if (current == null) {
+    const config = getConfig(state.network);
+    if (!config?.deployment) {
       return;
     }
 
     dispatch(deploymentLoading());
 
-    const subscription = Rx.from(current.deployment()).subscribe({
+    const subscription = Rx.from(config.deployment()).subscribe({
       next: deployment => dispatch(deploymentLoaded(deployment)),
       error: error => dispatch(deploymentError(error)),
     });
@@ -363,8 +363,9 @@ export const ConnectionProvider: React.FC<ConnectionProviderProps> = props => {
       return undefined;
     }
 
-    if (state.eth && state.network && state.deployment) {
-      return createEnvironment(state.eth, state.deployment, state.network, config[state.network]!);
+    const config = getConfig(state.network);
+    if (state.eth && state.network && state.deployment && config) {
+      return createEnvironment(state.eth, state.deployment, state.network, config);
     }
 
     return undefined;

@@ -15,16 +15,20 @@ import { useAccount } from '~/hooks/useAccount';
 import { useTransaction } from '~/hooks/useTransaction';
 import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
-import { Holding } from '@melonproject/melongql';
+import { Holding, Token, Policy } from '@melonproject/melongql';
 import { Subtitle } from '~/storybook/components/Title/Title';
 import { Button } from '~/storybook/components/Button/Button';
 import { catchError, map, switchMapTo, expand } from 'rxjs/operators';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
+import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
+import { validatePolicies } from '../FundLiquidityProviderTrading/validatePolicies';
 
 export interface FundUniswapTradingProps {
   trading: string;
   exchange: ExchangeDefinition;
   holdings: Holding[];
+  denominationAsset?: Token;
+  policies?: Policy[];
   maker: TokenDefinition;
   taker: TokenDefinition;
   quantity: BigNumber;
@@ -39,6 +43,8 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
     quantity: props.quantity,
     state: 'loading',
   }));
+
+  const [policyValidation, setPolicyValidation] = useState({ valid: true, message: '' });
 
   const environment = useEnvironment()!;
   const account = useAccount()!;
@@ -114,7 +120,39 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
   const loading = state.state === 'loading';
   const ready = !loading && valid;
 
+  useEffect(() => {
+    (async () =>
+      await validatePolicies({
+        environment,
+        policies: props.policies,
+        taker: props.taker,
+        maker: props.maker,
+        holdings: props.holdings,
+        denominationAsset: props.denominationAsset,
+        setPolicyValidation,
+        value,
+        quantity: props.quantity,
+        trading: props.trading,
+      }))();
+  }, [state]);
+
   const submit = async () => {
+    await validatePolicies({
+      environment,
+      policies: props.policies,
+      taker: props.taker,
+      maker: props.maker,
+      holdings: props.holdings,
+      denominationAsset: props.denominationAsset,
+      setPolicyValidation,
+      value,
+      quantity: props.quantity,
+      trading: props.trading,
+    });
+    if (!policyValidation.valid) {
+      return;
+    }
+
     const trading = new Trading(environment, props.trading);
     const adapter = await UniswapTradingAdapter.create(environment, props.exchange.exchange, trading);
 
@@ -145,7 +183,11 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
           'No Offer'
         )}
       </Button>
-      <TransactionModal transaction={transaction} />
+      <TransactionModal transaction={transaction}>
+        <TransactionDescription title="Take order on Uniswap">
+          You are taking an order on Uniswap.
+        </TransactionDescription>
+      </TransactionModal>
     </>
   );
 };

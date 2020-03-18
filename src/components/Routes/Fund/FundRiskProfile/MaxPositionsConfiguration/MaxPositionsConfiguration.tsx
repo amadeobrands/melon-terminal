@@ -9,6 +9,7 @@ import { Button } from '~/storybook/components/Button/Button';
 import { Input } from '~/storybook/components/Input/Input';
 import { SectionTitle } from '~/storybook/components/Title/Title';
 import { BlockActions } from '~/storybook/components/Block/Block';
+import { NotificationBar, NotificationContent } from '~/storybook/components/NotificationBar/NotificationBar';
 
 interface MaxPositionsConfigurationForm {
   maxPositions: number;
@@ -51,7 +52,12 @@ export const MaxPositionsConfiguration: React.FC<MaxPositionsConfigurationProps>
   return (
     <>
       <SectionTitle>Configure Max Positions Policy</SectionTitle>
-
+      <NotificationBar kind="neutral">
+        <NotificationContent>
+          The maximum number of positions policy imposes a maximum on the number of assets that a fund can hold. E.g. a
+          maximum of 10 positions means that the fund can hold up to 10 different assets in its portfolio.
+        </NotificationContent>
+      </NotificationBar>
       <FormContext {...form}>
         <form onSubmit={submit}>
           <Input name="maxPositions" label="Maximum number of positions" type="number" step={1} id="maxPositions" />

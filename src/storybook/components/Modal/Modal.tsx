@@ -7,7 +7,7 @@ export const Modal = styled.div`
   bottom: ${props => props.theme.spaceUnits.m};
   top: ${props => props.theme.spaceUnits.m};
   overflow: auto;
-  overflow-y: hidden;
+  overflow-y: scroll;
   overflow-x: hidden;
   border: none;
   border-radius: 0px;

@@ -14,7 +14,10 @@ import { RequiresFundCreatedAfter } from '~/components/Gates/RequiresFundCreated
 import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
 import { usePriceFeedUpdateQuery } from '~/components/Layout/PriceFeedUpdate.query';
 import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 import { RequiresFundNotShutDown } from '~/components/Gates/RequiresFundNotShutDown/RequiresFundNotShutDown';
+import { UserWhitelist, AssetWhitelist, AssetBlacklist } from '@melonproject/melongql';
+import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 
 export interface FundInvestProps {
   address: string;
@@ -28,6 +31,20 @@ export const FundInvest: React.FC<FundInvestProps> = ({ address }) => {
   const environment = useEnvironment()!;
   const [result, query] = useFundInvestQuery(address);
   const [priceUpdate] = usePriceFeedUpdateQuery();
+
+  const denominationAsset = result?.fund?.routes?.accounting?.denominationAsset;
+  const holdings = result?.fund?.routes?.accounting?.holdings?.filter(holding => !holding.amount?.isZero());
+
+  const policies = result?.fund?.routes?.policyManager?.policies;
+  const assetWhitelists = policies?.filter(policy => policy.identifier === 'AssetWhitelist') as
+    | AssetWhitelist[]
+    | undefined;
+  const assetBlacklists = policies?.filter(policy => policy.identifier === 'AssetBlacklist') as
+    | AssetBlacklist[]
+    | undefined;
+  const userWhitelists = policies?.filter(policy => policy.identifier === 'UserWhitelist') as
+    | UserWhitelist[]
+    | undefined;
 
   const oneDay = 24 * 60 * 60 * 1000;
   const nextUpdate = new Date((priceUpdate?.getTime() || 0) + oneDay);
@@ -52,7 +69,18 @@ export const FundInvest: React.FC<FundInvestProps> = ({ address }) => {
   const symbol = environment.tokens.find(token => sameAddress(token.address, request?.investmentAsset))?.symbol;
 
   const account = result?.account;
-  const allowedAssets = result?.fund?.routes?.participation?.allowedAssets;
+  const allowedAssets = result?.fund?.routes?.participation?.allowedAssets
+    ?.filter(
+      asset =>
+        !assetWhitelists?.length ||
+        assetWhitelists.every(list => list.assetWhitelist?.some(item => sameAddress(item, asset.token?.address)))
+    )
+    .filter(
+      asset =>
+        !assetBlacklists?.length ||
+        !assetBlacklists.some(list => list.assetBlacklist?.some(item => sameAddress(item, asset.token?.address)))
+    );
+
   const action = useMemo(() => {
     const canCancelRequest = result?.account?.participation?.canCancelRequest;
     if (canCancelRequest) {
@@ -78,6 +106,15 @@ export const FundInvest: React.FC<FundInvestProps> = ({ address }) => {
       <Block>
         <SectionTitle>Invest</SectionTitle>
         <Spinner />
+      </Block>
+    );
+  }
+
+  if (userWhitelists && !userWhitelists.every(list => list.isWhitelisted)) {
+    return (
+      <Block>
+        <SectionTitle>Invest</SectionTitle>
+        <p>This fund operates an investor whitelist and you are currently not on that whitelist.</p>
       </Block>
     );
   }
@@ -108,6 +145,9 @@ export const FundInvest: React.FC<FundInvestProps> = ({ address }) => {
               ref={transactionRef}
               address={address}
               allowedAssets={allowedAssets}
+              holdings={holdings}
+              denominationAsset={denominationAsset}
+              policies={policies}
               totalSupply={totalSupply}
               account={account!}
               loading={query.networkStatus < 7}
@@ -133,18 +173,45 @@ export const FundInvest: React.FC<FundInvestProps> = ({ address }) => {
                 <br />
                 Investment amount: <TokenValue value={request?.investmentAmount} /> {symbol}
                 <br />
-                Request date: {format(request?.timestamp || 0, 'yyyy-MM-dd hh:mm a')}
+                Request date: <FormattedDate timestamp={request?.timestamp}></FormattedDate>
               </p>
 
-              <p>Wait for the execution window to execute your investment request.</p>
               <p>
-                Execution window start: {format(nextUpdate, 'yyyy-MM-dd hh:mm a')}
-                <br />
-                Execution window end:&nbsp;&nbsp;&nbsp;{format(twentyFourHoursAfterRequest, 'yyyy-MM-dd hh:mm a')}
+                Your investment request will be automatically executed after the next price update, which will be around{' '}
+                <FormattedDate timestamp={nextUpdate}></FormattedDate>.
+              </p>
+
+              <p>
+                If you come back during the execution window (which starts at around{' '}
+                <FormattedDate timestamp={nextUpdate}></FormattedDate> and ends at{' '}
+                <FormattedDate timestamp={twentyFourHoursAfterRequest}></FormattedDate>), and your invesment request
+                hasn't been automatically executed, you will see here the option to execute it yourself.
               </p>
             </>
           )}
-          <TransactionModal transaction={transaction} />
+          <TransactionModal transaction={transaction}>
+            {transaction.state.name === 'Approve' && (
+              <TransactionDescription title="Approve">
+                You are approving the fund's Participation contract to transfer your investment amount to itself.{' '}
+              </TransactionDescription>
+            )}
+            {transaction.state.name === 'Invest' && (
+              <TransactionDescription title="Request investment">
+                You are creating the actual investment request into the fund.
+              </TransactionDescription>
+            )}
+            {transaction.state.name === 'Execute investment request' && (
+              <TransactionDescription title="Execute investment request">
+                You are executing the investment request.
+              </TransactionDescription>
+            )}
+            {transaction.state.name === 'Cancel investment request' && (
+              <TransactionDescription title="Cancel">
+                Your investment request will be cancelled. The initially requested investment amount will be returned to
+                your wallet.
+              </TransactionDescription>
+            )}
+          </TransactionModal>
         </RequiresFundCreatedAfter>
       </RequiresFundNotShutDown>
     </Block>

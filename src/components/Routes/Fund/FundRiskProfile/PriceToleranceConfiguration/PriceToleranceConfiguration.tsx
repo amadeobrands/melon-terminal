@@ -9,6 +9,7 @@ import { Input } from '~/storybook/components/Input/Input';
 import { Button } from '~/storybook/components/Button/Button';
 import { SectionTitle } from '~/storybook/components/Title/Title';
 import { BlockActions } from '~/storybook/components/Block/Block';
+import { NotificationBar, NotificationContent } from '~/storybook/components/NotificationBar/NotificationBar';
 
 interface PriceToleranceConfigurationForm {
   priceTolerance: number;
@@ -51,6 +52,13 @@ export const PriceToleranceConfiguration: React.FC<PriceToleranceConfigurationPr
   return (
     <>
       <SectionTitle>Configure Price Tolerance Policy</SectionTitle>
+      <NotificationBar kind="neutral">
+        <NotificationContent>
+          The price tolerance policy sets a specific price tolerance for all trading activities. E.g. if you set a price
+          tolerance of 10%, then the fund manager can only trade assets at prices that are at most 10% lower than the
+          previous asset price update.
+        </NotificationContent>
+      </NotificationBar>
       <FormContext {...form}>
         <form onSubmit={submit}>
           <Input name="priceTolerance" label="Price tolerance (%)" type="number" step="any" id="priceTolerance" />

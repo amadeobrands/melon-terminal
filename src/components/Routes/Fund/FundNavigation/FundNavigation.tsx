@@ -5,21 +5,22 @@ import { TabBar, TabBarContent, TabBarSection, TabLink } from '~/storybook/compo
 import { RequiresFundDeployedWithCurrentVersion } from '~/components/Gates/RequiresFundDeployedWithCurrentVersion/RequiresFundDeployedWithCurrentVersion';
 
 export interface FundNavigationProps {
+  prefix: string;
   address: string;
 }
 
-export const FundNavigation: React.FC<FundNavigationProps> = ({ address }) => {
+export const FundNavigation: React.FC<FundNavigationProps> = ({ prefix, address }) => {
   return (
     <TabBar>
       <TabBarContent justify="between">
         <TabBarSection>
-          <TabLink to={`/fund/${address}`} exact={true} activeClassName="active">
+          <TabLink to={prefix} exact={true} activeClassName="active">
             Overview
           </TabLink>
-          <TabLink to={`/fund/${address}/invest`} exact={true} activeClassName="active">
+          <TabLink to={`${prefix}/invest`} exact={true} activeClassName="active">
             Invest &amp; Redeem
           </TabLink>
-          <TabLink to={`/fund/${address}/trade`} exact={true} activeClassName="active">
+          <TabLink to={`${prefix}/trade`} exact={true} activeClassName="active">
             Trade
           </TabLink>
         </TabBarSection>
@@ -27,12 +28,12 @@ export const FundNavigation: React.FC<FundNavigationProps> = ({ address }) => {
           <TabBarSection>
             <RequiresFundDeployedWithCurrentVersion address={address} fallback={false}>
               <RequiresFundNotShutDown fallback={false}>
-                <TabLink to={`/fund/${address}/policies`} exact={true} activeClassName="active">
+                <TabLink to={`${prefix}/policies`} exact={true} activeClassName="active">
                   Ruleset
                 </TabLink>
               </RequiresFundNotShutDown>
             </RequiresFundDeployedWithCurrentVersion>
-            <TabLink to={`/fund/${address}/manage`} exact={true} activeClassName="active">
+            <TabLink to={`${prefix}/manage`} exact={true} activeClassName="active">
               Admin
             </TabLink>
           </TabBarSection>

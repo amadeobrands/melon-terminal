@@ -1,6 +1,6 @@
 import React from 'react';
 import * as Rx from 'rxjs';
-import { map, switchMap, mapTo } from 'rxjs/operators';
+import { map, switchMap, mapTo, startWith } from 'rxjs/operators';
 import { Eth } from 'web3-eth';
 import { networkFromId } from '~/utils/networkFromId';
 import {
@@ -29,9 +29,8 @@ const connect = (): Rx.Observable<ConnectionAction> => {
     transactionConfirmationBlocks: 1,
   });
 
-  const enable$ = Rx.defer(() => ethereum.enable() as Promise<string[]>);
-  const timer$ = Rx.timer(100).pipe(mapTo([]));
-  const initial$ = Rx.race(enable$, timer$).pipe(
+  const enable$ = Rx.defer(() => ethereum.enable() as Promise<string[]>).pipe(startWith([]));
+  const initial$ = enable$.pipe(
     switchMap(async accounts => {
       const network = networkFromId(await eth.net.getId());
       return connectionEstablished(eth, network, accounts);

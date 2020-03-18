@@ -12,14 +12,31 @@ import { map, retryWhen, delay, take, share } from 'rxjs/operators';
 import { networkFromId } from '~/utils/networkFromId';
 import { SectionTitle } from '~/storybook/components/Title/Title';
 import { Button } from '~/storybook/components/Button/Button';
+import { NetworkEnum } from '~/types';
+import { getConfig } from '~/config';
 
-interface EthResource extends Rx.Unsubscribable {
+interface Resource extends Rx.Unsubscribable {
   eth: Eth;
 }
 
 const connect = (): Rx.Observable<ConnectionAction> => {
-  const create = (): EthResource => {
-    const provider = new HttpProvider(process.env.MELON_DEFAULT_PROVIDER);
+  const [, path] = window.location.pathname.split('/', 2);
+  const providers: {
+    [key: string]: string | undefined;
+  } = {
+    testnet: getConfig(NetworkEnum.TESTNET)?.provider,
+    mainnet: getConfig(NetworkEnum.MAINNET)?.provider,
+    kovan: getConfig(NetworkEnum.KOVAN)?.provider,
+    rinkeby: getConfig(NetworkEnum.RINKEBY)?.provider,
+  };
+
+  const endpoint = providers[path] || Object.values(providers).find(provider => !!provider);
+  if (!endpoint) {
+    return Rx.EMPTY;
+  }
+
+  const create = (): Resource => {
+    const provider = new HttpProvider(endpoint);
     const eth = new Eth(provider, undefined, {
       transactionConfirmationBlocks: 1,
     });
@@ -28,7 +45,7 @@ const connect = (): Rx.Observable<ConnectionAction> => {
   };
 
   return Rx.using(create, resource => {
-    const eth = (resource as EthResource).eth;
+    const eth = (resource as Resource).eth;
     const connect$ = Rx.defer(async () => networkFromId(await eth.net.getId())).pipe(
       retryWhen(error => error.pipe(delay(10000))),
       take(1),
