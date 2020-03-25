@@ -1,5 +1,5 @@
 import React from 'react';
-import { fromUnixTime, format } from 'date-fns';
+import { fromUnixTime, format, subMonths, isBefore } from 'date-fns';
 import { Nivo, NivoProps } from './Nivo';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
@@ -1368,29 +1368,36 @@ const subgraphData = [
  *
  * @param obj
  */
-function dataFromSubgraph(obj: Fund) {
-  const seen = {};
-  return {
-    id: obj.name,
-    data: obj.calculationsHistory
-      .reverse()
-      .map(item => {
-        const date = format(fromUnixTime(parseInt(item.timestamp)), 'yyyy-MM-dd'); //fromUnixTime(parseInt(item.timestamp)), 'yyyy-MM-dd')
 
-        return {
-          y: fromTokenBaseUnit(item.sharePrice, 18).toPrecision(3),
-          x: date,
-        };
-      })
-      .filter(filterItem => {
-        if (!seen.hasOwnProperty(filterItem.x)) {
-          seen[filterItem.x] = true;
-          return true;
-        }
-      }),
-  };
+function singleFundQuery(startDate: Date, endDate: Date) {
+  const today = new Date();
+
+  return subgraphData.map(object => {
+    const seen = {} as { [key: string]: boolean };
+    return {
+      id: object.name,
+      data: object.calculationsHistory
+        .filter(filterItem => {
+          const itemDate = fromUnixTime(parseInt(filterItem.timestamp));
+          return isBefore(startDate, itemDate) && isBefore(itemDate, today);
+        })
+        .reverse()
+        .map(item => {
+          const date = format(fromUnixTime(parseInt(item.timestamp)), 'yyyy-MM-dd');
+
+          return {
+            y: fromTokenBaseUnit(item.sharePrice, 18).toPrecision(4),
+            x: date,
+          };
+        })
+        .filter(filterItem => {
+          if (!seen.hasOwnProperty(filterItem.x)) {
+            seen[filterItem.x] = true;
+            return true;
+          }
+        }),
+    };
+  });
 }
 
-const parsedData = subgraphData.map(item => dataFromSubgraph(item));
-console.log(parsedData);
-export const Default: React.FC = () => <Nivo data={parsedData} />;
+export const Default: React.FC = () => <Nivo generator={singleFundQuery} />;
