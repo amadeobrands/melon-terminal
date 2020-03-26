@@ -17,15 +17,18 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
   const logProps = { type: 'log', base: 10, max: 'auto', min: 'auto' } as LogScale;
 
   const [yScale, setYScale] = useState<Scale>(linearProps);
-  const [startDate, setStartDate] = useState<Date>(new Date('2020-03-01'));
+  const [startDate, setStartDate] = useState<Date>(new Date('2020-01-01'));
 
   const dateButtonHandler = (num: number) => {
     setStartDate(subMonths(today, num));
   };
 
-  const scaleButtonHandler = () => {
-    setYScale(yScale === linearProps ? logProps : linearProps);
+  const scaleButtonHandler = (type: string) => {
+    const newProps = type == 'linear' ? logProps : linearProps;
+
+    setYScale(newProps);
   };
+
   const queryData = useMemo(() => {
     return generator(startDate, today);
   }, [startDate]);
@@ -34,19 +37,21 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
 
   return (
     <S.Chart>
-      {months.map(month => (
+      {months.map((month, index) => (
         <Button
+          key={index}
           onClick={() => {
             dateButtonHandler(month);
           }}
         >
-
           <FormattedNumber decimals={0} value={month} />M
         </Button>
       ))}
       <ResponsiveLine
         data={queryData}
         colors={{ scheme: 'paired' }}
+        enableArea={true}
+
         margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
         xScale={{ type: 'time', format: '%Y-%m-%d', precision: 'day' }} // format: 'native', precision: 'day' }}
         xFormat="time: %Y-%m-%d"
@@ -136,10 +141,10 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
       />
       <Button
         onClick={() => {
-          scaleButtonHandler();
+          scaleButtonHandler(yScale.type);
         }}
       >
-        {yScale == linearProps ? 'Log' : 'Linear'}
+        {yScale.type == 'linear' ? 'Log' : 'Linear'}
       </Button>
     </S.Chart>
   );
