@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Serie, ResponsiveLine, Line } from '@nivo/line';
+import { Scale, LinearScale, LogScale } from '@nivo/scales';
 import * as S from './Nivo.styles';
 import { subMonths } from 'date-fns';
 import { Button } from '~/storybook/Button/Button.styles';
@@ -12,8 +13,8 @@ export interface NivoProps {
 export const Nivo: React.FC<NivoProps> = ({ generator }) => {
   const today = new Date();
 
-  const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false };
-  const logProps = { type: 'log', base: 10, max: 'auto', min: 'auto' };
+  const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false } as LinearScale;
+  const logProps = { type: 'log', base: 10, max: 'auto', min: 'auto' } as LogScale;
 
   const [yScale, setYScale] = useState<Scale>(linearProps);
   const [startDate, setStartDate] = useState<Date>(new Date('2020-03-01'));
@@ -25,7 +26,6 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
   const scaleButtonHandler = () => {
     setYScale(yScale === linearProps ? logProps : linearProps);
   };
-
   const queryData = useMemo(() => {
     return generator(startDate, today);
   }, [startDate]);
