@@ -3,6 +3,7 @@ import { Serie, ResponsiveLine, Line } from '@nivo/line';
 import * as S from './Nivo.styles';
 import { subMonths } from 'date-fns';
 import { Button } from '~/storybook/Button/Button.styles';
+import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 
 export interface NivoProps {
   generator: (startDate: Date, currentDate: Date) => Serie[];
@@ -11,20 +12,20 @@ export interface NivoProps {
 export const Nivo: React.FC<NivoProps> = ({ generator }) => {
   const today = new Date();
 
-  
-  const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false }
-  const logProps = { type: 'log', base: 10, max: 'auto', min: 'auto'}
-  
-  const [yScale, setYScale] = useState(linearProps)
+  const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false };
+  const logProps = { type: 'log', base: 10, max: 'auto', min: 'auto' };
+
+  const [yScale, setYScale] = useState<Scale>(linearProps);
   const [startDate, setStartDate] = useState<Date>(new Date('2020-03-01'));
-  
+
   const dateButtonHandler = (num: number) => {
     setStartDate(subMonths(today, num));
   };
 
   const scaleButtonHandler = () => {
-    setYScale(yScale === linearProps ? logProps : linearProps)
-  }
+    setYScale(yScale === linearProps ? logProps : linearProps);
+  };
+
   const queryData = useMemo(() => {
     return generator(startDate, today);
   }, [startDate]);
@@ -39,7 +40,8 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
             dateButtonHandler(month);
           }}
         >
-          {month}M
+
+          <FormattedNumber decimals={0} value={month} />M
         </Button>
       ))}
       <ResponsiveLine
@@ -49,12 +51,11 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
         xScale={{ type: 'time', format: '%Y-%m-%d', precision: 'day' }} // format: 'native', precision: 'day' }}
         xFormat="time: %Y-%m-%d"
         // Linear scale setting:
-        yScale={ yScale }
+        yScale={yScale}
         // Log scale setting:
         // yScale={{ type: 'log', base: 10, max: 'auto', min: 'auto'}}
 
         axisTop={null}
-        axisRight={{ orient: 'right' }}
         axisBottom={{
           format: '%b %d',
           orient: 'bottom',
@@ -133,7 +134,13 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
           },
         ]}
       />
-      <Button onClick={() => {scaleButtonHandler()}}>{yScale == linearProps ? 'Log': 'Linear'}</Button>
+      <Button
+        onClick={() => {
+          scaleButtonHandler();
+        }}
+      >
+        {yScale == linearProps ? 'Log' : 'Linear'}
+      </Button>
     </S.Chart>
   );
 };
