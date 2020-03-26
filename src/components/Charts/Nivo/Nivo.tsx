@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Serie, ResponsiveLine, Line } from '@nivo/line';
+import { Scale, LinearScale, LogScale } from '@nivo/scales';
 import * as S from './Nivo.styles';
 import { subMonths } from 'date-fns';
 import { Button } from '~/storybook/Button/Button.styles';
@@ -11,20 +12,19 @@ export interface NivoProps {
 export const Nivo: React.FC<NivoProps> = ({ generator }) => {
   const today = new Date();
 
-  
-  const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false }
-  const logProps = { type: 'log', base: 10, max: 'auto', min: 'auto'}
-  
-  const [yScale, setYScale] = useState(linearProps)
+  const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false } as LinearScale;
+  const logProps = { type: 'log', base: 10, max: 'auto', min: 'auto' } as LogScale;
+
+  const [yScale, setYScale] = useState<Scale>(linearProps);
   const [startDate, setStartDate] = useState<Date>(new Date('2020-03-01'));
-  
+
   const dateButtonHandler = (num: number) => {
     setStartDate(subMonths(today, num));
   };
 
   const scaleButtonHandler = () => {
-    setYScale(yScale === linearProps ? logProps : linearProps)
-  }
+    setYScale(yScale === linearProps ? logProps : linearProps);
+  };
   const queryData = useMemo(() => {
     return generator(startDate, today);
   }, [startDate]);
@@ -49,7 +49,7 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
         xScale={{ type: 'time', format: '%Y-%m-%d', precision: 'day' }} // format: 'native', precision: 'day' }}
         xFormat="time: %Y-%m-%d"
         // Linear scale setting:
-        yScale={ yScale }
+        yScale={yScale}
         // Log scale setting:
         // yScale={{ type: 'log', base: 10, max: 'auto', min: 'auto'}}
 
@@ -133,7 +133,13 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
           },
         ]}
       />
-      <Button onClick={() => {scaleButtonHandler()}}>{yScale == linearProps ? 'Log': 'Linear'}</Button>
+      <Button
+        onClick={() => {
+          scaleButtonHandler();
+        }}
+      >
+        {yScale == linearProps ? 'Log' : 'Linear'}
+      </Button>
     </S.Chart>
   );
 };

@@ -1,10 +1,10 @@
 import React from 'react';
 import { Serie, ResponsiveLine, Line } from '@nivo/line';
-import * as S from './Nivo.styles';
+import * as S from '~/components/Charts/Nivo/Nivo.styles';
 
 export interface NivoProps {
   data: Serie[];
-  generator: (start: number, end: number) => Serie[] 
+  generator: (start: number, end: number) => Serie[];
 }
 
 export const Nivo: React.FC<NivoProps> = ({ data, generator }) => {
@@ -32,7 +32,7 @@ export const Nivo: React.FC<NivoProps> = ({ data, generator }) => {
         // yScale={{ type: 'log', base: 10, max: 'auto', min: 'auto'}}
 
         axisTop={null}
-        axisRight={{orient: 'right'}}
+        axisRight={{ orient: 'right' }}
         axisBottom={{
           format: '%b %d',
           orient: 'bottom',
@@ -54,7 +54,6 @@ export const Nivo: React.FC<NivoProps> = ({ data, generator }) => {
           legendOffset: -40,
           legendPosition: 'middle',
         }}
-
         enablePoints={false}
         // enableGridX={false}
         // Below is a custom tooltip that shows the date in common between the data series in the slice
@@ -97,7 +96,7 @@ export const Nivo: React.FC<NivoProps> = ({ data, generator }) => {
             itemHeight: 20,
             itemOpacity: 0.75,
             symbolSize: 12,
-            padding: {top: 24},
+            padding: { top: 24 },
             symbolShape: 'circle',
             symbolBorderColor: 'rgba(0, 0, 0, .5)',
             effects: [
