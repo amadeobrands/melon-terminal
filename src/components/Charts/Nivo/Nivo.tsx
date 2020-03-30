@@ -1,13 +1,14 @@
 import React from 'react';
-import { Serie, ResponsiveLine } from '@nivo/line';
+import { Serie, ResponsiveLine, SliceTooltip } from '@nivo/line';
 import { Scale, LinearScale, LogScale } from '@nivo/scales';
 import * as S from './Nivo.styles';
-import { subMonths } from 'date-fns';
+import { subMonths, isBefore, fromUnixTime } from 'date-fns';
 import { Button } from '~/storybook/Button/Button.styles';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
+import { ToolTipContainer, ToolTipText } from './ToolTip';
 
 export interface NivoProps {
-  generator: (startDate: Date, currentDate: Date) => Serie[];
+  generator: (startDate: Date, currentDate: Date) => { earliestDate: number; data: Serie[] };
 }
 
 const months = [1, 2, 3, 6, 9, 12];
@@ -32,18 +33,29 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
   };
 
   const scaleButtonHandler = (type: 'linear' | 'log') => {
-    setYScaleType(type);
+    setYScaleType(type === 'linear' ? 'log' : 'linear');
   };
 
+  // if a asset is yougner than a button, do not show the button
+  // how do we know the age of the asset?
+  // how do we know the age of a button? - can we store date obj in key={}
+  // component loads with default view (all time?)
+  // query comes back with array of dates for assets queried
+  // chart shows only buttons whose month values are .earlierThan() the oldest date
+  console.log(queryData);
   return (
     <S.Chart>
-      {months.map((month, index) => (
-        <Button key={index} onClick={() => dateButtonHandler(month)}>
-          <FormattedNumber decimals={0} value={month} />M
-        </Button>
-      ))}
+      {months.map((month, index) => {
+        if (isBefore(fromUnixTime(queryData.earliestDate), subMonths(today, month))) {
+          return (
+            <Button size="small" key={index} onClick={() => dateButtonHandler(month)}>
+              <FormattedNumber decimals={0} value={month} />M
+            </Button>
+          );
+        }
+      })}
       <ResponsiveLine
-        data={queryData}
+        data={queryData.data}
         animate={false}
         colors={{ scheme: 'paired' }}
         enableArea={true}
@@ -83,10 +95,10 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
         //
         sliceTooltip={({ slice }) => {
           return (
-            <div>
+            <ToolTipContainer>
               <div>Date: {slice.points[0].data.xFormatted}</div>
               {slice.points.map(point => (
-                <div
+                <ToolTipText
                   key={point.id}
                   style={{
                     color: point.serieColor,
@@ -94,9 +106,9 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
                   }}
                 >
                   <strong>{point.serieId}:</strong> {point.data.yFormatted}
-                </div>
+                </ToolTipText>
               ))}
-            </div>
+            </ToolTipContainer>
           );
         }}
         enableSlices="x"
@@ -134,7 +146,7 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
           },
         ]}
       />
-      <Button onClick={() => scaleButtonHandler(yScale.type)}>{yScale.type == 'linear' ? 'Log' : 'Linear'}</Button>
+      <Button onClick={() => scaleButtonHandler(yScaleType)}>{yScaleType === 'linear' ? 'Log' : 'Linear'}</Button>
     </S.Chart>
   );
 };

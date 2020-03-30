@@ -522,6 +522,7 @@ const subgraphData = [
       },
     ],
     name: 'HelloFund',
+    createdAt: '1578514013',
   },
   {
     calculationsHistory: [
@@ -852,6 +853,7 @@ const subgraphData = [
       },
     ],
     name: 'EFK Capital',
+    createdAt: '1582137015',
   },
   {
     calculationsHistory: [
@@ -1357,6 +1359,7 @@ const subgraphData = [
       },
     ],
     name: 'AVANTGARDE',
+    createdAt: '1563462093',
   },
 ];
 
@@ -1371,33 +1374,40 @@ const subgraphData = [
 
 function singleFundQuery(startDate: Date, endDate: Date) {
   const today = new Date();
+  const earliestDate = subgraphData
+    .map(object => parseInt(object.createdAt))
+    .reduce((acc, curr) => {
+      return acc < curr ? acc : curr;
+    }, today.getTime());
+  return {
+    earliestDate: earliestDate,
+    data: subgraphData.map(object => {
+      const seen = {} as { [key: string]: boolean };
+      return {
+        id: object.name,
+        data: object.calculationsHistory
+          .filter(filterItem => {
+            const itemDate = fromUnixTime(parseInt(filterItem.timestamp));
+            return isBefore(startDate, itemDate) && isBefore(itemDate, today);
+          })
+          .reverse()
+          .map(item => {
+            const date = format(fromUnixTime(parseInt(item.timestamp)), 'yyyy-MM-dd');
 
-  return subgraphData.map(object => {
-    const seen = {} as { [key: string]: boolean };
-    return {
-      id: object.name,
-      data: object.calculationsHistory
-        .filter(filterItem => {
-          const itemDate = fromUnixTime(parseInt(filterItem.timestamp));
-          return isBefore(startDate, itemDate) && isBefore(itemDate, today);
-        })
-        .reverse()
-        .map(item => {
-          const date = format(fromUnixTime(parseInt(item.timestamp)), 'yyyy-MM-dd');
-
-          return {
-            y: fromTokenBaseUnit(item.sharePrice, 18).toPrecision(4),
-            x: date,
-          };
-        })
-        .filter(filterItem => {
-          if (!seen.hasOwnProperty(filterItem.x)) {
-            seen[filterItem.x] = true;
-            return true;
-          }
-        }),
-    };
-  });
+            return {
+              y: fromTokenBaseUnit(item.sharePrice, 18).toPrecision(4),
+              x: date,
+            };
+          })
+          .filter(filterItem => {
+            if (!seen.hasOwnProperty(filterItem.x)) {
+              seen[filterItem.x] = true;
+              return true;
+            }
+          }),
+      };
+    }),
+  };
 }
 
 export const Default: React.FC = () => <Nivo generator={singleFundQuery} />;
