@@ -8,6 +8,7 @@ import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNu
 import { ToolTipContainer, ToolTipText } from './ToolTip';
 import { useDarkMode } from '~/hooks/useDarkMode';
 
+
 export interface NivoProps {
   generator: (startDate: Date, currentDate: Date) => { earliestDate: number; data: Serie[] };
 }
@@ -16,15 +17,21 @@ const months = [1, 2, 3, 6, 9, 12];
 const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false } as LinearScale;
 const logProps = { type: 'log', base: 10, max: 'auto', min: 'auto' } as LogScale;
 
-export const Nivo: React.FC<NivoProps> = ({ generator }) => {
+
+
+export const Nivo: React.FC<NivoProps> = ({ generator },...props) => {
   const [yScaleType, setYScaleType] = React.useState<'linear' | 'log'>('linear');
   const today = React.useMemo(() => new Date(), []);
   const yScale = React.useMemo(() => (yScaleType === 'linear' ? linearProps : logProps), [yScaleType]);
 
+  const context = useDarkMode();
+  console.log(context);
+  const nivoTheme = context.isDarkMode ? S.chartColorsDark : S.chartColorsLight;
+  console.log(nivoTheme)
   const [startDate, setStartDate] = React.useState<Date>(() => {
     return subMonths(today, 3);
   });
-
+  console.log(props)
   const queryData = React.useMemo(() => {
     return generator(startDate, today);
   }, [today, startDate]);
@@ -36,15 +43,7 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
   const scaleButtonHandler = (type: 'linear' | 'log') => {
     setYScaleType(type === 'linear' ? 'log' : 'linear');
   };
-  const { isDarkMode } = useDarkMode();
-  const nivoTheme = !isDarkMode ? props.theme.lightTheme.chartColors : props.theme.darkTheme.chartColors;
-  // if a asset is yougner than a button, do not show the button
-  // how do we know the age of the asset?
-  // how do we know the age of a button? - can we store date obj in key={}
-  // component loads with default view (all time?)
-  // query comes back with array of dates for assets queried
-  // chart shows only buttons whose month values are .earlierThan() the oldest date
-  console.log(queryData);
+
   return (
     <S.Chart>
       {months.map((month, index) => {
@@ -57,9 +56,10 @@ export const Nivo: React.FC<NivoProps> = ({ generator }) => {
         }
       })}
       <ResponsiveLine
+        theme={nivoTheme}
         data={queryData.data}
         animate={false}
-        colors={{ scheme: nivoTheme }}
+        // colors={{scheme: 'nivo'}}
         enableArea={true}
         margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
         xScale={{ type: 'time', format: '%Y-%m-%d', precision: 'day' }} // format: 'native', precision: 'day' }}

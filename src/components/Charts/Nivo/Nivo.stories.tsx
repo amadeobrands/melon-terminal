@@ -3,6 +3,8 @@ import { fromUnixTime, format, subMonths, isBefore } from 'date-fns';
 import { Nivo, NivoProps } from './Nivo';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
+import { DarkModeProvider } from '~/components/Contexts/DarkMode/DarkMode';
+
 
 export default { title: 'Charts|Nivo' };
 
@@ -1413,4 +1415,8 @@ function singleFundQuery(startDate: Date, endDate: Date) {
   };
 }
 
-export const Default: React.FC = () => <Nivo generator={singleFundQuery} />;
+export const Default: React.FC = () => (
+  <DarkModeProvider>
+    <Nivo generator={singleFundQuery} />
+  </DarkModeProvider>
+);
