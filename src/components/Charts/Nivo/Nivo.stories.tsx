@@ -1368,8 +1368,8 @@ const subgraphData = [
  * formats it as { id: string, data: {x: string, y: number}[]} where x is the date and y is the shareprice
  * and filters out repeated dates (takes the first timestamp each day)
  * - array is reversed because data pulled from most recent date backwards
- * 
- * question here - how to get the first date from the subgraph. Can't take the createdAt date as that won't always match the price data. 
+ *
+ * question here - how to get the first date from the subgraph. Can't take the createdAt date as that won't always match the price data.
  * does the price data get cut off at 100 items?
  *
  * @param obj

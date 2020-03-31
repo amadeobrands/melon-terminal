@@ -16,8 +16,6 @@ const months = [1, 2, 3, 6, 9, 12];
 const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false } as LinearScale;
 const logProps = { type: 'log', base: 10, max: 'auto', min: 'auto' } as LogScale;
 
-
-
 export const Nivo: React.FC<NivoProps> = ({ generator }) => {
   const [yScaleType, setYScaleType] = React.useState<'linear' | 'log'>('linear');
   const today = React.useMemo(() => new Date(), []);
