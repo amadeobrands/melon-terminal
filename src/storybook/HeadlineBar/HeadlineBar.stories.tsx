@@ -4,7 +4,7 @@ import { Headline } from '../Headline/Headline';
 import { Button } from '../Button/Button';
 import { DataBlock, DataBlockSection } from '../DataBlock/DataBlock';
 
-export default { title: 'Layouts|HeadlineBar' };
+export default { title: 'Bar|HeadlineBar' };
 
 export const Default: React.FC = () => {
   return (

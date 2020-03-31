@@ -2,7 +2,7 @@ import React from 'react';
 import { Grid, GridRow, GridCol } from './Grid';
 import { Block } from '../Block/Block';
 
-export default { title: 'Structure|Grid' };
+export default { title: 'Layouts|Grid' };
 
 export const Default: React.FC = () => {
   return (

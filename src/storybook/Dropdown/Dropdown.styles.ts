@@ -29,7 +29,6 @@ export const DropdownSelectContainer = styled.div<DropdownSelectContainerProps>`
   background-color: ${props => props.theme.mainColors.primary};
   color: ${props => props.theme.mainColors.primaryDark};
   border: ${props => props.theme.border.borderDefault};
-
   &:before {
     content: '';
     position: absolute;
@@ -42,7 +41,6 @@ export const DropdownSelectContainer = styled.div<DropdownSelectContainerProps>`
     border-top: 6px solid ${props => props.theme.border.borderColor};
     pointer-events: none;
   }
-
   ${props => {
     if (props.disabled) {
       return css`
@@ -52,7 +50,6 @@ export const DropdownSelectContainer = styled.div<DropdownSelectContainerProps>`
       `;
     }
   }}
-
   ${props => {
     if (props.error) {
       return css`
@@ -73,15 +70,12 @@ export const DropdownSelect = styled.select`
     ${props => props.theme.spaceUnits.xs} ${props => props.theme.spaceUnits.s};
   line-height: 1.6;
   margin: 0;
-
   :focus {
     outline-color: ${props => props.theme.mainColors.secondaryDarkAlpha};
   }
-
   &::-ms-expand {
     display: none;
   }
-
   &:focus::-ms-value {
     background-color: transparent;
   }

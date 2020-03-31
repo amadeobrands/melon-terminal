@@ -12,7 +12,7 @@ import {
   WithoutBlocks as NoBlockGridSample,
 } from '../Grid/Grid.stories';
 
-export default { title: 'Structure|Skeleton' };
+export default { title: 'Layouts|Skeleton' };
 
 export const Deafult: React.FC = () => {
   return (

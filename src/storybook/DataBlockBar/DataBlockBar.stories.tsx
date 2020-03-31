@@ -2,7 +2,7 @@ import React from 'react';
 import { DataBlockBar, DataBlockBarContent } from './DataBlockBar';
 import { DataBlock } from '../DataBlock/DataBlock';
 
-export default { title: 'Layouts|DataBlockBar' };
+export default { title: 'Bar|DataBlockBar' };
 
 export const Deafult: React.FC = () => {
   return (

@@ -1,7 +1,7 @@
 import React from 'react';
 import { TabBar, TabBarContent, TabBarSection, TabLink } from './TabNavigation';
 
-export default { title: 'Components|TabNavigation' };
+export default { title: 'Layouts|TabNavigation' };
 
 export const Default: React.FC = () => {
   return (

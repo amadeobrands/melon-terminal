@@ -2,7 +2,11 @@
   "extends": "./paths.json",
   "compilerOptions": {
     "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -16,6 +20,6 @@
     "noEmit": true,
     "jsx": "react"
   },
-  "include": ["src", ".storybook/main.ts", ".storybook/preview.tsx"],
+  "include": ["src", ".storybook"],
   "exclude": ["node_modules"]
 }

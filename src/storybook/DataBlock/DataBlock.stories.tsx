@@ -1,7 +1,7 @@
 import React from 'react';
 import { DataBlock, DataBlockSection } from './DataBlock';
 
-export default { title: 'Atoms|DataBlock' };
+export default { title: 'Components|DataBlock' };
 
 export const Default = () => <DataBlock label="quantity">10000</DataBlock>;
 

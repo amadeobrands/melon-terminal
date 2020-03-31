@@ -4,27 +4,6 @@ export interface InputProps {
   error?: boolean;
 }
 
-export interface InputWrapperProps {
-  margin: boolean;
-}
-
-export const InputWrapper = styled.div<InputWrapperProps>`
-  margin-bottom: ${props => props.margin && props.theme.spaceUnits.l};
-`;
-
-export const InputLabel = styled.span`
-  display: inline-block;
-  margin-bottom: ${props => props.theme.spaceUnits.xs};
-  color: ${props => props.theme.mainColors.primaryDark};
-`;
-
-export const InputError = styled.span`
-  display: inline-block;
-  margin-top: ${props => props.theme.spaceUnits.xs};
-  color: ${props => props.theme.statusColors.primaryLoss};
-  font-size: ${props => props.theme.fontSizes.s};
-`;
-
 export const Input = styled.input<InputProps>`
   position: relative;
   width: 100%;
@@ -38,9 +17,11 @@ export const Input = styled.input<InputProps>`
   &::placeholder {
     color: ${props => props.theme.mainColors.secondaryDarkAlpha};
   }
+
   &:focus {
     outline-color: ${props => props.theme.mainColors.secondaryDarkAlpha};
   }
+
   ${props => {
     if (props.disabled) {
       return css`
@@ -50,6 +31,7 @@ export const Input = styled.input<InputProps>`
       `;
     }
   }}
+
   ${props => {
     if (props.error) {
       return css`

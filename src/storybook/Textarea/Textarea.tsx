@@ -28,7 +28,6 @@ const TextareaInput = styled.textarea<TextareaInputProps>`
       border-color: ${props => props.theme.mainColors.secondaryDarkAlpha};
       pointer-events: none;
     `}
-
   ${props => {
     if (props.error) {
       return css`

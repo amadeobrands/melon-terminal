@@ -2,7 +2,7 @@ import React from 'react';
 import { Logo } from '../Logo/Logo';
 import * as S from './Header';
 
-export default { title: 'Components|Header' };
+export default { title: 'Layouts|Header' };
 
 export const Default: React.FC = () => {
   return (

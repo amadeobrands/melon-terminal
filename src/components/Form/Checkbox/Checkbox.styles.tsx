@@ -1,13 +1,14 @@
 import styled, { css } from 'styled-components';
+import { Check } from 'styled-icons/fa-solid/Check';
 
-export const RadioButtonContainer = styled.div`
+export const CheckboxContainer = styled.div`
   position: relative;
   display: block;
   margin-bottom: ${props => props.theme.spaceUnits.s};
   text-align: left;
 `;
 
-export const RadioButtonInput = styled.input`
+export const CheckboxInput = styled.input`
   position: absolute;
   top: 0;
   left: 0;
@@ -18,60 +19,62 @@ export const RadioButtonInput = styled.input`
   margin: 0px;
   cursor: pointer;
   &:hover + span {
-    span {
-      background: ${props => props.theme.mainColors.primaryDark};
+    svg {
+      color: ${props => props.theme.mainColors.primaryDark};
     }
   }
   :checked + span {
     background: ${props => props.theme.mainColors.primaryDark};
-    span {
-      background: ${props => props.theme.mainColors.primary};
+    svg {
+      color: ${props => props.theme.mainColors.primary};
     }
   }
   &:hover:checked + span {
     background: ${props => props.theme.mainColors.secondaryDark};
+    svg {
+      color: ${props => props.theme.mainColors.textColor};
+    }
   }
   ${props =>
     props.disabled &&
     css`
       pointer-events: none;
       + span {
-        border: 2px solid ${props => props.theme.mainColors.secondaryDark};
+        border: 2px solid ${props => props.theme.mainColors.textColor};
         background: ${props => props.theme.mainColors.secondary};
       }
       :checked + span {
         background: ${props => props.theme.mainColors.secondaryDark};
-      }
-      ~ label {
-        pointer-events: none;
+        svg {
+          color: ${props => props.theme.mainColors.textColor};
+        }
       }
     `}
 `;
 
-export const RadioButtonMask = styled.span`
+export const CheckboxMask = styled.span`
   position: relative;
   display: inline-block;
   vertical-align: middle;
   width: ${props => props.theme.spaceUnits.m};
   height: ${props => props.theme.spaceUnits.m};
-  border-radius: 100%;
+  border-radius: 0px;
   border: 2px solid ${props => props.theme.mainColors.primaryDark};
   transition: all 0.2s ease-in-out;
 `;
 
-export const RadioButtonIcon = styled.span`
+export const CheckboxIcon = styled(Check)`
   position: absolute;
   top: 50%;
   left: 50%;
-  width: ${props => props.theme.spaceUnits.xxs};
-  height: ${props => props.theme.spaceUnits.xxs};
-  border-radius: 100%;
+  width: ${props => props.theme.spaceUnits.xs};
+  height: ${props => props.theme.spaceUnits.xs};
   transform: translate(-50%, -50%);
-  background: transparent;
+  color: transparent;
   transition: all 0.2s ease-in-out;
 `;
 
-export const RadioButtonLabel = styled.label`
+export const CheckboxLabel = styled.label`
   position: relative;
   vertical-align: middle;
   padding-left: ${props => props.theme.spaceUnits.xs};

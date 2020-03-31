@@ -8,6 +8,7 @@
   ],
   "build": {
     "env": {
+      "SKIP_PREFLIGHT_CHECK": "true",
       "MELON_MAINNET_DEPLOYMENT": "./deployments/mainnet-deployment.json",
       "MELON_MAINNET_SUBGRAPH": "https://api.thegraph.com/subgraphs/name/melonproject/melon",
       "MELON_MAINNET_PROVIDER": "https://mainnet.infura.io/v3/b39a0d1b493b42fd8d9bdc8f91d2d0bb",

@@ -1,7 +1,7 @@
 import React from 'react';
 import * as S from './Footer';
 
-export default { title: 'Components|Footer' };
+export default { title: 'Layouts|Footer' };
 
 export const Default: React.FC = () => {
   return (
