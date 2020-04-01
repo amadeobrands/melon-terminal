@@ -1,7 +1,7 @@
 /// <reference types="react-scripts" />
 
 import 'styled-components';
-import { lightTheme } from '~/theme';
+import { Theme } from '~/theme';
 import { Deployment, NetworkEnum } from './types';
 
 declare module 'console' {
@@ -9,9 +9,7 @@ declare module 'console' {
 }
 
 declare module 'styled-components' {
-  type DerivedTheme = typeof lightTheme;
-
-  export interface DefaultTheme extends DerivedTheme {}
+  export interface DefaultTheme extends Theme {}
 }
 
 declare global {

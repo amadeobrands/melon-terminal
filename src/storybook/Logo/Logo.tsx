@@ -1,5 +1,4 @@
 import React from 'react';
-import { useColor } from '~/hooks/useColor';
 import * as L from './Logo.styles';
 
 const dimensions = {
@@ -27,17 +26,14 @@ export interface LogosProps {
 }
 
 export const Logo: React.FC<LogosProps> = ({ name, size }) => {
-  const context = useColor();
-  const onClick = () => context.random && context.random();
-
   return (
-    <L.LogoWrapper size={size} onClick={onClick}>
+    <L.LogoWrapper size={size}>
       <svg
         version="1.1"
         xmlns="http://www.w3.org/2000/svg"
         viewBox={`0 0 ${dimensions[name].height} ${dimensions[name].width}`}
         height="100%"
-        fill={context.color || '#0B0B09'}
+        fill={'#0B0B09'}
       >
         {name === 'with-bottom-text' && (
           <>

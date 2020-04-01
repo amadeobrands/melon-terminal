@@ -8,7 +8,7 @@ export default {
   decorators: [withForm()],
 };
 
-export const Default = () => <Input name="input" label={text('label', 'I m a label')} />;
+export const Default = () => <Input name="input" label={text('label', "I'm a label")} />;
 
 export const Disabled = () => <Input name="input" disabled={true} />;
 

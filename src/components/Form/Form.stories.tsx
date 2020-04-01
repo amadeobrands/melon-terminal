@@ -1,5 +1,6 @@
 import React from 'react';
 import * as Yup from 'yup';
+import BigNumber from 'bignumber.js';
 import { Input } from '~/components/Form/Input/Input';
 import { Textarea } from '~/components/Form/Textarea/Textarea';
 import { Button } from '~/components/Form/Button/Button';
@@ -7,6 +8,7 @@ import { Checkbox } from '~/components/Form/Checkbox/Checkbox';
 import { CheckboxGroup } from '~/components/Form/CheckboxGroup/CheckboxGroup';
 import { useFormik, Form } from './Form';
 import { Select } from './Select/Select';
+import { BigNumberInput } from './BigNumberInput/BigNumberInput';
 
 export default { title: 'Forms|Form' };
 
@@ -45,6 +47,14 @@ const validationSchema = Yup.object({
     .min(1)
     .max(2)
     .required(),
+  bigNumber: Yup.mixed()
+    .required()
+    .test('is-big-number', 'Has to be a big number', (value: BigNumber) => {
+      return BigNumber.isBigNumber(value);
+    })
+    .test('greater-or-equal', 'Must be bigger than 100', (value: BigNumber) => {
+      return value.isGreaterThanOrEqualTo(100);
+    }),
 });
 
 const initialValues = {
@@ -53,6 +63,7 @@ const initialValues = {
   textarea: 'Foo',
   checkbox: false,
   checkboxes: [],
+  bigNumber: new BigNumber(123.456789),
 };
 
 export const Basic = () => {
@@ -73,6 +84,7 @@ export const Basic = () => {
       <CheckboxGroup name="checkboxes" label="Checkbox group" options={options} />
       <Select name="select" options={selectOptions} label="Select" />
       <Select name="selectMultiple" options={selectOptions} label="Select multiple" isMulti={true} />
+      <BigNumberInput name="bigNumber" label="BigNumber" />
       <Button type="submit">Submit</Button>
     </Form>
   );

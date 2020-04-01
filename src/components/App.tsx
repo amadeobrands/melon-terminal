@@ -1,11 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { ModalProvider } from 'styled-react-modal';
-import { Theme as ThemeProvider, ModalBackground } from './App.styles';
+import { ThemeProvider } from './Theme';
 import { ApolloProvider } from './Contexts/Apollo/Apollo';
 import { ConnectionProvider } from './Contexts/Connection/Connection';
 import { AccountProvider } from './Contexts/Account/Account';
-import { DarkModeProvider } from './Contexts/DarkMode/DarkMode';
 
 // NOTE: Imported using root relative import to allow overrides with webpack.
 import { AppRouter } from '~/components/AppRouter';
@@ -32,21 +30,17 @@ if (coinbase.supported()) {
 }
 
 const AppComponent = () => (
-  <DarkModeProvider>
-    <ThemeProvider>
-      <ModalProvider backgroundComponent={ModalBackground}>
-        <ConnectionProvider methods={methods} default={start} disconnect={anonymous}>
-          <ApolloProvider>
-            <AccountProvider>
-              <Router>
-                <AppRouter connectionSwitch={switchable} />
-              </Router>
-            </AccountProvider>
-          </ApolloProvider>
-        </ConnectionProvider>
-      </ModalProvider>
-    </ThemeProvider>
-  </DarkModeProvider>
+  <ThemeProvider>
+    <ConnectionProvider methods={methods} default={start} disconnect={anonymous}>
+      <ApolloProvider>
+        <AccountProvider>
+          <Router>
+            <AppRouter connectionSwitch={switchable} />
+          </Router>
+        </AccountProvider>
+      </ApolloProvider>
+    </ConnectionProvider>
+  </ThemeProvider>
 );
 
 export const App = AppComponent;

@@ -1,22 +1,21 @@
 import React from 'react';
-import { useDarkMode } from '~/hooks/useDarkMode';
+import { useDarkMode } from '~/components/Theme';
+import { Icons } from '~/storybook/Icons/Icons';
 import * as S from './DarkModeSwitch.styles';
-import { Icons } from '../Icons/Icons';
 
 export const DarkModeSwitch: React.FC = () => {
-  const context = useDarkMode();
-  const onClick = () => context.setDarkMode();
+  const [dark, setDark] = useDarkMode();
 
-  if (context.isDarkMode) {
+  if (dark) {
     return (
-      <S.ButtonNight onClick={onClick}>
+      <S.ButtonNight onClick={() => setDark(!dark)}>
         <Icons name="SUN" size="small" />
       </S.ButtonNight>
     );
   }
 
   return (
-    <S.ButtonDay onClick={onClick}>
+    <S.ButtonDay onClick={() => setDark(!dark)}>
       <Icons name="MOON" size="small" />
     </S.ButtonDay>
   );

@@ -21,12 +21,14 @@ export const FundMetrics: React.FC = () => {
     );
   }
 
-  const history = metrics.melonNetworkHistories && metrics.melonNetworkHistories[0];
-  const investors = metrics.investorCounts && metrics.investorCounts[0];
-  const funds = metrics.fundCounts && metrics.fundCounts[0];
+  const networkGav = fromTokenBaseUnit(metrics.state?.networkGav, 18);
+  const activeInvestors = metrics.state?.activeInvestors;
+  const nonActiveInvestors = metrics.state?.nonActiveInvestors;
+  const activeFunds = metrics.state.activeFunds;
+  const nonActiveFunds = metrics.state?.nonActiveFunds;
+  const allInvestments = metrics.state?.allInvestments;
 
-  const weiToEth = fromTokenBaseUnit(history?.gav, 18);
-  const mlnPrice = weiToEth.multipliedBy(coinApi.data.rate);
+  const mlnPrice = networkGav.multipliedBy(coinApi.data.rate);
 
   return (
     <Dictionary>
@@ -34,18 +36,26 @@ export const FundMetrics: React.FC = () => {
       <Grid>
         <GridRow justify="space-around">
           <GridCol xs={12} sm={4}>
-            {funds && (
+            {activeFunds && nonActiveFunds && (
               <DictionaryEntry>
                 <DictionaryLabel>Number of funds</DictionaryLabel>
                 <DictionaryData textAlign="right">
-                  {parseInt(funds.active ?? '0', 10) + parseInt(funds.nonActive ?? '0', 10)}
+                  {parseInt(activeFunds ?? '0', 10) + parseInt(nonActiveFunds ?? '0', 10)}
                 </DictionaryData>
               </DictionaryEntry>
             )}
-            {investors && (
+            {activeInvestors && nonActiveInvestors && (
               <DictionaryEntry>
                 <DictionaryLabel>Number of investors</DictionaryLabel>
-                <DictionaryData textAlign="right">{parseInt(investors.numberOfInvestors ?? '0', 10)}</DictionaryData>
+                <DictionaryData textAlign="right">
+                  {parseInt(activeInvestors ?? '0', 10) + parseInt(nonActiveInvestors ?? '0', 10)}
+                </DictionaryData>
+              </DictionaryEntry>
+            )}
+            {allInvestments && (
+              <DictionaryEntry>
+                <DictionaryLabel>Number of investments</DictionaryLabel>
+                <DictionaryData textAlign="right">{parseInt(allInvestments ?? '0', 10)}</DictionaryData>
               </DictionaryEntry>
             )}
           </GridCol>
@@ -53,7 +63,7 @@ export const FundMetrics: React.FC = () => {
             <DictionaryEntry>
               <DictionaryLabel>Total AUM (in ETH)</DictionaryLabel>
               <DictionaryData textAlign="right">
-                <FormattedNumber tooltip={true} decimals={0} value={weiToEth} suffix="ETH" />
+                <FormattedNumber tooltip={true} decimals={0} value={networkGav} suffix="ETH" />
               </DictionaryData>
             </DictionaryEntry>
             <DictionaryEntry>

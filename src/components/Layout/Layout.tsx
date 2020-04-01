@@ -56,14 +56,14 @@ export const Layout: React.FC<LayoutProps> = props => {
               </Link>
             </HeaderTitle>
             <LogoContainer>
-              <LogoDesktop>
-                <Logo name="with-bottom-text" size="small" />
-              </LogoDesktop>
-              <LogoMobile>
-                <Link to="/">
+              <Link to="/">
+                <LogoDesktop>
                   <Logo name="with-bottom-text" size="small" />
-                </Link>
-              </LogoMobile>
+                </LogoDesktop>
+                <LogoMobile>
+                  <Logo name="with-bottom-text" size="small" />
+                </LogoMobile>
+              </Link>
             </LogoContainer>
             <ConnectionInfo>
               <DarkModeSwitch />

@@ -1,7 +1,6 @@
 import React from 'react';
 import styled, { css } from 'styled-components';
 import { Container } from '../Container/Container';
-import { useColor } from '~/hooks/useColor';
 
 export interface NotificationBarProps {
   kind?: 'neutral' | 'warning' | 'error' | 'success';
@@ -95,10 +94,8 @@ export const NotificationContent = styled(Container)`
 `;
 
 export const NotificationBar: React.FC<NotificationBarProps> = props => {
-  const context = useColor();
-
   if (props.kind === 'neutral') {
-    return <NotificationBarStyle {...props} borderColor={context.color} />;
+    return <NotificationBarStyle {...props} />;
   }
 
   return <NotificationBarStyle {...props} />;
