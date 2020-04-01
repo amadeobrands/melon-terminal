@@ -13,9 +13,6 @@ export const chartColorsLight = {
         stroke: 'red',
         strokeWidth: 5,
       },
-      // text: {
-      //   textColor: 'white',
-      // },
     },
     legend: {
       text: {
@@ -25,7 +22,7 @@ export const chartColorsLight = {
   },
   grid: {
     line: {
-      stroke: 'red',
+      stroke: 'black',
       strokeWidth: 1,
     },
   },
@@ -52,15 +49,15 @@ export const chartColorsLight = {
       strokeOpacity: 0.75,
       strokeDasharray: '6 6',
     },
-  }
-}
+  },
+};
 
 export const chartColorsDark = {
-  textColor: 'white',
+  textColor: 'rgb(155, 155, 155)',
   axis: {
     ticks: {
       line: {
-        stroke: '#777777',
+        stroke: 'rgb(155, 155, 155)',
         strokeWidth: 1,
       },
       // text: {
@@ -79,16 +76,12 @@ export const chartColorsDark = {
       strokeWidth: 1,
     },
   },
-  legends: {
-    text: {
-      fill: '#333333',
-    },
-  },
+
   labels: {
     text: {},
   },
   markers: {
-    lineColor: '#000000',
+    lineColor: 'red',
     lineStrokeWidth: 1,
     text: {},
   },
@@ -102,5 +95,5 @@ export const chartColorsDark = {
       strokeOpacity: 0.75,
       strokeDasharray: '6 6',
     },
-  }
-}
+  },
+};
