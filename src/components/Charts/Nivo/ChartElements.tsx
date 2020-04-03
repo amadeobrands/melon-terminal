@@ -8,14 +8,25 @@ export const ToolTipContainer = styled.div`
 `;
 export const ToolTipText = styled.div`
   opacity: 1;
-  color: 'rbg(0,0,0)'
+  color: 'rbg(0,0,0)';
 `;
-
 
 export const ControlBox = styled.div`
   border: ${props => props.theme.border.borderSecondary};
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  padding: ${props => props.theme.spaceUnits.xs}
-`
+  padding: ${props => props.theme.spaceUnits.xs};
+`;
+
+export const PriceLabel = styled.div`
+  transform: rotate(-90deg);
+`;
+// export const ChartContainer = styled.div`
+// `
+
+export const Chart = styled.div`
+  display: flex;
+  flex-direction: row;
+  height: 397px;
+`;
