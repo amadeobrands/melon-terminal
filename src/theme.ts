@@ -152,6 +152,42 @@ export const light = {
     orderbookLight: 'limegreen',
     hover: 'rgba(0, 0, 0, 0.2)',
   },
+  chartColors: {
+    fontFamily: theme.fontFamilies,
+    textColor: 'rgb(0, 0, 0)', // mainColors.textColor
+    axis: {
+      domain: {
+        line: {
+          stroke: 'rgb(29,29,29)', // primaryDark
+        },
+      },
+      ticks: {
+        line: {
+          stroke: 'rgb(29,29,29)', // primaryDark
+          strokeWidth: 1, //changes width of tick
+          strokeOpacity: 0.5, // changes opacity of tick
+        },
+        text: {
+          fill: 'rgb(0,0,0)', // overrides the top level textColor property for tick text
+        },
+      },
+    },
+    grid: {
+      line: {
+        stroke: '', // primaryDark
+        strokeWidth: 1, // stroke width of grid lines
+        strokeDasharray: '', // makes dashed lines, pass in '4 4' (pixel of dash width and gap width) ------
+      },
+    },
+    crosshair: {
+      line: {
+        stroke: 'rgb(29,29,29)', // primaryDark
+        strokeWidth: 1,
+        strokeOpacity: 0.75,
+        strokeDasharray: '6 6',
+      },
+    },
+  },
   logoColors: logoColorsLightMode,
   ...theme,
 };
@@ -201,107 +237,42 @@ export const dark = {
     hover: 'rgba(0, 0, 0, 0.2)',
   },
   chartColors: {
-    textColor: '#333333',
+    fontFamily: theme.fontFamilies,
+    textColor: '#e5dfdf', // mainColors.textColor
     axis: {
       domain: {
         line: {
-          stroke: 'transparent',
-          strokeWidth: 1,
+          stroke: '#e5dfdf', // primaryDark
         },
       },
       ticks: {
         line: {
-          stroke: '#777777',
-          strokeWidth: 1,
+          stroke: '#e5dfdf', // primaryDark
+          strokeWidth: 1, //changes width of tick along the axis
+          strokeOpacity: 0.5, // changes opacity of tick
         },
         text: {
-          textColor: 'white',
-        },
-      },
-      legend: {
-        text: {
-          fontSize: 12,
+          fill: '#e5dfdf', // overrides the top level textColor property for tick text
         },
       },
     },
     grid: {
       line: {
-        stroke: '#dddddd',
-        strokeWidth: 1,
-      },
-    },
-    legends: {
-      text: {
-        fill: '#333333',
-      },
-    },
-    labels: {
-      text: {},
-    },
-    markers: {
-      lineColor: '#000000',
-      lineStrokeWidth: 1,
-      text: {},
-    },
-    dots: {
-      text: {},
-    },
-    tooltip: {
-      container: {
-        background: 'white',
-        color: 'inherit',
-        fontSize: 'inherit',
-        borderRadius: '2px',
-        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.25)',
-        padding: '5px 9px',
-      },
-      basic: {
-        whiteSpace: 'pre',
-        display: 'flex',
-        alignItems: 'center',
-      },
-      chip: {
-        marginRight: 7,
-      },
-      table: {},
-      tableCell: {
-        padding: '3px 5px',
+        stroke: '', // primaryDark
+        strokeWidth: 1, // stroke width of grid lines
+        strokeDasharray: '', // makes dashed lines, pass in '4 4' (pixel of dash width and gap width) ------
       },
     },
     crosshair: {
       line: {
-        stroke: '#000000',
+        stroke: '#e5dfdf', // primaryDark
         strokeWidth: 1,
         strokeOpacity: 0.75,
         strokeDasharray: '6 6',
       },
     },
-    annotations: {
-      text: {
-        fontSize: 13,
-        outlineWidth: 2,
-        outlineColor: '#ffffff',
-      },
-      link: {
-        stroke: '#000000',
-        strokeWidth: 1,
-        outlineWidth: 2,
-        outlineColor: '#ffffff',
-      },
-      outline: {
-        fill: 'none',
-        stroke: '#000000',
-        strokeWidth: 2,
-        outlineWidth: 2,
-        outlineColor: '#ffffff',
-      },
-      symbol: {
-        fill: '#000000',
-        outlineWidth: 2,
-        outlineColor: '#ffffff',
-      },
-    },
   },
+
   logoColors: logoColorsDarkMode,
   ...theme,
 };

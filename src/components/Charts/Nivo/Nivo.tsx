@@ -1,13 +1,12 @@
 import React from 'react';
+import { useTheme } from 'styled-components';
 import { Serie, ResponsiveLine } from '@nivo/line';
 import { LinearScale, LogScale } from '@nivo/scales';
 import * as S from './Nivo.styles';
 import { subMonths, isBefore, fromUnixTime } from 'date-fns';
 import { Button } from '~/storybook/Button/Button.styles';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
-import { ToolTipContainer, ToolTipText } from './ToolTip';
-import { useDarkMode } from '~/hooks/useDarkMode';
-
+import { ToolTipContainer, ToolTipText, ControlBox } from './ToolTip';
 
 export interface NivoProps {
   generator: (startDate: Date, currentDate: Date) => { earliestDate: number; data: Serie[] };
@@ -17,21 +16,21 @@ const months = [1, 2, 3, 6, 9, 12];
 const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false } as LinearScale;
 const logProps = { type: 'log', base: 10, max: 'auto', min: 'auto' } as LogScale;
 
-
-
-export const Nivo: React.FC<NivoProps> = ({ generator },...props) => {
+export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
   const [yScaleType, setYScaleType] = React.useState<'linear' | 'log'>('linear');
   const today = React.useMemo(() => new Date(), []);
   const yScale = React.useMemo(() => (yScaleType === 'linear' ? linearProps : logProps), [yScaleType]);
+  const areaProp = React.useMemo(() => (yScaleType === 'linear' ? true : false), [yScaleType]);
+  const theme = useTheme();
 
-  const context = useDarkMode();
-  console.log(context);
-  const nivoTheme = context.isDarkMode ? S.chartColorsDark : S.chartColorsLight;
-  console.log(nivoTheme)
   const [startDate, setStartDate] = React.useState<Date>(() => {
     return subMonths(today, 3);
   });
-  console.log(props)
+
+  const [tickFrequency, setTickFrequency] = React.useState<'every week' | 'every day'>('every week')
+
+
+
   const queryData = React.useMemo(() => {
     return generator(startDate, today);
   }, [today, startDate]);
@@ -44,61 +43,66 @@ export const Nivo: React.FC<NivoProps> = ({ generator },...props) => {
     setYScaleType(type === 'linear' ? 'log' : 'linear');
   };
 
+  const frequencyButtonHandler = (frequency: 'every day' | 'every week') => {
+    setTickFrequency(frequency === 'every day' ? 'every week' : 'every day')
+  }
+
+  const chartColor = theme.mode == 'light' ? 'set2' : 'accent'; // https://nivo.rocks/guides/colors/
+  const legendTextColor = theme.mainColors.textColor
   return (
     <S.Chart>
-      {months.map((month, index) => {
-        if (isBefore(fromUnixTime(queryData.earliestDate), subMonths(today, month))) {
-          return (
-            <Button size="small" key={index} onClick={() => dateButtonHandler(month)}>
-              <FormattedNumber decimals={0} value={month} />M
-            </Button>
-          );
-        }
-      })}
+      <ControlBox>
+        <div>
+          {months.map((month, index) => {
+            if (isBefore(fromUnixTime(queryData.earliestDate), subMonths(today, month))) {
+              return (
+                <Button size="small" key={index} onClick={() => dateButtonHandler(month)}>
+                  <FormattedNumber decimals={0} value={month} />M
+                </Button>
+              );
+            }
+          })}
+        </div>
+        <Button size="small" onClick={() => frequencyButtonHandler(tickFrequency)}>
+          {tickFrequency === 'every day' ? 'Weekly Ticks' : 'Daily Ticks'}
+        </Button>
+        <Button size="small" onClick={() => scaleButtonHandler(yScaleType)}>
+          {yScaleType === 'linear' ? 'Log Scale' : 'Linear Scale'}
+        </Button>
+      </ControlBox>
       <ResponsiveLine
-        theme={nivoTheme}
         data={queryData.data}
+        theme={theme.chartColors}
+        colors={{ scheme: chartColor }} // data colors
         animate={false}
-        // colors={{scheme: 'nivo'}}
-        enableArea={true}
         margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
         xScale={{ type: 'time', format: '%Y-%m-%d', precision: 'day' }} // format: 'native', precision: 'day' }}
         xFormat="time: %Y-%m-%d"
-        // Linear scale setting:
         yScale={yScale}
-        // Log scale setting:
-        // yScale={{ type: 'log', base: 10, max: 'auto', min: 'auto'}}
-
         axisTop={null}
+        axisRight={null}
         axisBottom={{
           format: '%b %d',
           orient: 'bottom',
-          tickValues: 'every week',
-
-          // tickSize: 5,
-          // tickPadding: 5,
+          tickValues: tickFrequency, // this should be dynamic based on how long the time series is
+          tickSize: 5, // the distance the tick extends from the axis
+          tickPadding: 10,
           tickRotation: 45,
-          legend: 'date', // this'll be dynamic
-          legendOffset: 40,
-          legendPosition: 'middle',
         }}
         axisLeft={{
           orient: 'left',
           tickSize: 5,
           tickPadding: 5,
           tickRotation: 0,
-          legend: 'price',
           legendOffset: -40,
           legendPosition: 'middle',
         }}
-        enablePoints={false}
         // enableGridX={false}
-        // Below is a custom tooltip that shows the date in common between the data series in the slice
-        //
         sliceTooltip={({ slice }) => {
+          console.log(slice.points[0].data.xFormatted);
           return (
             <ToolTipContainer>
-              <div>Date: {slice.points[0].data.xFormatted}</div>
+              <ToolTipText>Date: {slice.points[0].data.xFormatted}</ToolTipText>
               {slice.points.map(point => (
                 <ToolTipText
                   key={point.id}
@@ -113,13 +117,12 @@ export const Nivo: React.FC<NivoProps> = ({ generator },...props) => {
             </ToolTipContainer>
           );
         }}
-        enableSlices="x"
-        pointColor={{ theme: 'background' }}
-        pointBorderWidth={2}
-        pointBorderColor={{ from: 'serieColor' }}
-        pointLabel="y"
-        pointLabelYOffset={-12}
-        areaOpacity={0.65}
+        enableSlices={'x'} // enables tool tip display of data at each point of axis passed
+        enableCrosshair={true} // enables a crosshair for the tooltip
+        crosshairType="cross" // sets the type of crosshair (though I can't get it to change)
+        enablePoints={false} // enables point graphics for each data point (defaults to true)
+        enableArea={areaProp} // fills in the area below the lines
+        areaOpacity={1} // opacity of the area underneath the lines
         legends={[
           {
             anchor: 'bottom-right',
@@ -129,6 +132,7 @@ export const Nivo: React.FC<NivoProps> = ({ generator },...props) => {
             translateY: 0,
             itemsSpacing: 0,
             itemDirection: 'left-to-right',
+            itemTextColor: legendTextColor,
             itemWidth: 100,
             itemHeight: 20,
             itemOpacity: 0.75,
@@ -148,7 +152,6 @@ export const Nivo: React.FC<NivoProps> = ({ generator },...props) => {
           },
         ]}
       />
-      <Button onClick={() => scaleButtonHandler(yScaleType)}>{yScaleType === 'linear' ? 'Log' : 'Linear'}</Button>
     </S.Chart>
   );
 };
