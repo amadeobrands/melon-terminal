@@ -5,7 +5,7 @@ import { LinearScale, LogScale } from '@nivo/scales';
 import { subMonths, isBefore, fromUnixTime, subWeeks } from 'date-fns';
 import { Button } from '~/storybook/Button/Button.styles';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
-import { Chart, ToolTipContainer, ToolTipText, ControlBox, PriceLabel } from './ChartElements';
+import * as S from './Nivo.styles';
 
 export interface NivoProps {
   generator: (startDate: Date, currentDate: Date) => { earliestDate: number; data: Serie[] };
@@ -26,7 +26,7 @@ const historicalDates = [
   { tenor: 'M', number: 12 },
 ] as ButtonDate[];
 
-// min should maybe be dyamic based on the lowest value that gets passed in through the generator
+// min should maybe be dynamic based on the lowest value that gets passed in through the generator
 const linearProps = { type: 'linear', min: 0, max: 'auto', reverse: false } as LinearScale;
 const logProps = { type: 'log', base: 10, min: 0, max: 'auto' } as LogScale;
 
@@ -34,13 +34,15 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
   const [yScaleType, setYScaleType] = React.useState<'linear' | 'log'>('linear');
   const today = React.useMemo(() => new Date(), []);
   const yScale = React.useMemo(() => (yScaleType === 'linear' ? linearProps : logProps), [yScaleType]);
-  // const areaProp = React.useMemo(() => (yScaleType === 'linear' ? true : false), [yScaleType]);
+  
   const areaProp = false;
   const theme = useTheme();
 
   const [startDate, setStartDate] = React.useState<Date>(() => {
     return subMonths(today, 1);
   });
+
+  const [activeButton, setActiveButton] = React.useState<ButtonDate>({ tenor: 'M', number: 1 });
 
   const tickFrequency = React.useMemo(() => {
     if (isBefore(startDate, subMonths(today, 6))) {
@@ -50,13 +52,14 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
     } else {
       return 'every day';
     }
-  }, [startDate]);
+  }, [startDate, today]);
 
   const queryData = React.useMemo(() => {
     return generator(startDate, today);
   }, [today, startDate, generator]);
 
   const dateButtonHandler = (date: ButtonDate) => {
+    setActiveButton(date);
     if (date.tenor === 'W') {
       setStartDate(subWeeks(today, date.number));
     } else {
@@ -64,21 +67,26 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
     }
   };
 
-  const scaleButtonHandler = (type: 'linear' | 'log') => {
-    setYScaleType(type === 'linear' ? 'log' : 'linear');
-  };
+  // const scaleButtonHandler = (type: 'linear' | 'log') => {
+  //   setYScaleType(type === 'linear' ? 'log' : 'linear');
+  // };
 
   const chartColor = theme.mode === 'light' ? 'set2' : 'accent'; // https://nivo.rocks/guides/colors/
   const legendTextColor = theme.mainColors.textColor;
 
   return (
     <>
-      <ControlBox>
+      <S.ControlBox>
         <div>
           {historicalDates.map((date, index) => {
             if (date.tenor === 'W' && isBefore(fromUnixTime(queryData.earliestDate), subWeeks(today, date.number))) {
               return (
-                <Button size="extrasmall" key={index} onClick={() => dateButtonHandler(date)}>
+                <Button
+                  kind={activeButton === date ? 'success' : 'secondary'}
+                  size="extrasmall"
+                  key={index}
+                  onClick={() => dateButtonHandler(date)}
+                >
                   <FormattedNumber decimals={0} value={date.number} />
                   {date.tenor}
                 </Button>
@@ -86,14 +94,24 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
             }
             if (date.tenor === 'M' && isBefore(fromUnixTime(queryData.earliestDate), subMonths(today, date.number))) {
               return (
-                <Button size="extrasmall" key={index} onClick={() => dateButtonHandler(date)}>
+                <Button
+                  kind={activeButton === date ? 'success' : 'secondary'}
+                  size="extrasmall"
+                  key={index}
+                  onClick={() => dateButtonHandler(date)}
+                >
                   <FormattedNumber decimals={0} value={date.number} />
                   {date.tenor}
                 </Button>
               );
             } else {
               return (
-                <Button size="extrasmall" key={index} disabled={true}>
+                <Button
+                  kind={activeButton === date ? 'success' : 'secondary'}
+                  size="extrasmall"
+                  key={index}
+                  disabled={true}
+                >
                   <FormattedNumber decimals={0} value={date.number} /> {date.tenor}
                 </Button>
               );
@@ -104,10 +122,10 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
         {/* <Button size="extrasmall" onClick={() => scaleButtonHandler(yScaleType)}>
           {yScaleType === 'linear' ? 'Log Scale' : 'Linear Scale'}
         </Button> */}
-      </ControlBox>
+      </S.ControlBox>
 
-      <Chart>
-        <PriceLabel>price</PriceLabel>
+      <S.Chart>
+        <S.PriceLabel>price</S.PriceLabel>
         <ResponsiveLine
           data={queryData.data}
           theme={theme.chartColors}
@@ -137,10 +155,10 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
           }}
           sliceTooltip={({ slice }) => {
             return (
-              <ToolTipContainer>
-                <ToolTipText>Date: {slice.points[0].data.xFormatted}</ToolTipText>
+              <S.ToolTipContainer>
+                <S.ToolTipText>Date: {slice.points[0].data.xFormatted}</S.ToolTipText>
                 {slice.points.map(point => (
-                  <ToolTipText
+                  <S.ToolTipText
                     key={point.id}
                     style={{
                       color: point.serieColor,
@@ -148,9 +166,9 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
                     }}
                   >
                     <strong>{point.serieId}:</strong> {point.data.yFormatted}
-                  </ToolTipText>
+                  </S.ToolTipText>
                 ))}
-              </ToolTipContainer>
+              </S.ToolTipContainer>
             );
           }}
           enableSlices={'x'} // enables tool tip display of data at each point of axis passed
@@ -188,7 +206,7 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
             },
           ]}
         />
-      </Chart>
+      </S.Chart>
     </>
   );
 };
