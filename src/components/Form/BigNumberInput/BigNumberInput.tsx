@@ -1,40 +1,45 @@
 import React from 'react';
 import BigNumber from 'bignumber.js';
-import NumberFormat, { NumberFormatValues } from 'react-number-format';
-import { InputField, InputFieldProps } from '~/components/Form/Input/Input';
-import { useField } from '~/components/Form/Form';
+import NumberFormat, { NumberFormatValues, NumberFormatProps } from 'react-number-format';
+import { InputWidget, InputField } from '~/components/Form/Input/Input';
+import { useField, GenericInputProps } from '~/components/Form/Form';
 
-export interface BigNumberInputProps {
-  name: string;
-  label?: string;
-}
-
-export const BigNumberInputField: React.FC<InputFieldProps> = props => {
-  return <InputField {...props} field={{ ...props.field, value: props.value }} />;
-};
+export type BigNumberInputProps = NumberFormatProps &
+  GenericInputProps & {
+    name: string;
+    value?: BigNumber.Value;
+    label?: string;
+  };
 
 export const BigNumberInput: React.FC<BigNumberInputProps> = props => {
-  const [{ onChange, ...field }, meta, helper] = useField<BigNumber | undefined>({ type: 'text', ...props });
+  const [{ onChange, ...field }, meta, helpers] = useField<BigNumber.Value | undefined>({
+    type: 'text',
+    ...props,
+  } as any);
 
   const onValueChange = React.useCallback(
     (values: NumberFormatValues) => {
       const value = new BigNumber(values.value);
-      helper.setValue(!value.isNaN() ? value : undefined);
+      helpers.setValue(!value.isNaN() ? value : undefined);
     },
-    [helper]
+    [helpers.setValue]
   );
 
   return (
+    <BigNumberInputField customInput={InputWidget} onValueChange={onValueChange} {...meta} {...field} {...props} />
+  );
+};
+
+export const BigNumberInputField: React.FC<BigNumberInputProps> = props => {
+  const value = (BigNumber.isBigNumber(props.value) ? props.value.toFixed() : props.value) as string;
+
+  return (
     <NumberFormat
-      customInput={BigNumberInputField}
-      onValueChange={onValueChange}
+      customInput={InputField}
       thousandSeparator=","
       allowedDecimalSeparators={['.', ',']}
-      value={field.value?.toFixed()}
-      field={field}
-      meta={meta}
-      helper={helper}
       {...props}
+      value={value}
     />
   );
 };

@@ -19,6 +19,7 @@ export interface SelectOption {
   label: string;
   description?: string;
   icon?: string;
+  [key: string]: any;
 }
 
 export interface SelectProps<TOption extends SelectOption = SelectOption> extends SelectPropsBase<TOption> {
@@ -52,6 +53,20 @@ export const Select: React.FC<SelectProps> = props => {
     [field.value, helpers.setValue, props.isMulti, props.onChange]
   );
 
+  return <SelectWidget {...meta} {...field} {...props} value={value} onChange={onChange} />;
+};
+
+export const SelectWidget: React.FC<SelectProps> = ({ label, ...props }) => {
+  return (
+    <Wrapper>
+      {label && <Label>{label}</Label>}
+      <SelectField {...props} />
+      {props.error && <Error>{props.error}</Error>}
+    </Wrapper>
+  );
+};
+
+export const SelectField: React.FC<SelectProps> = props => {
   const hasDescriptions = React.useMemo(() => {
     return props.options.some((option: any) => !!option.description);
   }, [props.options]);
@@ -61,19 +76,12 @@ export const Select: React.FC<SelectProps> = props => {
   }, [props.options]);
 
   return (
-    <Wrapper>
-      {props.label && <Label>{props.label}</Label>}
-      <SelectBase
-        {...props}
-        {...field}
-        value={value}
-        components={{ Option, SingleValue, MultiValue }}
-        onChange={onChange}
-        hasDescriptions={hasDescriptions}
-        hasIcons={hasIcons}
-      />
-      {meta.error && <Error>{meta.error}</Error>}
-    </Wrapper>
+    <SelectBase
+      components={{ Option, SingleValue, MultiValue }}
+      {...props}
+      hasDescriptions={hasDescriptions}
+      hasIcons={hasIcons}
+    />
   );
 };
 

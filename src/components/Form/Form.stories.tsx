@@ -9,25 +9,13 @@ import { CheckboxGroup } from '~/components/Form/CheckboxGroup/CheckboxGroup';
 import { useFormik, Form } from './Form';
 import { Select } from './Select/Select';
 import { BigNumberInput } from './BigNumberInput/BigNumberInput';
+import { RadioButtons } from './RadioButtons/RadioButtons';
+import { TokenValue, tokens } from './TokenValueInput/TokenValue';
+import { TokenValueInput } from './TokenValueInput/TokenValueInput';
 
 export default { title: 'Forms|Form' };
 
 const options = [
-  {
-    value: 'value1',
-    label: 'label1',
-  },
-  {
-    value: 'value2',
-    label: 'label2',
-  },
-  {
-    value: 'value3',
-    label: 'label3',
-  },
-];
-
-const selectOptions = [
   { value: 'chocolate', label: 'Chocolate' },
   { value: 'strawberry', label: 'Strawberry' },
   { value: 'vanilla', label: 'Vanilla' },
@@ -55,6 +43,12 @@ const validationSchema = Yup.object({
     .test('greater-or-equal', 'Must be bigger than 100', (value: BigNumber) => {
       return value.isGreaterThanOrEqualTo(100);
     }),
+  tokenValue: Yup.mixed()
+    .required()
+    .test('has-enough-decimals', 'Must have at the full decimal amount.', (value: TokenValue) => {
+      const decimals = value.value?.decimalPlaces();
+      return !!decimals && new BigNumber(value.token.decimals).isEqualTo(decimals);
+    }),
 });
 
 const initialValues = {
@@ -62,7 +56,7 @@ const initialValues = {
   noLabel: 'No Label',
   textarea: 'Foo',
   checkbox: false,
-  checkboxes: [],
+  checkboxes: ['chocolate'],
   bigNumber: new BigNumber(123.456789),
 };
 
@@ -82,9 +76,11 @@ export const Basic = () => {
       <Textarea name="textarea" label="Textarea" />
       <Checkbox name="checkbox" label="Checkbox" />
       <CheckboxGroup name="checkboxes" label="Checkbox group" options={options} />
-      <Select name="select" options={selectOptions} label="Select" />
-      <Select name="selectMultiple" options={selectOptions} label="Select multiple" isMulti={true} />
+      <Select name="select" options={options} label="Select" />
+      <Select name="selectMultiple" options={options} label="Select multiple" isMulti={true} />
       <BigNumberInput name="bigNumber" label="BigNumber" />
+      <RadioButtons label="Radio Button" name="radioGroup" options={options} />
+      <TokenValueInput label="Token value" name="tokenValue" tokens={tokens} />
       <Button type="submit">Submit</Button>
     </Form>
   );

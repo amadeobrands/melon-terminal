@@ -1,43 +1,43 @@
 import styled, { css } from 'styled-components';
-import { Check } from 'styled-icons/fa-solid/Check';
 
-export const CheckboxContainer = styled.div`
+export const RadioButtonContainer = styled.div`
   position: relative;
   display: block;
   margin-bottom: ${props => props.theme.spaceUnits.s};
   text-align: left;
 `;
 
-export const CheckboxMask = styled.span`
+export const RadioButtonMask = styled.span`
   position: relative;
   display: inline-block;
   vertical-align: middle;
   width: ${props => props.theme.spaceUnits.m};
   height: ${props => props.theme.spaceUnits.m};
-  border-radius: 0px;
+  border-radius: 100%;
   border: 2px solid ${props => props.theme.mainColors.primaryDark};
   transition: all 0.2s ease-in-out;
 `;
 
-export const CheckboxIcon = styled(Check)`
+export const RadioButtonIcon = styled.span`
   position: absolute;
   top: 50%;
   left: 50%;
-  width: ${props => props.theme.spaceUnits.xs};
-  height: ${props => props.theme.spaceUnits.xs};
+  width: ${props => props.theme.spaceUnits.xxs};
+  height: ${props => props.theme.spaceUnits.xxs};
+  border-radius: 100%;
   transform: translate(-50%, -50%);
-  color: transparent;
+  background: transparent;
   transition: all 0.2s ease-in-out;
 `;
 
-export const CheckboxLabel = styled.label`
+export const RadioButtonLabel = styled.label`
   position: relative;
   vertical-align: middle;
   padding-left: ${props => props.theme.spaceUnits.xs};
   cursor: pointer;
 `;
 
-export const CheckboxInput = styled.input`
+export const RadioButtonInput = styled.input`
   position: absolute;
   top: 0;
   left: 0;
@@ -48,24 +48,22 @@ export const CheckboxInput = styled.input`
   margin: 0px;
   cursor: pointer;
 
-  &:hover + ${CheckboxMask} {
-    ${CheckboxIcon} {
-      color: ${props => props.theme.mainColors.primaryDark};
+  &:hover + ${RadioButtonMask} {
+    ${RadioButtonIcon} {
+      background: ${props => props.theme.mainColors.primaryDark};
     }
   }
 
-  &:checked + ${CheckboxMask} {
+  &:checked + ${RadioButtonMask} {
     background: ${props => props.theme.mainColors.primaryDark};
-    ${CheckboxIcon} {
-      color: ${props => props.theme.mainColors.primary};
+
+    ${RadioButtonIcon} {
+      background: ${props => props.theme.mainColors.primary};
     }
   }
 
-  &:hover:checked + ${CheckboxMask} {
+  &:hover:checked + ${RadioButtonMask} {
     background: ${props => props.theme.mainColors.secondaryDark};
-    ${CheckboxIcon} {
-      color: ${props => props.theme.mainColors.textColor};
-    }
   }
 
   ${props =>
@@ -73,19 +71,16 @@ export const CheckboxInput = styled.input`
     css`
       pointer-events: none;
 
-      & + ${CheckboxMask} {
-        border: 2px solid ${props => props.theme.mainColors.textColor};
+      & + ${RadioButtonMask} {
+        border: 2px solid ${props => props.theme.mainColors.secondaryDark};
         background: ${props => props.theme.mainColors.secondary};
       }
 
-      &:checked + ${CheckboxMask} {
+      &:checked + ${RadioButtonMask} {
         background: ${props => props.theme.mainColors.secondaryDark};
-        ${CheckboxIcon} {
-          color: ${props => props.theme.mainColors.textColor};
-        }
       }
 
-      & ~ ${CheckboxLabel} {
+      & ~ ${RadioButtonLabel} {
         color: ${props => props.theme.mainColors.secondaryDark};
         pointer-events: none;
       }

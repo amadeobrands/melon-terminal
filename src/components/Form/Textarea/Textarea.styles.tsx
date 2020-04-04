@@ -1,10 +1,7 @@
 import styled, { css } from 'styled-components';
+import { GenericTextareaProps } from '~/components/Form/Form';
 
-export interface TextareaInputProps {
-  error?: boolean;
-}
-
-export const TextareaInput = styled.textarea<TextareaInputProps>`
+export const TextareaInput = styled.textarea<GenericTextareaProps>`
   position: relative;
   width: 100%;
   min-height: calc(${props => props.theme.spaceUnits.xl} * 4);

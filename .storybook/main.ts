@@ -27,6 +27,10 @@ module.exports = {
       '~': path.resolve(process.cwd(), 'src'),
     });
 
+    config.node = Object.assign(config.node || {}, {
+      fs: 'empty',
+    });
+
     return config;
   },
 };

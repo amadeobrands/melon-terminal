@@ -1,6 +1,6 @@
 import React, { ChangeEvent } from 'react';
 import { FieldArray, useField, getIn, Wrapper, Label, Error } from '~/components/Form/Form';
-import { CheckboxItem } from '~/components/Form/Checkbox/Checkbox';
+import { CheckboxItem, CheckboxProps } from '~/components/Form/Checkbox/Checkbox';
 
 export interface CheckboxGroupOption {
   value: string;
@@ -8,14 +8,22 @@ export interface CheckboxGroupOption {
   disabled?: boolean;
 }
 
-export interface CheckboxGroupProps {
+export interface CheckboxGroupProps extends CheckboxProps {
   options: CheckboxGroupOption[];
-  name: string;
-  label?: string;
 }
 
 export const CheckboxGroup: React.FC<CheckboxGroupProps> = props => {
   const [field, meta] = useField({ type: 'checkbox', ...props });
+  const mapping = React.useMemo(() => {
+    if (Array.isArray(field.value)) {
+      return field.value.reduce<{ [key: number]: number }>((carry, current, index) => {
+        const key = props.options.findIndex(inner => inner.value === current);
+        return key !== -1 ? { ...carry, [key]: index } : carry;
+      }, {});
+    }
+
+    return {} as { [key: number]: number };
+  }, [field.value, props.options]);
 
   return (
     <Wrapper>
@@ -30,13 +38,6 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = props => {
               array.push(event.target.value);
             }
           };
-
-          const mapping = Array.isArray(field.value)
-            ? field.value.reduce<{ [key: number]: number }>((carry, current, index) => {
-                const key = props.options.findIndex(inner => inner.value === current);
-                return key !== -1 ? { ...carry, [key]: index } : carry;
-              }, {})
-            : ({} as { [key: number]: number });
 
           return props.options.map((item, index) => {
             const key = `${item.label}:${item.value}`;
@@ -61,20 +62,23 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = props => {
             return (
               <CheckboxItem
                 key={key}
+                {...meta}
+                {...field}
+                {...props}
+                {...item}
                 name={name}
                 checked={checked}
                 error={error}
                 touched={touched}
                 initialTouched={initialTouched}
                 onChange={handle}
-                {...item}
               />
             );
           });
         }}
       </FieldArray>
 
-      {meta.error && typeof meta.error === 'string' && <Error>{meta.error}</Error>}
+      {typeof meta.error === 'string' && <Error>{meta.error}</Error>}
     </Wrapper>
   );
 };

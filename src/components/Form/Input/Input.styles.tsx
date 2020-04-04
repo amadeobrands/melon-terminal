@@ -1,10 +1,7 @@
 import styled, { css } from 'styled-components';
+import { GenericInputProps } from '~/components/Form/Form';
 
-export interface InputProps {
-  error?: boolean;
-}
-
-export const Input = styled.input<InputProps>`
+export const Input = styled.input<GenericInputProps>`
   position: relative;
   width: 100%;
   padding: 0px ${props => props.theme.spaceUnits.m};
@@ -14,6 +11,7 @@ export const Input = styled.input<InputProps>`
   height: ${props => props.theme.spaceUnits.xxl};
   box-shadow: inset 1px 4px 4px rgba(200, 200, 200, 0.25);
   color: ${props => props.theme.mainColors.textColor};
+
   &::placeholder {
     color: ${props => props.theme.mainColors.secondaryDarkAlpha};
   }
