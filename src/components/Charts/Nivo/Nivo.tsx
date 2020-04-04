@@ -42,7 +42,7 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
     return subMonths(today, 1);
   });
 
-  const [activeButton, setActiveButton] = React.useState<ButtonDate>({ tenor: 'M', number: 1 });
+  const [activeButton, setActiveButton] = React.useState<ButtonDate>(historicalDates[1]);
 
   const tickFrequency = React.useMemo(() => {
     if (isBefore(startDate, subMonths(today, 6))) {
@@ -93,6 +93,7 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
               );
             }
             if (date.tenor === 'M' && isBefore(fromUnixTime(queryData.earliestDate), subMonths(today, date.number))) {
+              console.log(activeButton === date)
               return (
                 <Button
                   kind={activeButton === date ? 'success' : 'secondary'}
