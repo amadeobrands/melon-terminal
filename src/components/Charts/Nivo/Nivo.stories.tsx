@@ -1,7 +1,6 @@
 import React from 'react';
-import BigNumber from 'bignumber.js';
 import { fromUnixTime, format, isBefore } from 'date-fns';
-import { Nivo, NivoProps } from './Nivo';
+import { Nivo } from './Nivo';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 
 export default { title: 'Charts|Nivo' };
@@ -29,7 +28,7 @@ interface Fund {
  * @param obj
  */
 
-function singleFundQuery(startDate: Date, endDate: Date) {
+function singleFundQuery(startDate: number) {
   const today = new Date();
   const earliestDate = subgraphData
     .map(object => parseInt(object.createdAt))
@@ -44,15 +43,20 @@ function singleFundQuery(startDate: Date, endDate: Date) {
         id: object.name,
         data: object.calculationsHistory
           .filter(filterItem => {
-            const itemDate = fromUnixTime(parseInt(filterItem.timestamp));
-            return isBefore(startDate, itemDate) && isBefore(itemDate, today);
+            const itemDate = parseInt(filterItem.timestamp);
+            const itemPrice = fromTokenBaseUnit(filterItem.sharePrice, 18);
+            return (
+              isBefore(startDate, itemDate) &&
+              isBefore(itemDate, today) &&
+              !itemPrice.isNaN() &&
+              itemPrice.isGreaterThan(0)
+            );
           })
           .reverse()
-          .map(item => {
+          .map((item) => {
             const date = format(fromUnixTime(parseInt(item.timestamp)), 'yyyy-MM-dd');
-            const price = fromTokenBaseUnit(item.sharePrice, 18).isGreaterThan(0)
-              ? fromTokenBaseUnit(item.sharePrice, 18).toPrecision(2)
-              : null;
+            const price = fromTokenBaseUnit(item.sharePrice, 18).toNumber().toFixed(4);
+          
             return {
               y: price,
               x: date,
@@ -68,7 +72,9 @@ function singleFundQuery(startDate: Date, endDate: Date) {
     }),
   };
 }
-
+function averageOfTwo(array: any[], index: number) {
+  return (array[index - 1] + array[index + 1]) / 2;
+}
 const helloFund = {
   calculationsHistory: [
     {

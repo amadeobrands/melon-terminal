@@ -2,29 +2,19 @@ import React from 'react';
 import { useTheme } from 'styled-components';
 import { Serie, ResponsiveLine } from '@nivo/line';
 import { LinearScale, LogScale } from '@nivo/scales';
-import { subMonths, isBefore, fromUnixTime, subWeeks } from 'date-fns';
+import { subMonths, isBefore, fromUnixTime, subWeeks, getUnixTime } from 'date-fns';
 import { Button } from '~/storybook/Button/Button.styles';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import * as S from './Nivo.styles';
 
 export interface NivoProps {
-  generator: (startDate: Date, currentDate: Date) => { earliestDate: number; data: Serie[] };
+  generator: (startDate: number) => { earliestDate: number; data: Serie[] };
 }
 
 interface ButtonDate {
-  tenor: 'W' | 'M';
-  number: number;
+  label: '1w' | '1m' | '2m' | '3m' | '6m' | '1y' | 'All Time';
+  timeStamp: number;
 }
-
-const historicalDates = [
-  { tenor: 'W', number: 1 },
-  { tenor: 'M', number: 1 },
-  { tenor: 'M', number: 2 },
-  { tenor: 'M', number: 3 },
-  { tenor: 'M', number: 6 },
-  { tenor: 'M', number: 9 },
-  { tenor: 'M', number: 12 },
-] as ButtonDate[];
 
 // min should maybe be dynamic based on the lowest value that gets passed in through the generator
 const linearProps = { type: 'linear', min: 0, max: 'auto', reverse: false } as LinearScale;
@@ -34,20 +24,27 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
   const [yScaleType, setYScaleType] = React.useState<'linear' | 'log'>('linear');
   const today = React.useMemo(() => new Date(), []);
   const yScale = React.useMemo(() => (yScaleType === 'linear' ? linearProps : logProps), [yScaleType]);
-  
+
   const areaProp = false;
   const theme = useTheme();
 
-  const [startDate, setStartDate] = React.useState<Date>(() => {
-    return subMonths(today, 1);
-  });
+  const historicalDates = [
+    { label: '1w', timeStamp: getUnixTime(subWeeks(today, 1)) },
+    { label: '1m', timeStamp: getUnixTime(subMonths(today, 1)) },
+    { label: '2m', timeStamp: getUnixTime(subMonths(today, 2)) },
+    { label: '3m', timeStamp: getUnixTime(subMonths(today, 3)) },
+    { label: '6m', timeStamp: getUnixTime(subMonths(today, 6)) },
+    { label: '1y', timeStamp: getUnixTime(subMonths(today, 12)) },
+  ] as ButtonDate[];
 
-  const [activeButton, setActiveButton] = React.useState<ButtonDate>(historicalDates[1]);
+  const [startDate, setStartDate] = React.useState<number>(historicalDates[1].timeStamp);
+
+  const [activeButton, setActiveButton] = React.useState<number>(historicalDates[1].timeStamp);
 
   const tickFrequency = React.useMemo(() => {
-    if (isBefore(startDate, subMonths(today, 6))) {
+    if (isBefore(startDate, historicalDates[4].timeStamp)) {
       return 'every month';
-    } else if (isBefore(startDate, subMonths(today, 1))) {
+    } else if (isBefore(startDate, historicalDates[1].timeStamp)) {
       return 'every week';
     } else {
       return 'every day';
@@ -55,78 +52,48 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
   }, [startDate, today]);
 
   const queryData = React.useMemo(() => {
-    return generator(startDate, today);
+    return generator(startDate);
   }, [today, startDate, generator]);
 
+  historicalDates.push({ label: 'All Time', timeStamp: queryData.earliestDate });
+
   const dateButtonHandler = (date: ButtonDate) => {
-    setActiveButton(date);
-    if (date.tenor === 'W') {
-      setStartDate(subWeeks(today, date.number));
-    } else {
-      setStartDate(subMonths(today, date.number));
-    }
+    setActiveButton(date.timeStamp);
+    setStartDate(date.timeStamp);
   };
 
-  // const scaleButtonHandler = (type: 'linear' | 'log') => {
-  //   setYScaleType(type === 'linear' ? 'log' : 'linear');
-  // };
+  const scaleButtonHandler = (type: 'linear' | 'log') => {
+    setYScaleType(type === 'linear' ? 'log' : 'linear');
+  };
 
   const chartColor = theme.mode === 'light' ? 'set2' : 'accent'; // https://nivo.rocks/guides/colors/
+
   const legendTextColor = theme.mainColors.textColor;
 
   return (
     <>
-      <S.ControlBox>
-        <div>
+      <S.Chart>
+        <S.ControlBox>
           {historicalDates.map((date, index) => {
-            if (date.tenor === 'W' && isBefore(fromUnixTime(queryData.earliestDate), subWeeks(today, date.number))) {
+            if (isBefore(queryData.earliestDate, date.timeStamp) || date.timeStamp === queryData.earliestDate) {
               return (
                 <Button
-                  kind={activeButton === date ? 'success' : 'secondary'}
-                  size="extrasmall"
+                  kind={activeButton === date.timeStamp ? 'success' : 'secondary'}
+                  size="small"
                   key={index}
                   onClick={() => dateButtonHandler(date)}
                 >
-                  <FormattedNumber decimals={0} value={date.number} />
-                  {date.tenor}
-                </Button>
-              );
-            }
-            if (date.tenor === 'M' && isBefore(fromUnixTime(queryData.earliestDate), subMonths(today, date.number))) {
-              console.log(activeButton === date)
-              return (
-                <Button
-                  kind={activeButton === date ? 'success' : 'secondary'}
-                  size="extrasmall"
-                  key={index}
-                  onClick={() => dateButtonHandler(date)}
-                >
-                  <FormattedNumber decimals={0} value={date.number} />
-                  {date.tenor}
-                </Button>
-              );
-            } else {
-              return (
-                <Button
-                  kind={activeButton === date ? 'success' : 'secondary'}
-                  size="extrasmall"
-                  key={index}
-                  disabled={true}
-                >
-                  <FormattedNumber decimals={0} value={date.number} /> {date.tenor}
+                  {date.label}
                 </Button>
               );
             }
           })}
-        </div>
 
-        {/* <Button size="extrasmall" onClick={() => scaleButtonHandler(yScaleType)}>
-          {yScaleType === 'linear' ? 'Log Scale' : 'Linear Scale'}
-        </Button> */}
-      </S.ControlBox>
-
-      <S.Chart>
-        <S.PriceLabel>price</S.PriceLabel>
+          <Button size="small" onClick={() => scaleButtonHandler(yScaleType)}>
+            {yScaleType === 'linear' ? 'Log Scale' : 'Linear Scale'}
+          </Button>
+        </S.ControlBox>
+        {/* <S.PriceLabel>price</S.PriceLabel> */}
         <ResponsiveLine
           data={queryData.data}
           theme={theme.chartColors}
