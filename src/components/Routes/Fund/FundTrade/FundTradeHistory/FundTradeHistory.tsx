@@ -41,6 +41,7 @@ export const FundTradeHistory: React.FC<FundTradeHistoryProps> = ({ address }) =
                 <HeaderCell>Buy asset</HeaderCell>
                 <HeaderCellRightAlign>Sell quantity</HeaderCellRightAlign>
                 <HeaderCell>Sell asset</HeaderCell>
+                <HeaderCellRightAlign>Price</HeaderCellRightAlign>
                 <HeaderCell>Type</HeaderCell>
               </HeaderRow>
             </thead>
@@ -52,13 +53,33 @@ export const FundTradeHistory: React.FC<FundTradeHistoryProps> = ({ address }) =
                   </BodyCell>
                   <BodyCell>{trade.exchange?.name}</BodyCell>
                   <BodyCellRightAlign>
-                    <FormattedNumber tooltip={true} value={trade.buyQuantity} />
+                    {trade.buyQuantity && !trade.buyQuantity.isNaN() ? (
+                      <FormattedNumber tooltip={true} value={trade.buyQuantity} />
+                    ) : (
+                      <></>
+                    )}
                   </BodyCellRightAlign>
                   <BodyCell>{trade.buyAsset?.symbol}</BodyCell>
                   <BodyCellRightAlign>
-                    <FormattedNumber tooltip={true} value={trade.sellQuantity} />
+                    {trade.sellQuantity && !trade.sellQuantity.isNaN() ? (
+                      <FormattedNumber tooltip={true} value={trade.sellQuantity} />
+                    ) : (
+                      <></>
+                    )}
                   </BodyCellRightAlign>
                   <BodyCell>{trade.sellAsset?.symbol}</BodyCell>
+                  <BodyCellRightAlign>
+                    {trade.price && !trade.price.isNaN() ? (
+                      <FormattedNumber
+                        tooltip={true}
+                        value={trade.price}
+                        decimals={4}
+                        suffix={`${trade.sellAsset?.symbol}/${trade.buyAsset?.symbol}`}
+                      />
+                    ) : (
+                      <></>
+                    )}
+                  </BodyCellRightAlign>
                   <BodyCell>{trade.methodName}</BodyCell>
                 </BodyRow>
               ))}

@@ -14,6 +14,7 @@ export interface Trade {
   sellAsset?: TokenDefinition;
   buyQuantity?: BigNumber;
   sellQuantity?: BigNumber;
+  price?: BigNumber;
   methodName?: string;
 }
 
@@ -55,8 +56,8 @@ export const useFundTradeHistoryQuery = (address: string) => {
   const trades = useMemo(
     () =>
       (result.data?.fund?.trading?.trades || []).map((item: any) => {
-        const buyAsset = environment.getToken(item.assetBought?.id);
-        const sellAsset = environment.getToken(item.assetSold?.id);
+        const buyAsset = item.assetBought?.id && environment.getToken(item.assetBought?.id);
+        const sellAsset = item.assetSold?.id && environment.getToken(item.assetSold?.id);
 
         let buyAmount = new BigNumber(item.amountBought ?? 0);
         const sellAmount = new BigNumber(item.amountSold ?? 0);
@@ -65,11 +66,17 @@ export const useFundTradeHistoryQuery = (address: string) => {
         const sellQuantity = sellAsset && fromTokenBaseUnit(sellAmount, sellAsset.decimals);
         const exchange = environment.exchanges.find(exchange => sameAddress(exchange.exchange, item.exchange?.id));
 
+        const price =
+          sellQuantity && !sellQuantity.isZero() && buyQuantity && !buyQuantity?.isZero()
+            ? sellQuantity.dividedBy(buyQuantity)
+            : new BigNumber('NaN');
+
         return {
           buyAsset,
           sellAsset,
           buyQuantity,
           sellQuantity,
+          price,
           id: item.id,
           timestamp: item.timestamp,
           methodName: item.methodName,
