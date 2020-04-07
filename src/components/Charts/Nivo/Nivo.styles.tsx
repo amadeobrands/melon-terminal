@@ -13,12 +13,12 @@ export const ToolTipText = styled.div`
 `;
 
 export const ControlBox = styled.div`
-  border: ${props => props.theme.border.borderSecondary};
+  // border: ${props => props.theme.border.borderSecondary};
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  flex-direction: row;
+  justify-content: left;
   align-items: center;
-  padding: ${props => props.theme.spaceUnits.xs};
+  padding: ${props => props.theme.spaceUnits.s};
 `;
 
 export const ButtonBox = styled.div`
@@ -29,11 +29,21 @@ export const ButtonBox = styled.div`
 export const PriceLabel = styled.div`
   transform: rotate(-90deg);
 `;
-// export const ChartContainer = styled.div`
-// `
+
 
 export const Chart = styled.div`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   height: 397px;
+  border: ${props => props.theme.border.borderSecondary};
+  padding-bottom: ${props => props.theme.spaceUnits.xxxl}
 `;
+
+export const ChartButton = styled(Button)`
+  font-size: ${props => props.theme.spaceUnits.s};
+  text-align: center;
+  width: auto;
+  height: auto;
+  padding: ${props => props.theme.spaceUnits.xxs};
+  border: ${props => props.theme.border.borderColor};
+`

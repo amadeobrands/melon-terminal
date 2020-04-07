@@ -53,21 +53,26 @@ function singleFundQuery(startDate: number) {
             );
           })
           .reverse()
-          .map((item) => {
+          .map(item => {
             const date = format(fromUnixTime(parseInt(item.timestamp)), 'yyyy-MM-dd');
-            const price = fromTokenBaseUnit(item.sharePrice, 18).toNumber().toFixed(4);
-          
+            const price = fromTokenBaseUnit(item.sharePrice, 18)
+              .toNumber()
+              .toFixed(4);
+
             return {
               y: price,
               x: date,
             };
           })
-          .filter(filterItem => {
-            if (!seen.hasOwnProperty(filterItem.x)) {
-              seen[filterItem.x] = true;
-              return true;
+          .reduce((prev, curr) => {
+            const dates = prev.map(item => item.x);
+            if (dates.includes(curr.x)) {
+              return prev;
+            } else {
+              prev.push(curr);
+              return prev;
             }
-          }),
+          }, []),
       };
     }),
   };
@@ -4081,6 +4086,6 @@ const eek = {
   name: 'EEK Capital',
 };
 
-const subgraphData = [eek, ag, helloFund];
+const subgraphData = [ag];
 
 export const Default: React.FC = () => <Nivo generator={singleFundQuery} />;
