@@ -5,17 +5,6 @@ import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 
 export default { title: 'Charts|Nivo' };
 
-interface CalcHistory {
-  sharePrice: string;
-  source: string;
-  timestamp: string;
-}
-
-interface Fund {
-  name: string;
-  calculationsHistory: CalcHistory[];
-}
-
 /**
  * Takes in an object returned from the subgraph.
  * formats it as { id: string, data: {x: string, y: number}[]} where x is the date and y is the shareprice

@@ -6,9 +6,9 @@ import { subMonths, isBefore, subWeeks, getUnixTime } from 'date-fns';
 import * as S from './Nivo.styles';
 
 /**
- * The price chart must be passed a generator function that returns the earliest unix timestamp
- * for a collection of data (in order to show the All Time sort button) and an array of Serie objects
- * containing the data to be displayed.
+ * The price chart must be passed a generator function that accepts the start date (currently defaulting to 1m)
+ * and returns the earliest unix timestamp for a collection of data (in order to show the All Time sort button)
+ * and an array of Serie objects containing the data to be displayed.
  * 
  * Price data must be strictly positive in order to display logarithmic charts, and so as not to 
  * screw up the display on linear charts. 
@@ -68,7 +68,7 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
     return generator(startDate);
   }, [today, startDate, generator]);
 
-  historicalDates.push({ label: 'All Time', timeStamp: queryData.earliestDate });
+  queryData && historicalDates.push({ label: 'All Time', timeStamp: queryData.earliestDate });
 
   const dateButtonHandler = (date: ButtonDate) => {
     setActiveButton(date.timeStamp);
@@ -188,7 +188,7 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
                     itemOpacity: 1,
                   },
                 },
-              ],
+              ], 
             },
           ]}
         />
