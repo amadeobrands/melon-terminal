@@ -9,16 +9,16 @@ import * as S from './Nivo.styles';
  * The price chart must be passed a generator function that accepts the start date (currently defaulting to 1m)
  * and returns the earliest unix timestamp for a collection of data (in order to show the All Time sort button)
  * and an array of Serie objects containing the data to be displayed.
- * 
- * Price data must be strictly positive in order to display logarithmic charts, and so as not to 
- * screw up the display on linear charts. 
- * 
+ *
+ * Price data must be strictly positive in order to display logarithmic charts, and so as not to
+ * screw up the display on linear charts.
+ *
  * Linear charts may have gaps in the data, with the y value passed as null
- * 
- * A logarithmic y axis is not yet possible - a bug within Nivo renders data backwards (highest 
- * values at the bottom of the axis) occasionally and unpredictably. The corresponding code to 
+ *
+ * A logarithmic y axis is not yet possible - a bug within Nivo renders data backwards (highest
+ * values at the bottom of the axis) occasionally and unpredictably. The corresponding code to
  * toggle log/linear has been commented out but left intact.
- * 
+ *
  */
 export interface NivoProps {
   generator: (startDate: number) => { earliestDate: number; data: Serie[] };
@@ -31,7 +31,7 @@ interface ButtonDate {
 
 // min should maybe be dynamic based on the lowest value that gets passed in through the generator
 const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false } as LinearScale;
-const logProps = { type: 'log',  max: 'auto', min: 'auto' } as LogScale;
+const logProps = { type: 'log', max: 'auto', min: 'auto' } as LogScale;
 
 export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
   const [yScaleType, setYScaleType] = React.useState<'linear' | 'log'>('linear');
@@ -75,11 +75,11 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
     setStartDate(date.timeStamp);
   };
 
-  const scaleButtonHandler = (type: 'linear' | 'log') => {
-    setYScaleType(type === 'linear' ? 'log' : 'linear');
-  };
+  // const scaleButtonHandler = (type: 'linear' | 'log') => {
+  //   setYScaleType(type === 'linear' ? 'log' : 'linear');
+  // };
 
-  console.log(queryData)
+  console.log(queryData);
   const chartColor = theme.mode === 'light' ? 'set2' : 'accent'; // https://nivo.rocks/guides/colors/
 
   const legendTextColor = theme.mainColors.textColor;
@@ -87,7 +87,8 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
   return (
     <>
       <S.Chart>
-        <S.ControlBox>Zoom:  
+        <S.ControlBox>
+          Zoom:
           {historicalDates.map((date, index) => {
             if (isBefore(queryData.earliestDate, date.timeStamp) || date.timeStamp === queryData.earliestDate) {
               return (
@@ -102,12 +103,11 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
               );
             }
           })}
-
-          {/* <Button size="small" onClick={() => scaleButtonHandler(yScaleType)}>
+          {/* <S.ChartButton size="small" onClick={() => scaleButtonHandler(yScaleType)}>
             {yScaleType === 'linear' ? 'Log Scale' : 'Linear Scale'}
-          </Button> */}
+          </S.ChartButton> */}
         </S.ControlBox>
-        
+
         <ResponsiveLine
           data={queryData.data}
           theme={theme.chartColors}
@@ -125,8 +125,8 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
             legendOffset: -10,
             format: '%d %b',
             orient: 'bottom',
-            tickValues: tickFrequency, 
-            tickSize: 5, 
+            tickValues: tickFrequency,
+            tickSize: 5,
             tickPadding: 10,
             tickRotation: 45,
           }}
@@ -137,7 +137,7 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
             tickRotation: 0,
             legendOffset: 10,
             legendPosition: 'end',
-            legend: 'Price (ETH)'
+            legend: 'Price (ETH)',
           }}
           sliceTooltip={({ slice }) => {
             return (
@@ -188,7 +188,7 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
                     itemOpacity: 1,
                   },
                 },
-              ], 
+              ],
             },
           ]}
         />

@@ -19,9 +19,7 @@ import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNu
 import styled from 'styled-components';
 import { Dropdown } from '~/storybook/Dropdown/Dropdown';
 import { Button } from '~/storybook/Button/Button.styles';
-import { Nivo } from '~/components/Charts/Nivo/Nivo';
 import { useFundSharePriceQuery } from './FundPerformanceChart.query';
-import { useFund } from '~/hooks/useFund';
 import { subMonths } from 'date-fns';
 
 export interface FundPerformanceTableProps {
@@ -47,7 +45,7 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
       value: token.symbol,
     }));
 
-  const chartQuery = useFundSharePriceQuery(subMonths(new Date(), 1).getTime())
+  const chartQuery = useFundSharePriceQuery(subMonths(new Date(), 1).getTime());
 
   const [selectedTokens, setSelectedTokens] = useState(() =>
     tokens.filter(token => startingTokens.includes(token.name)).map(token => token.name)

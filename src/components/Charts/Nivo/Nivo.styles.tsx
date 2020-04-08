@@ -24,19 +24,18 @@ export const ControlBox = styled.div`
 export const ButtonBox = styled.div`
   display: flex;
   flex-direction: column;
-`
+`;
 
 export const PriceLabel = styled.div`
   transform: rotate(-90deg);
 `;
-
 
 export const Chart = styled.div`
   display: flex;
   flex-direction: column;
   height: 397px;
   border: ${props => props.theme.border.borderSecondary};
-  padding-bottom: ${props => props.theme.spaceUnits.xxxl}
+  padding-bottom: ${props => props.theme.spaceUnits.xxxl};
 `;
 
 export const ChartButton = styled(Button)`
@@ -46,4 +45,4 @@ export const ChartButton = styled(Button)`
   height: auto;
   padding: ${props => props.theme.spaceUnits.xxs};
   border: ${props => props.theme.border.borderColor};
-`
+`;

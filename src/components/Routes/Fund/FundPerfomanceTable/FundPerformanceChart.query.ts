@@ -19,6 +19,10 @@ import { useMemo } from 'react';
  *  x: date (format 'yyyy-MM-dd')
  * }
  *
+ *
+ * add tests to parsing function
+ *
+ *
  */
 
 export interface FundSharePriceQueryVariables {
@@ -81,3 +85,5 @@ export const useFundSharePriceQuery = (startDate: number) => {
 
   console.log(data);
 };
+
+function parseSharePriceQueryData(input: FundSharePriceQueryResult[]): FundSharePricesParsed {}
