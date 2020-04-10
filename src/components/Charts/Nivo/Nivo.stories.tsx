@@ -52,7 +52,7 @@ function singleFundQuery(startDate: number) {
               x: date,
             };
           })
-          .reduce((prev, curr: {x: string, y: string}) => {
+          .reduce((prev, curr: { x: string; y: string }) => {
             const dates: string[] = prev.map(item => item.x);
             if (dates.includes(curr.x)) {
               return prev;
@@ -4078,22 +4078,21 @@ const subgraphData = [ag];
 
 export const Default: React.FC = () => <Nivo generator={singleFundQuery} />;
 
-
 /**'
  * in == values, of == keys (double check this)
  * .every .some .find => check array methods to which you can pass callbacks
  * .findIndex() .includes()
  *  object.entries, object.values, object.keys ==> access object key/values as arrays
- * 
- * 
+ *
+ *
  * function whatever(stuff){
  *    const  stateArray = []
- *    
+ *
  *    for (let i in values){
  *      check some values and if it suits push it into stateArray
  *    }
-*      
+ *
  *    return stateArray
  * }
- * 
+ *
  */

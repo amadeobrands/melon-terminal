@@ -5,6 +5,8 @@ import { FundContracts } from './FundContracts/FundContracts';
 import { FundFactSheet } from './FundFactSheet/FundFactSheet';
 import { Grid, GridRow, GridCol } from '~/storybook/Grid/Grid';
 import { FundPerformanceTable } from '~/components/Routes/Fund/FundPerfomanceTable/FundPerformanceTable';
+import { useFundSharePriceQuery } from '../FundPerfomanceTable/FundPerformanceChart.query';
+import { Nivo } from '~/components/Charts/Nivo/Nivo';
 
 export interface FundOverviewProps {
   address: string;
@@ -23,6 +25,7 @@ export const FundOverview: React.FC<FundOverviewProps> = ({ address }) => (
     <GridRow>
       <GridCol>
         <FundPerformanceTable address={address} />
+        <Nivo generator={useFundSharePriceQuery} />
       </GridCol>
     </GridRow>
     <GridRow>

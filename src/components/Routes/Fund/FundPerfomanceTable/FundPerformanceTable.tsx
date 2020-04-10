@@ -21,6 +21,7 @@ import { Dropdown } from '~/storybook/Dropdown/Dropdown';
 import { Button } from '~/storybook/Button/Button.styles';
 import { useFundSharePriceQuery } from './FundPerformanceChart.query';
 import { subMonths } from 'date-fns';
+import { Nivo } from '~/components/Charts/Nivo/Nivo';
 
 export interface FundPerformanceTableProps {
   address: string;
@@ -44,8 +45,6 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
       name: token.symbol,
       value: token.symbol,
     }));
-
-  const chartQuery = useFundSharePriceQuery(subMonths(new Date(), 1).getTime());
 
   const [selectedTokens, setSelectedTokens] = useState(() =>
     tokens.filter(token => startingTokens.includes(token.name)).map(token => token.name)

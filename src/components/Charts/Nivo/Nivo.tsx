@@ -4,6 +4,8 @@ import { Serie, ResponsiveLine } from '@nivo/line';
 import { LinearScale, LogScale } from '@nivo/scales';
 import { subMonths, isBefore, subWeeks, getUnixTime } from 'date-fns';
 import * as S from './Nivo.styles';
+import { Block } from '~/storybook/Block/Block';
+import { Spinner } from '~/storybook/Spinner/Spinner';
 
 /**
  * The price chart must be passed a generator function that accepts the start date (currently defaulting to 1m)
@@ -20,8 +22,13 @@ import * as S from './Nivo.styles';
  * toggle log/linear has been commented out but left intact.
  *
  */
-export interface NivoProps {
-  generator: (startDate: number) => { earliestDate: number; data: Serie[] };
+export interface LineChartData {
+  earliestDate: number;
+  data: Serie[]
+}
+
+export interface LineChartProps {
+  generator(startDate: number): [LineChartData, QueryResult];
 }
 
 interface ButtonDate {
@@ -33,7 +40,7 @@ interface ButtonDate {
 const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false } as LinearScale;
 const logProps = { type: 'log', max: 'auto', min: 'auto' } as LogScale;
 
-export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
+export const Nivo: React.FC<LineChartProps> = ({ generator }, ...props) => {
   const [yScaleType, setYScaleType] = React.useState<'linear' | 'log'>('linear');
   const today = React.useMemo(() => new Date(), []);
   const yScale = React.useMemo(() => (yScaleType === 'linear' ? linearProps : logProps), [yScaleType]);
@@ -64,7 +71,7 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
     }
   }, [startDate, today]);
 
-  const queryData = React.useMemo(() => {
+  const [queryData, query] = React.useMemo(() => {
     return generator(startDate);
   }, [today, startDate, generator]);
 
@@ -83,6 +90,7 @@ export const Nivo: React.FC<NivoProps> = ({ generator }, ...props) => {
   const chartColor = theme.mode === 'light' ? 'set2' : 'accent'; // https://nivo.rocks/guides/colors/
 
   const legendTextColor = theme.mainColors.textColor;
+
 
   return (
     <>
