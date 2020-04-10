@@ -24,7 +24,7 @@ import { Spinner } from '~/storybook/Spinner/Spinner';
  */
 export interface LineChartData {
   earliestDate: number;
-  data: Serie[]
+  data: Serie[];
 }
 
 export interface LineChartProps {
@@ -85,12 +85,17 @@ export const Nivo: React.FC<LineChartProps> = ({ generator }, ...props) => {
   // const scaleButtonHandler = (type: 'linear' | 'log') => {
   //   setYScaleType(type === 'linear' ? 'log' : 'linear');
   // };
-
+  if (query.loading) {
+    return (
+      <Block>
+        <Spinner />
+      </Block>
+    );
+  }
   console.log(queryData);
   const chartColor = theme.mode === 'light' ? 'set2' : 'accent'; // https://nivo.rocks/guides/colors/
 
   const legendTextColor = theme.mainColors.textColor;
-
 
   return (
     <>

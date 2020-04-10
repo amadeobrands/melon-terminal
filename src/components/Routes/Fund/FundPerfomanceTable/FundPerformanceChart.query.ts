@@ -82,15 +82,11 @@ export const useFundSharePriceQuery = (startDate: number) => {
   };
 
   const result = useTheGraphQuery(FundSharePriceQuery, options);
-
-  // const data = useMemo(() => {
-  //   return result.data;
-  // }, [result.data]);
-
+  console.log(result);
   const chartData = useMemo(() => {
     return result.data?.funds ? parseSharePriceQueryData(result.data.funds, startDate) : undefined;
-  }, [result.data.funds]);
-
+  }, [result.data?.funds]);
+  console.log(chartData);
   return [chartData, result] as [typeof chartData, typeof result];
 };
 
@@ -106,7 +102,7 @@ function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate:
   // remove validPrices false price
 
   const returnObject: LineChartData = {
-    earliestDate: undefined,
+    earliestDate: 0,
     data: [],
   };
 
@@ -114,7 +110,6 @@ function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate:
     // find earliest date
     if (!returnObject.earliestDate || returnObject.earliestDate < i.createdAt) {
       returnObject['earliestDate'] = i.createdAt;
-      console.log(returnObject, 'I chnaged it');
     }
 
     // declare empty array to track dates
@@ -148,7 +143,7 @@ function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate:
     returnObject.data.push(fundInfo);
   }
 
-  console.log('returnObject: ', returnObject);
+  // console.log('returnObject: ', returnObject);
 
   return returnObject;
 }
