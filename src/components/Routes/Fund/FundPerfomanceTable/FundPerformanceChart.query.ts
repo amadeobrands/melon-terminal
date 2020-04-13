@@ -1,11 +1,13 @@
+import React from 'react';
 import gql from 'graphql-tag';
 import BigNumber from 'bignumber.js';
 import { Serie, Datum } from '@nivo/line';
-import { useTheGraphQuery } from '~/hooks/useQuery';
+import { useTheGraphQuery, useLazyTheGraphQuery } from '~/hooks/useQuery';
 import { useFund } from '~/hooks/useFund';
-import { useMemo } from 'react';
 import { format, fromUnixTime } from 'date-fns';
 import { LineChartData } from '~/components/Charts/Nivo/Nivo';
+import { parseISO } from 'date-fns/fp';
+import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 
 /**
  * Query must take a fund address and a date
@@ -81,16 +83,10 @@ export const useFundSharePriceQuery = (startDate: number) => {
     } as FundSharePriceQueryVariables,
   };
 
-  const result = useTheGraphQuery(FundSharePriceQuery, options);
-  console.log(result);
-  const chartData = useMemo(() => {
-    return result.data?.funds ? parseSharePriceQueryData(result.data.funds, startDate) : undefined;
-  }, [result.data?.funds]);
-  console.log(chartData);
-  return [chartData, result] as [typeof chartData, typeof result];
+  return useLazyTheGraphQuery(FundSharePriceQuery, options);
 };
 
-function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate: number): LineChartData {
+export function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate: BigNumber): LineChartData {
   // takes an array of - fund objects (must pass correct result.data.funds to function)
   // returns an an object with two values - the oldest date to display and an
   // array of Series: { id: string | number, data: Datum[] }
@@ -100,7 +96,7 @@ function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate:
   // de-duplicate - only take the first update on a given date
   // remove calculations with null and 0 prices
   // remove validPrices false price
-
+  const editedDate = startDate.dividedBy(1000).toNumber();
   const returnObject: LineChartData = {
     earliestDate: 0,
     data: [],
@@ -109,7 +105,7 @@ function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate:
   for (let i of input) {
     // find earliest date
     if (!returnObject.earliestDate || returnObject.earliestDate < i.createdAt) {
-      returnObject['earliestDate'] = i.createdAt;
+      returnObject['earliestDate'] = parseInt(i.createdAt);
     }
 
     // declare empty array to track dates
@@ -128,7 +124,7 @@ function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate:
       }
 
       // skip it if the item's date is before the chart's start date
-      if (j.timestamp < startDate) {
+      if (j.timestamp < editedDate) {
         continue;
       }
 
@@ -136,14 +132,12 @@ function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate:
       // and push the price into the price array
       if (!seenDates[`${date}`]) {
         seenDates[`${date}`] = true;
-        fundInfo.data.push({ y: j.sharePrice, x: date });
+        fundInfo.data.push({ y: toTokenBaseUnit(j.sharePrice, 18).toFixed(4), x: date });
       }
     }
     // push the Datum into the Serie
     returnObject.data.push(fundInfo);
   }
-
-  // console.log('returnObject: ', returnObject);
 
   return returnObject;
 }

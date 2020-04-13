@@ -1,4 +1,5 @@
 import React from 'react';
+import { QueryResult } from '@apollo/react-common'
 import { useTheme } from 'styled-components';
 import { Serie, ResponsiveLine } from '@nivo/line';
 import { LinearScale, LogScale } from '@nivo/scales';
@@ -28,7 +29,8 @@ export interface LineChartData {
 }
 
 export interface LineChartProps {
-  generator(startDate: number): [LineChartData, QueryResult];
+  triggerFunction(): void;
+  chartData: LineChartData
 }
 
 interface ButtonDate {
@@ -40,11 +42,11 @@ interface ButtonDate {
 const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false } as LinearScale;
 const logProps = { type: 'log', max: 'auto', min: 'auto' } as LogScale;
 
-export const Nivo: React.FC<LineChartProps> = ({ generator }, ...props) => {
+export const Nivo: React.FC<LineChartProps> = ({ triggerFunction, chartData }) => {
   const [yScaleType, setYScaleType] = React.useState<'linear' | 'log'>('linear');
   const today = React.useMemo(() => new Date(), []);
   const yScale = React.useMemo(() => (yScaleType === 'linear' ? linearProps : logProps), [yScaleType]);
-
+  console.log(chartData)
   const areaProp = false;
   const theme = useTheme();
 
@@ -71,11 +73,9 @@ export const Nivo: React.FC<LineChartProps> = ({ generator }, ...props) => {
     }
   }, [startDate, today]);
 
-  const [queryData, query] = React.useMemo(() => {
-    return generator(startDate);
-  }, [today, startDate, generator]);
 
-  queryData && historicalDates.push({ label: 'All Time', timeStamp: queryData.earliestDate });
+
+  historicalDates.push({ label: 'All Time', timeStamp: chartData.earliestDate });
 
   const dateButtonHandler = (date: ButtonDate) => {
     setActiveButton(date.timeStamp);
@@ -85,14 +85,9 @@ export const Nivo: React.FC<LineChartProps> = ({ generator }, ...props) => {
   // const scaleButtonHandler = (type: 'linear' | 'log') => {
   //   setYScaleType(type === 'linear' ? 'log' : 'linear');
   // };
-  if (query.loading) {
-    return (
-      <Block>
-        <Spinner />
-      </Block>
-    );
-  }
-  console.log(queryData);
+ 
+
+  
   const chartColor = theme.mode === 'light' ? 'set2' : 'accent'; // https://nivo.rocks/guides/colors/
 
   const legendTextColor = theme.mainColors.textColor;
@@ -103,7 +98,7 @@ export const Nivo: React.FC<LineChartProps> = ({ generator }, ...props) => {
         <S.ControlBox>
           Zoom:
           {historicalDates.map((date, index) => {
-            if (isBefore(queryData.earliestDate, date.timeStamp) || date.timeStamp === queryData.earliestDate) {
+            if (isBefore(chartData.earliestDate, date.timeStamp) || date.timeStamp === chartData.earliestDate) {
               return (
                 <S.ChartButton
                   kind={activeButton === date.timeStamp ? 'success' : 'secondary'}
@@ -122,7 +117,7 @@ export const Nivo: React.FC<LineChartProps> = ({ generator }, ...props) => {
         </S.ControlBox>
 
         <ResponsiveLine
-          data={queryData.data}
+          data={chartData.data}
           theme={theme.chartColors}
           colors={{ scheme: chartColor }} // data colors
           animate={false}

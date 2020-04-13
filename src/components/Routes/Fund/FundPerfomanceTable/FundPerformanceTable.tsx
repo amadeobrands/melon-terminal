@@ -59,7 +59,7 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
   );
 
   const [fund, assets, query] = useFundPerformanceQuery(address, selectedTokens);
-  const [sharePriceQuery] = useFundSharePriceQuery(1235)
+  const [sharePriceQuery] = useFundSharePriceQuery(1235);
   function toggleTokenSelection(symbol: string) {
     if (!symbol) {
       return;
