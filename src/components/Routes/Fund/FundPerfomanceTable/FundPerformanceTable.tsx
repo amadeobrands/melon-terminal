@@ -20,8 +20,6 @@ import styled from 'styled-components';
 import { Dropdown } from '~/storybook/Dropdown/Dropdown';
 import { Button } from '~/storybook/Button/Button.styles';
 import { useFundSharePriceQuery } from './FundPerformanceChart.query';
-import { subMonths } from 'date-fns';
-import { Nivo } from '~/components/Charts/Nivo/Nivo';
 
 export interface FundPerformanceTableProps {
   address: string;
@@ -59,7 +57,7 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
   );
 
   const [fund, assets, query] = useFundPerformanceQuery(address, selectedTokens);
-  const [sharePriceQuery] = useFundSharePriceQuery(1235);
+  const [sharePriceQuery] = useFundSharePriceQuery();
   function toggleTokenSelection(symbol: string) {
     if (!symbol) {
       return;

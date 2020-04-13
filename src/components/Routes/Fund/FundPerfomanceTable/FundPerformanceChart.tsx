@@ -1,32 +1,44 @@
 import React from 'react';
 import BigNumber from 'bignumber.js';
+import { useEffectOnce } from 'react-use';
 import { Nivo } from '~/components/Charts/Nivo/Nivo';
-import { useFundSharePriceQuery, parseSharePriceQueryData } from './FundPerformanceChart.query';
 import { Block } from '~/storybook/Block/Block';
-import { Spinner } from '~/storybook/Spinner/Spinner';
-import { Button } from '~/storybook/Button/Button';
+import { useFund } from '~/hooks/useFund';
+import { useFundSharePriceQuery, parseSharePriceQueryData } from './FundPerformanceChart.query';
 
 export const FundPerformanceChart: React.FC = () => {
+  const fund = useFund();
+  const [load, result] = useFundSharePriceQuery();
 
-  const [loadSharePriceData, {called, loading, data}] = useFundSharePriceQuery()
-  
-  if (called && loading){
-    return (
-      <Block>
-        <Spinner />
-      </Block>
-    );
+  const trigger = React.useCallback(
+    (start: number) => {
+      load({
+        variables: {
+          start: start,
+          funds: [fund.address!.toLowerCase()],
+        },
+      });
+    },
+    [load, fund]
+  );
+
+  const data = React.useMemo(() => {
+    if (!result.data) {
+      return undefined;
+    }
+
+    return parseSharePriceQueryData(result.data.funds, new BigNumber(result.variables.start));
+  }, [result.data]);
+
+  useEffectOnce(() => trigger(0));
+
+  if (!result.called) {
+    return null;
   }
 
-  if (!called){
-    return (
-      <Block>
-        <Button onClick={() => loadSharePriceData()}>X</Button>
-      </Block>
-    )
-  }
-
-  const parsedData = parseSharePriceQueryData(data.funds, dummyDate)
-
-  return (<Block><Nivo triggerFunction={loadSharePriceData} chartData={parsedData}/></Block>);
+  return (
+    <Block>
+      <Nivo triggerFunction={trigger} chartData={data} startDate={result.variables.start} loading={result.loading} />
+    </Block>
+  );
 };

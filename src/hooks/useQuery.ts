@@ -75,10 +75,10 @@ export const useTheGraphQuery = <TData = any, TVariables = OperationVariables>(
   return useContextQuery<TData, TVariables>(client, query, options);
 };
 
-export const useLazyTheGraphQuery = <TVariables = OperationVariables>(
+export const useLazyTheGraphQuery = <TData = any, TVariables = OperationVariables>(
   query: DocumentNode,
   options?: OnChainQueryLazyHookOptions<TVariables>
 ) => {
   const client = useTheGraphClient();
-  return useLazyContextQuery<Schema, TVariables>(client, query, options);
+  return useLazyContextQuery<TData, TVariables>(client, query, options);
 };

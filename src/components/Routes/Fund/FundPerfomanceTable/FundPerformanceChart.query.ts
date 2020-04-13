@@ -1,12 +1,9 @@
-import React from 'react';
 import gql from 'graphql-tag';
 import BigNumber from 'bignumber.js';
 import { Serie, Datum } from '@nivo/line';
-import { useTheGraphQuery, useLazyTheGraphQuery } from '~/hooks/useQuery';
-import { useFund } from '~/hooks/useFund';
+import { useLazyTheGraphQuery, OnChainQueryLazyHookOptions } from '~/hooks/useQuery';
 import { format, fromUnixTime } from 'date-fns';
 import { LineChartData } from '~/components/Charts/Nivo/Nivo';
-import { parseISO } from 'date-fns/fp';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 
 /**
@@ -30,17 +27,17 @@ import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
  */
 
 export interface FundSharePriceQueryVariables {
-  startDate: BigNumber;
+  start: number;
   funds: string[];
 }
 
 const FundSharePriceQuery = gql`
-  query FundSharePriceQuery($funds: [String!]!, $startDate: BigInt!) {
+  query FundSharePriceQuery($funds: [String!]!, $start: BigInt!) {
     funds(where: { id_in: $funds }) {
       name
       createdAt
       calculationsHistory(
-        where: { source: "priceUpdate", timestamp_gt: $startDate }
+        where: { source: "priceUpdate", timestamp_gt: $start }
         first: 1000
         orderBy: timestamp
         orderDirection: desc
@@ -72,18 +69,8 @@ export interface FundSharePricesParsed {
   data: Serie[];
 }
 
-export const useFundSharePriceQuery = (startDate: number) => {
-  const context = useFund();
-  const address = context.address!.toLowerCase();
-  const dummyDate = new Date('March 1 2020').getTime();
-  const options = {
-    variables: {
-      startDate: new BigNumber(dummyDate).dividedBy(1000),
-      funds: [address.toLowerCase()],
-    } as FundSharePriceQueryVariables,
-  };
-
-  return useLazyTheGraphQuery(FundSharePriceQuery, options);
+export const useFundSharePriceQuery = () => {
+  return useLazyTheGraphQuery<any, FundSharePriceQueryVariables>(FundSharePriceQuery);
 };
 
 export function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate: BigNumber): LineChartData {
