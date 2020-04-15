@@ -4,7 +4,7 @@ import { CheckboxItem, CheckboxProps } from '~/components/Form/Checkbox/Checkbox
 
 export interface CheckboxGroupOption {
   value: string;
-  label: string;
+  label?: string;
   disabled?: boolean;
 }
 

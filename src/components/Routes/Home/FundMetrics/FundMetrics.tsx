@@ -24,7 +24,7 @@ export const FundMetrics: React.FC = () => {
   const networkGav = fromTokenBaseUnit(metrics.state?.networkGav, 18);
   const activeInvestors = metrics.state?.activeInvestors;
   const nonActiveInvestors = metrics.state?.nonActiveInvestors;
-  const activeFunds = metrics.state.activeFunds;
+  const activeFunds = metrics.state?.activeFunds;
   const nonActiveFunds = metrics.state?.nonActiveFunds;
   const allInvestments = metrics.state?.allInvestments;
 

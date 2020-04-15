@@ -1,6 +1,7 @@
 import React from 'react';
 import * as Yup from 'yup';
 import BigNumber from 'bignumber.js';
+import { TokenDefinition } from '@melonproject/melonjs';
 import { Input } from '~/components/Form/Input/Input';
 import { Textarea } from '~/components/Form/Textarea/Textarea';
 import { Button } from '~/components/Form/Button/Button';
@@ -10,7 +11,8 @@ import { useFormik, Form } from './Form';
 import { Select } from './Select/Select';
 import { BigNumberInput } from './BigNumberInput/BigNumberInput';
 import { RadioButtons } from './RadioButtons/RadioButtons';
-import { TokenValue, tokens } from './TokenValueInput/TokenValue';
+import { TokenValue } from './TokenValueSelect/TokenValue';
+import { TokenValueSelect } from './TokenValueSelect/TokenValueSelect';
 import { TokenValueInput } from './TokenValueInput/TokenValueInput';
 
 export default { title: 'Forms|Form' };
@@ -20,6 +22,27 @@ const options = [
   { value: 'strawberry', label: 'Strawberry' },
   { value: 'vanilla', label: 'Vanilla' },
 ];
+
+const tokens = [
+  {
+    address: '0x0000000000000000000000000000000000000001',
+    symbol: 'WETH',
+    name: 'Wrapped Ether',
+    decimals: 18,
+  },
+  {
+    address: '0x0000000000000000000000000000000000000002',
+    symbol: 'MLN',
+    name: 'Melon',
+    decimals: 18,
+  },
+  {
+    address: '0x0000000000000000000000000000000000000003',
+    symbol: 'SAI',
+    name: 'Sai',
+    decimals: 9,
+  },
+] as TokenDefinition[];
 
 const validationSchema = Yup.object({
   input: Yup.string()
@@ -44,6 +67,12 @@ const validationSchema = Yup.object({
       return value.isGreaterThanOrEqualTo(100);
     }),
   tokenValue: Yup.mixed()
+    .required()
+    .test('has-enough-decimals', 'Must have at the full decimal amount.', (value: TokenValue) => {
+      const decimals = value.value?.decimalPlaces();
+      return !!decimals && new BigNumber(value.token.decimals).isEqualTo(decimals);
+    }),
+  tokenValueInput: Yup.mixed()
     .required()
     .test('has-enough-decimals', 'Must have at the full decimal amount.', (value: TokenValue) => {
       const decimals = value.value?.decimalPlaces();
@@ -80,7 +109,8 @@ export const Basic = () => {
       <Select name="selectMultiple" options={options} label="Select multiple" isMulti={true} />
       <BigNumberInput name="bigNumber" label="BigNumber" />
       <RadioButtons label="Radio Button" name="radioGroup" options={options} />
-      <TokenValueInput label="Token value" name="tokenValue" tokens={tokens} />
+      <TokenValueSelect label="Token value Select" name="tokenValue" tokens={tokens} />
+      <TokenValueInput label="Token value Input" name="tokenValueInput" token={tokens[0]} />
       <Button type="submit">Submit</Button>
     </Form>
   );

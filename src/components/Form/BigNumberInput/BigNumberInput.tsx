@@ -12,7 +12,7 @@ export type BigNumberInputProps = NumberFormatProps &
   };
 
 export const BigNumberInput: React.FC<BigNumberInputProps> = props => {
-  const [{ onChange, ...field }, meta, helpers] = useField<BigNumber.Value | undefined>({
+  const [{ onChange, ...field }, meta, { setValue }] = useField<BigNumber.Value | undefined>({
     type: 'text',
     ...props,
   } as any);
@@ -20,9 +20,9 @@ export const BigNumberInput: React.FC<BigNumberInputProps> = props => {
   const onValueChange = React.useCallback(
     (values: NumberFormatValues) => {
       const value = new BigNumber(values.value);
-      helpers.setValue(!value.isNaN() ? value : undefined);
+      setValue(!value.isNaN() ? value : undefined);
     },
-    [helpers.setValue]
+    [setValue]
   );
 
   return (

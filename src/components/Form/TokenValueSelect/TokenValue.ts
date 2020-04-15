@@ -1,27 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { TokenDefinition } from '@melonproject/melonjs';
 
-export const tokens = [
-  {
-    address: '0x0000000000000000000000000000000000000001',
-    symbol: 'WETH',
-    name: 'Wrapped Ether',
-    decimals: 18,
-  },
-  {
-    address: '0x0000000000000000000000000000000000000002',
-    symbol: 'MLN',
-    name: 'Melon',
-    decimals: 18,
-  },
-  {
-    address: '0x0000000000000000000000000000000000000003',
-    symbol: 'SAI',
-    name: 'Sai',
-    decimals: 9,
-  },
-] as TokenDefinition[];
-
 export class TokenValue {
   public readonly value?: BigNumber;
 
