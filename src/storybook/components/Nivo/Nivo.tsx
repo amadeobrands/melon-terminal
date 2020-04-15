@@ -1,6 +1,6 @@
 import React from 'react';
 import { Serie, ResponsiveLine, Line } from '@nivo/line';
-import * as S from '~/components/Charts/Nivo/Nivo.styles';
+import * as S from '~/components/Charts/Nivo/PriceChart.styles';
 
 export interface NivoProps {
   data: Serie[];

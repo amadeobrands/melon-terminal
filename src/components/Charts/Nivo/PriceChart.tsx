@@ -3,8 +3,7 @@ import { useTheme } from 'styled-components';
 import { Serie, ResponsiveLine } from '@nivo/line';
 import { LinearScale, LogScale } from '@nivo/scales';
 import { subMonths, startOfDay, isAfter, isBefore, subWeeks, getUnixTime } from 'date-fns';
-import * as S from './Nivo.styles';
-import { Block } from '~/storybook/Block/Block';
+import * as S from './PriceChart.styles';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 
 /**
@@ -45,7 +44,7 @@ interface ButtonDate {
 const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false } as LinearScale;
 const logProps = { type: 'log', max: 'auto', min: 'auto' } as LogScale;
 
-export const Nivo: React.FC<LineChartProps> = props => {
+export const PriceChart: React.FC<LineChartProps> = props => {
   const [yScaleType, setYScaleType] = React.useState<'linear' | 'log'>('linear');
   const today = React.useMemo(() => startOfDay(new Date()), []);
   const yScale = React.useMemo(() => (yScaleType === 'linear' ? linearProps : logProps), [yScaleType]);
@@ -70,12 +69,18 @@ export const Nivo: React.FC<LineChartProps> = props => {
   }, [props.chartData, props.startDate]);
 
   const tickFrequency = React.useMemo(() => {
-    if (isBefore(props.startDate, getUnixTime(subMonths(today, 6)))) {
+    if (props.startDate === 0) {
+      if (props.chartData && isBefore(props.chartData?.earliestDate, getUnixTime(subMonths(today, 6)))) {
+        return 'every month';
+      } else if (props.chartData && isBefore(props.chartData?.earliestDate, getUnixTime(subMonths(today, 1)))) {
+        return 'every week';
+      }
+      return 'every day';
+    } else if (isBefore(props.startDate, getUnixTime(subMonths(today, 6)))) {
       return 'every month';
     } else if (isBefore(props.startDate, getUnixTime(subMonths(today, 1)))) {
       return 'every week';
     }
-
     return 'every day';
   }, [props.startDate, today]);
 
@@ -175,19 +180,19 @@ export const Nivo: React.FC<LineChartProps> = props => {
             areaOpacity={1} // opacity of the area underneath the lines
             legends={[
               {
-                anchor: 'bottom-right',
+                anchor: 'top-right',
                 direction: 'column',
                 justify: false,
                 translateX: 110,
                 translateY: 0,
                 itemsSpacing: 0,
-                itemDirection: 'left-to-right',
+                itemDirection: 'right-to-left',
                 itemTextColor: legendTextColor,
                 itemWidth: 100,
                 itemHeight: 20,
                 itemOpacity: 0.75,
                 symbolSize: 12,
-                padding: { top: 24 },
+                padding: { top: 24, right: 24 },
                 symbolShape: 'circle',
                 symbolBorderColor: 'rgba(0, 0, 0, .5)',
                 effects: [

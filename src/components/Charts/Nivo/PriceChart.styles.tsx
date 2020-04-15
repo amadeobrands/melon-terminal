@@ -7,6 +7,7 @@ export const ToolTipContainer = styled.div`
   background: white;
   opacity: 95%;
 `;
+
 export const ToolTipText = styled.div`
   opacity: 1;
   color: 'rbg(0,0,0)';

@@ -1,10 +1,10 @@
 import gql from 'graphql-tag';
 import BigNumber from 'bignumber.js';
-import { Serie, Datum } from '@nivo/line';
-import { useLazyTheGraphQuery, OnChainQueryLazyHookOptions } from '~/hooks/useQuery';
+import { Serie } from '@nivo/line';
+import { useLazyTheGraphQuery } from '~/hooks/useQuery';
 import { format, fromUnixTime } from 'date-fns';
-import { LineChartData } from '~/components/Charts/Nivo/Nivo';
-import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
+import { LineChartData } from '~/components/Charts/Nivo/PriceChart';
+import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 
 /**
  * Query must take a fund address and a date
@@ -119,7 +119,7 @@ export function parseSharePriceQueryData(input: FundSharePriceQueryResult[], sta
       // and push the price into the price array
       if (!seenDates[`${date}`]) {
         seenDates[`${date}`] = true;
-        fundInfo.data.push({ y: toTokenBaseUnit(j.sharePrice, 18).toFixed(4), x: date });
+        fundInfo.data.push({ y: fromTokenBaseUnit(j.sharePrice, 18).toFixed(4), x: date });
       }
     }
     // push the Datum into the Serie

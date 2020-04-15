@@ -1,6 +1,6 @@
 import React from 'react';
 import { fromUnixTime, format, isBefore } from 'date-fns';
-import { Nivo } from './Nivo';
+import { PriceChart } from './PriceChart';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 
 export default { title: 'Charts|Nivo' };
@@ -4076,7 +4076,7 @@ const eek = {
 
 const subgraphData = [ag];
 
-export const Default: React.FC = () => <Nivo generator={singleFundQuery} />;
+export const Default: React.FC = () => <PriceChart generator={singleFundQuery} />;
 
 /**'
  * in == values, of == keys (double check this)

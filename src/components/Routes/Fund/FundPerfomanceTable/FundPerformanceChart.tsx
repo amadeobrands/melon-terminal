@@ -1,10 +1,11 @@
 import React from 'react';
 import BigNumber from 'bignumber.js';
 import { useEffectOnce } from 'react-use';
-import { Nivo } from '~/components/Charts/Nivo/Nivo';
+import { PriceChart } from '~/components/Charts/Nivo/PriceChart';
 import { Block } from '~/storybook/Block/Block';
 import { useFund } from '~/hooks/useFund';
 import { useFundSharePriceQuery, parseSharePriceQueryData } from './FundPerformanceChart.query';
+import { SectionTitle } from '~/storybook/Title/Title';
 
 export const FundPerformanceChart: React.FC = () => {
   const fund = useFund();
@@ -38,7 +39,9 @@ export const FundPerformanceChart: React.FC = () => {
 
   return (
     <Block>
-      <Nivo triggerFunction={trigger} chartData={data} startDate={result.variables.start} loading={result.loading} />
+      <SectionTitle>Fund Share Price Over Time</SectionTitle>
+
+      <PriceChart triggerFunction={trigger} chartData={data} startDate={result.variables.start} loading={result.loading} />
     </Block>
   );
 };
