@@ -41,7 +41,12 @@ export const FundPerformanceChart: React.FC = () => {
     <Block>
       <SectionTitle>Fund Share Price Over Time</SectionTitle>
 
-      <PriceChart triggerFunction={trigger} chartData={data} startDate={result.variables.start} loading={result.loading} />
+      <PriceChart
+        triggerFunction={trigger}
+        chartData={data}
+        startDate={result.variables.start}
+        loading={result.loading}
+      />
     </Block>
   );
 };

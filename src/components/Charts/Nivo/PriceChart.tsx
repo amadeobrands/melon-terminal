@@ -7,20 +7,36 @@ import * as S from './PriceChart.styles';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 
 /**
- * The price chart must be passed a generator function that accepts the start date (currently defaulting to 1m)
- * and returns the earliest unix timestamp for a collection of data (in order to show the All Time sort button)
- * and an array of Serie objects containing the data to be displayed.
- *
- * Price data must be strictly positive in order to display logarithmic charts, and so as not to
+ * A price chart can accept and display price data over time for multiple assets.
+ * 
+ * The query that feeds data to the chart should be called using the useLazyTheGraphQuery hook, which 
+ * will return a trigger function along with the query data. The trigger function should be passed
+ * to the chart, which accepts a timestamp as a number and updates the query and results accordingly (used
+ * on the zoom buttons).
+ * 
+ * Its recommended to wrap this chart component in a parent component that will handle managing a fund's context,
+ * the chart's state, and calling the hooks that query TheGraph.
+ * 
+ * The data that comes back from any TheGraph query will need to be parsed in order to fit the 
+ * correct shape noted in the LineChartData type below. Notes on how to parse that date below:
+ * 
+ * - Price data must be strictly positive in order to display logarithmic charts, and so as not to
  * screw up the display on linear charts.
+ * - Linear charts may have gaps in the data, with the x value passed as a date and the y value passed as null
+ * - Always check the date format that comes back from the Graph, as it is in seconds since the epoch and various
+ * javascript methods generate timestamps in milliseconds.
  *
- * Linear charts may have gaps in the data, with the y value passed as null
  *
- * A logarithmic y axis is not yet possible - a bug within Nivo renders data backwards (highest
- * values at the bottom of the axis) occasionally and unpredictably. The corresponding code to
- * toggle log/linear has been commented out but left intact.
- *
+ * Other notes:
+ * - A logarithmic y axis is not yet possible - a bug within Nivo renders data backwards (highest
+ * values at the bottom of the axis) occasionally and unpredictably when the y axis is set to log scale. 
+ * The corresponding code to toggle log/linear has been commented out but left intact.
+ * 
+ * - The values passed to the trigger function are timestamps. Your query should return all valid
+ *  records with values greater than the timestamp passed to the trigger. In the case of the All Time
+ *  button, this value is 0. 
  */
+
 export interface LineChartData {
   earliestDate: number;
   data: Serie[];
@@ -40,7 +56,6 @@ interface ButtonDate {
   disabled: boolean;
 }
 
-// min should maybe be dynamic based on the lowest value that gets passed in through the generator
 const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false } as LinearScale;
 const logProps = { type: 'log', max: 'auto', min: 'auto' } as LogScale;
 

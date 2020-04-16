@@ -74,15 +74,6 @@ export const useFundSharePriceQuery = () => {
 };
 
 export function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate: BigNumber): LineChartData {
-  // takes an array of - fund objects (must pass correct result.data.funds to function)
-  // returns an an object with two values - the oldest date to display and an
-  // array of Series: { id: string | number, data: Datum[] }
-  // where data is an array of {x: , y: }
-  // where x is a date (yyy-MM-dd) and y is a number representing share price
-  // also needs to sort by before startDate and after
-  // de-duplicate - only take the first update on a given date
-  // remove calculations with null and 0 prices
-  // remove validPrices false price
   const editedDate = startDate.dividedBy(1000).toNumber();
   const returnObject: LineChartData = {
     earliestDate: 0,
@@ -128,20 +119,3 @@ export function parseSharePriceQueryData(input: FundSharePriceQueryResult[], sta
 
   return returnObject;
 }
-
-/**
-{ 
-  funds: [
-    {calculationsHistory: [
-     {
-        sharePrices: string or number not sure
-        source: "priceUpdate"
-        timestamp: string or number
-        validPrices: boolean
-     }
-    ],
-    createdAt: string or number not sure
-    name: string}
-  ] 
-}
- */
