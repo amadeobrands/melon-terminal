@@ -1,6 +1,5 @@
 import React from 'react';
-import BigNumber from 'bignumber.js';
-import { fromUnixTime, format, isBefore, startOfDay, sub } from 'date-fns';
+import { fromUnixTime, format, isBefore, startOfDay } from 'date-fns';
 import { PriceChart, LineChartData } from './PriceChart';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 import { Serie } from '@nivo/line';
@@ -10,29 +9,13 @@ import { useEffectOnce } from 'react-use';
 export default { title: 'Charts|Price Chart' };
 
 /**
- * Takes in an object returned from the subgraph.
- * formats it as { id: string, data: {x: string, y: number}[]} where x is the date and y is the shareprice
- * and filters out repeated dates (takes the first timestamp each day)
- * - array is reversed because data pulled from most recent date backwards
- *
- * question here - how to get the first date from the subgraph. Can't take the createdAt date as that won't always match the price data.
- * does the price data get cut off at 100 items?
- *
- * @param obj
+ * Implementation of a price chart with three distinct Series pulled from the melon subgraph.
+ * Logic has been added to keep the dates in this data evergreen (i.e. you'll always be able to 
+ * hit the 1 week chart view and see data)
+ * 
+ * The parent component pattern displayed below  (Default wrapping PriceChart) is recommended when implementing 
+ * price chart. The trigger function here has been built to mock the function returned from a lazy query.
  */
-
-export interface FundSharePriceQueryResult {
-  createdAt: number;
-  name: string;
-  calculationsHistory: CalculationHistory[];
-}
-
-export interface CalculationHistory {
-  timestamp: number;
-  sharePrice: number;
-  source: string;
-  validPrices: boolean;
-}
 
 const helloFund = {
   calculationsHistory: [
