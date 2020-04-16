@@ -5,6 +5,7 @@ import { PriceChart, LineChartData } from './PriceChart';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 import { Serie } from '@nivo/line';
 import { differenceInDays, addDays } from 'date-fns/esm';
+import { useEffectOnce } from 'react-use';
 
 export default { title: 'Charts|Price Chart' };
 
@@ -32,7 +33,6 @@ export interface CalculationHistory {
   source: string;
   validPrices: boolean;
 }
-
 
 const helloFund = {
   calculationsHistory: [
@@ -5091,16 +5091,14 @@ const eek = {
 
 const subgraphData = [ag, eek, helloFund];
 
-
-function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate: number): LineChartData {
+function parseSharePriceQueryData(input: any[], startDate: number): LineChartData {
   // date that this data was pulled, to adjust dates on each calculation hisotry in order to show evergreen data
   // i.e. the 1week chart view would be empty by a week from today without this adjustment
-  const dataPulledDate = startOfDay( new Date('April 16 2020'))
-  const today = startOfDay(new Date())
-  const diffInDays = differenceInDays(today, dataPulledDate)
+  const dataPulledDate = startOfDay(new Date('April 16 2020'));
+  const today = startOfDay(new Date());
+  const diffInDays = differenceInDays(today, dataPulledDate);
 
-  // parse data appropriately 
-  const adjustedStartDate = startDate/1000;
+  // parse data appropriately
 
   const returnObject: LineChartData = {
     earliestDate: 0,
@@ -5108,14 +5106,13 @@ function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate:
   };
 
   for (let i of input) {
-
-    // adjust earliest date to reflect static data
-    const adjustedCreatedAt = addDays(fromUnixTime(i.createdAt), diffInDays).getTime()
+    // adjust earliest date to reflect static data and adjust for seconds
+    const adjustedCreatedAt = addDays(parseInt(i.createdAt), diffInDays).getTime()/1000;
 
     // find earliest date
-    if (!returnObject.earliestDate || returnObject.earliestDate < adjustedCreatedAt) {
-      // @ts-ignore
-      returnObject['earliestDate'] = parseInt(adjustedCreatedAt);
+    if (!returnObject.earliestDate || isBefore(returnObject.earliestDate, adjustedCreatedAt)) {
+
+      returnObject['earliestDate'] = adjustedCreatedAt;
     }
 
     // declare empty object to track dates in O(1)
@@ -5124,19 +5121,18 @@ function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate:
     // declare fund object to push onto returnObject.data
     const fundInfo: Serie = { id: i.name, data: [] };
 
+
     // loop through calculations
     for (let j of i.calculationsHistory) {
-
       // adjust calc history date to reflect static data
       const adjustedCalcDate = addDays(fromUnixTime(j.timestamp), diffInDays);
-
+      
       // skip it if sharePrice is null or zero or if validPrices is false
       if (!j.sharePrice || !j.validPrices) {
         continue;
       }
-
       // skip it if the item's date is before the chart's start date
-      if (isBefore(adjustedCalcDate,adjustedStartDate)) {
+      if (isBefore(adjustedCalcDate.getTime()/1000, startDate)) {
         continue;
       }
 
@@ -5144,7 +5140,10 @@ function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate:
       // and push the price into the price array
       if (!seenDates[`${adjustedCalcDate}`]) {
         seenDates[`${adjustedCalcDate}`] = true;
-        fundInfo.data.push({ y: fromTokenBaseUnit(j.sharePrice, 18).toFixed(4), x: format(adjustedCalcDate, 'yyyy-MM-dd') });
+        fundInfo.data.push({
+          y: fromTokenBaseUnit(j.sharePrice, 18).toFixed(4),
+          x: format(adjustedCalcDate, 'yyyy-MM-dd'),
+        });
       }
     }
     // push the Datum into the Serie
@@ -5154,31 +5153,19 @@ function parseSharePriceQueryData(input: FundSharePriceQueryResult[], startDate:
   return returnObject;
 }
 
-let startDate = 0
+export const Default: React.FC = () => {
+  const [startDate, setStartDate] = React.useState(0);
 
-const triggerFunction = (start:number) => {
-  startDate = start
-}
+  const trigger = (start: number) => {
+    setStartDate(start)
+  };
 
-const data = parseSharePriceQueryData(subgraphData, startDate)
+  const data = React.useMemo(() => {
+    return parseSharePriceQueryData(subgraphData, startDate);
+  }, [startDate]);
 
-export const Default: React.FC = () => <PriceChart loading={false} chartData={data} startDate={startDate} triggerFunction={triggerFunction} />;
+  // const yScale = React.useMemo(() => (yScaleType === 'linear' ? linearProps : logProps), [yScaleType]);
+  useEffectOnce(() => trigger(0));
 
-/**'
- * in == values, of == keys (double check this)
- * .every .some .find => check array methods to which you can pass callbacks
- * .findIndex() .includes()
- *  object.entries, object.values, object.keys ==> access object key/values as arrays
- *
- *
- * function whatever(stuff){
- *    const  stateArray = []
- *
- *    for (let i in values){
- *      check some values and if it suits push it into stateArray
- *    }
- *
- *    return stateArray
- * }
- *
- */
+  return <PriceChart loading={false} chartData={data} startDate={startDate} triggerFunction={trigger} />;
+};
