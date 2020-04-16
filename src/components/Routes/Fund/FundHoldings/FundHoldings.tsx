@@ -16,7 +16,6 @@ import {
 import { SectionTitle } from '~/storybook/Title/Title';
 import { Block } from '~/storybook/Block/Block';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
-import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 import { Icons, IconName } from '~/storybook/Icons/Icons';
 import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
 
@@ -36,9 +35,20 @@ export const FundHoldings: React.FC<FundHoldingsProps> = ({ address }) => {
     );
   }
 
-  const totalValue = holdings.reduce((acc, current) => {
+  const nonZeroHoldings = holdings.filter(holding => !holding.amount?.isZero());
+
+  const totalValue = nonZeroHoldings.reduce((acc, current) => {
     return acc.plus(current.value || new BigNumber(0));
   }, new BigNumber(0));
+
+  if (!nonZeroHoldings.length) {
+    return (
+      <Block>
+        <SectionTitle>Portfolio Holdings</SectionTitle>
+        <ScrollableTable maxHeight="650px">No current holdings.</ScrollableTable>
+      </Block>
+    );
+  }
 
   return (
     <Block>
@@ -55,7 +65,7 @@ export const FundHoldings: React.FC<FundHoldingsProps> = ({ address }) => {
             </HeaderRow>
           </thead>
           <tbody>
-            {holdings.map((holding, key) => (
+            {nonZeroHoldings.map((holding, key) => (
               <BodyRow key={key}>
                 <BodyCell>
                   <S.HoldingIcon>

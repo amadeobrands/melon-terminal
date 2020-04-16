@@ -13,6 +13,8 @@ export interface FundHoldingsProps {
 export const FundHoldings: React.FC<FundHoldingsProps> = ({ address }) => {
   const [holdings, query] = useFundHoldingsQuery(address);
 
+  const nonZeroHoldings = holdings.filter(holding => !holding.amount?.isZero());
+
   if (query.loading) {
     return (
       <Block>
@@ -22,10 +24,19 @@ export const FundHoldings: React.FC<FundHoldingsProps> = ({ address }) => {
     );
   }
 
+  if (!nonZeroHoldings.length) {
+    return (
+      <Block>
+        <SectionTitle>Portfolio Holdings</SectionTitle>
+        No current holdings.
+      </Block>
+    );
+  }
+
   return (
     <Block>
       <SectionTitle>Portfolio Holdings</SectionTitle>
-      {holdings.map((holding, key) => (
+      {nonZeroHoldings.map((holding, key) => (
         <S.Balance key={key}>
           <TokenValue value={holding.amount} decimals={holding.token!.decimals!} symbol={holding.token?.symbol} />
         </S.Balance>
