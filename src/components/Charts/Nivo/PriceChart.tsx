@@ -24,7 +24,7 @@ import { Spinner } from '~/storybook/Spinner/Spinner';
  * screw up the display on linear charts.
  * - Linear charts may have gaps in the data, with the x value passed as a date and the y value passed as null
  * - Always check the date format that comes back from the Graph, as it is in seconds since the epoch and various
- * javascript methods generate timestamps in milliseconds.
+ * javascript methods generate timestamps in milliseconds. Compare apples to apples. 
  *
  *
  * Other notes:
