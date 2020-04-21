@@ -19,7 +19,7 @@ import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNu
 import styled from 'styled-components';
 import { Dropdown } from '~/storybook/Dropdown/Dropdown';
 import { Button } from '~/storybook/Button/Button.styles';
-import { useFundSharePriceQuery } from './FundPerformanceChart.query';
+import { useFundSharePriceQuery } from '../FundPerformanceChart/FundPerformanceChart.query';
 
 export interface FundPerformanceTableProps {
   address: string;

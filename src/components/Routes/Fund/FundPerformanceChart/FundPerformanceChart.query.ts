@@ -83,7 +83,7 @@ export function parseSharePriceQueryData(input: FundSharePriceQueryResult[], sta
   for (let i of input) {
     // find earliest date
     if (!returnObject.earliestDate || returnObject.earliestDate < i.createdAt) {
-      returnObject['earliestDate'] = parseInt(i.createdAt);
+      returnObject['earliestDate'] = parseInt(i.createdAt.toString());
     }
 
     // declare empty array to track dates

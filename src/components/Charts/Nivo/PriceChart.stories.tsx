@@ -2,7 +2,7 @@ import React from 'react';
 import { fromUnixTime, format, isBefore, startOfDay } from 'date-fns';
 import { PriceChart, LineChartData } from './PriceChart';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
-import { Serie } from '@nivo/line';
+import { Serie, Datum } from '@nivo/line';
 import { differenceInDays, addDays } from 'date-fns/esm';
 import { useEffectOnce } from 'react-use';
 
@@ -10,11 +10,12 @@ export default { title: 'Charts|Price Chart' };
 
 /**
  * Implementation of a price chart with three distinct Series pulled from the melon subgraph.
- * Logic has been added to keep the dates in this data evergreen (i.e. you'll always be able to 
+ * Logic has been added to keep the dates in this data evergreen (i.e. you'll always be able to
  * hit the 1 week chart view and see data)
- * 
- * The parent component pattern displayed below  (Default wrapping PriceChart) is recommended when implementing 
+ *
+ * The parent component pattern displayed below  (Default wrapping PriceChart) is recommended when implementing
  * price chart. The trigger function here has been built to mock the function returned from a lazy query.
+ *
  */
 
 const helloFund = {
@@ -5088,49 +5089,56 @@ function parseSharePriceQueryData(input: any[], startDate: number): LineChartDat
     data: [],
   };
 
+  // for each of the objects in the input array
   for (let i of input) {
-    // adjust earliest date to reflect static data and adjust for seconds
-    const adjustedCreatedAt = addDays(parseInt(i.createdAt), diffInDays).getTime()/1000;
+    // adjust the object's createdAt day forward in time by diffInDays
+    const adjustedCreatedAt = addDays(fromUnixTime(i.createdAt), diffInDays);
 
-    // find earliest date
-    if (!returnObject.earliestDate || isBefore(returnObject.earliestDate, adjustedCreatedAt)) {
-
-      returnObject['earliestDate'] = adjustedCreatedAt;
+    // check to see if the object's adjusted createdAt date is earlier than the returnObject's earliestDate
+    if (!returnObject.earliestDate || isBefore(adjustedCreatedAt, returnObject.earliestDate)) {
+      returnObject.earliestDate = adjustedCreatedAt.getTime() / 1000;
     }
 
-    // declare empty object to track dates in O(1)
-    const seenDates: { [date: string]: boolean } = {};
-
-    // declare fund object to push onto returnObject.data
+    // declare fund info object, which is ultimately what the chart will consume
     const fundInfo: Serie = { id: i.name, data: [] };
 
+    // declare an empty object to track dates in O(1)
+    const seenDates: { [date: string]: boolean } = {};
 
-    // loop through calculations
+    // loop through the input object's calculationsHistory array
     for (let j of i.calculationsHistory) {
-      // adjust calc history date to reflect static data
-      const adjustedCalcDate = addDays(fromUnixTime(j.timestamp), diffInDays);
-      
-      // skip it if sharePrice is null or zero or if validPrices is false
+      // format a the calcHistory's date. This'll be consumed by the chart as an x coord
+      // it'll also be used to deduplicate the data set
+      const date = format(fromUnixTime(j.timestamp), 'yyyy-MM-dd');
+
+      // disregard the calcHistory if sharePrice is null or zero, or if validPrices is false
       if (!j.sharePrice || !j.validPrices) {
         continue;
       }
-      // skip it if the item's date is before the chart's start date
-      if (isBefore(adjustedCalcDate.getTime()/1000, startDate)) {
+
+      // if it's a valid price, check that it's more recent than the chart's start date and
+      // continue if not. Timestamp is in seconds, start date is in seconds (getUnixTime)
+      
+      if (j.timestamp < startDate) {
         continue;
       }
 
-      // check if you've seen the date before, if not, add it to the dictionary
-      // and push the price into the price array
-      if (!seenDates[`${adjustedCalcDate}`]) {
-        seenDates[`${adjustedCalcDate}`] = true;
-        fundInfo.data.push({
-          y: fromTokenBaseUnit(j.sharePrice, 18).toFixed(4),
-          x: format(adjustedCalcDate, 'yyyy-MM-dd'),
-        });
+      // check if you've seen the date before. If yes, continue.
+      if (seenDates[`${date}`]) {
+        continue;
       }
+
+      // if you make it here, you want the data to be consumed so interpolate it into a datum
+      // and push it into the fundInfo.data array
+      fundInfo.data.push({
+        y: fromTokenBaseUnit(j.sharePrice, 18).toFixed(4),
+        x: date,
+      });
+
+      // finally add the date to the dictionary so you ignore all subsequent calcHistories
+      seenDates[`${date}`] = true
     }
-    // push the Datum into the Serie
-    returnObject.data.push(fundInfo);
+    returnObject.data.push(fundInfo)
   }
 
   return returnObject;
@@ -5140,7 +5148,7 @@ export const Default: React.FC = () => {
   const [startDate, setStartDate] = React.useState(0);
 
   const trigger = (start: number) => {
-    setStartDate(start)
+    setStartDate(start);
   };
 
   const data = React.useMemo(() => {
@@ -5149,6 +5157,6 @@ export const Default: React.FC = () => {
 
   // const yScale = React.useMemo(() => (yScaleType === 'linear' ? linearProps : logProps), [yScaleType]);
   useEffectOnce(() => trigger(0));
-
+  console.log(data)
   return <PriceChart loading={false} chartData={data} startDate={startDate} triggerFunction={trigger} />;
 };

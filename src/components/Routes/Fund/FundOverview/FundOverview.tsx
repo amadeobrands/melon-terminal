@@ -5,7 +5,7 @@ import { FundContracts } from './FundContracts/FundContracts';
 import { FundFactSheet } from './FundFactSheet/FundFactSheet';
 import { Grid, GridRow, GridCol } from '~/storybook/Grid/Grid';
 import { FundPerformanceTable } from '~/components/Routes/Fund/FundPerfomanceTable/FundPerformanceTable';
-import { FundPerformanceChart } from '../FundPerfomanceTable/FundPerformanceChart';
+import { FundPerformanceChart } from '../FundPerformanceChart/FundPerformanceChart';
 
 export interface FundOverviewProps {
   address: string;

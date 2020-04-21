@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { Button } from '~/storybook/Button/Button';
 
 export const ToolTipContainer = styled.div`
@@ -14,7 +14,6 @@ export const ToolTipText = styled.div`
 `;
 
 export const ControlBox = styled.div`
-  // border: ${props => props.theme.border.borderSecondary};
   display: flex;
   flex-direction: row;
   justify-content: left;
@@ -35,7 +34,6 @@ export const Chart = styled.div`
   display: flex;
   flex-direction: column;
   height: 397px;
-  border: ${props => props.theme.border.borderSecondary};
   padding-bottom: ${props => props.theme.spaceUnits.xxxl};
 `;
 
@@ -46,4 +44,10 @@ export const ChartButton = styled(Button)`
   height: auto;
   padding: ${props => props.theme.spaceUnits.xxs};
   border: ${props => props.theme.border.borderColor};
+  ${props => 
+    props.disabled &&
+  css`
+    opacity: 0.50;
+    background: none;
+  `}
 `;
