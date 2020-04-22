@@ -36,10 +36,18 @@ import styled from 'styled-components';
 import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
 import { getNetworkName } from '~/config';
 import { useConnectionState } from '~/hooks/useConnectionState';
+import { BigNumber } from 'bignumber.js';
+import { useVersionQuery } from '~/components/Layout/Version.query';
 
 interface SortChoice {
   key: keyof typeof sortChoice;
   order: 'asc' | 'desc';
+}
+
+interface Filter {
+  active: boolean;
+  funded: boolean;
+  version: boolean;
 }
 
 function createSortString(key: keyof FundProcessed) {
@@ -74,16 +82,21 @@ const sortChoice = {
   change: (a: FundProcessed, b: FundProcessed) => b.change.comparedTo(a.change),
 };
 
-const useFilteredFunds = (funds: FundProcessed[], search: string, filter: boolean) => {
+const useFilteredFunds = (funds: FundProcessed[], search: string, filter: Filter, version: string) => {
   const filtered = useMemo(() => {
-    if (!search && !filter) {
+    if (!search && !filter.active && !filter.funded && !filter.version) {
       return funds;
     }
 
     const searchString = search.toLowerCase();
-    return funds.filter(({ name, status }) => {
-      const matches = !search || name.toLowerCase().includes(searchString);
-      return matches && (!filter || status === 'Active');
+    return funds.filter(fund => {
+      const matches = !search || fund.name.toLowerCase().includes(searchString);
+      return (
+        matches &&
+        (!filter.active || fund.status === 'Active') &&
+        (!filter.funded || !new BigNumber(fund.aumEth).isZero()) &&
+        (!filter.version || fund.version === version)
+      );
     });
   }, [funds, search, filter]);
 
@@ -170,22 +183,24 @@ const tableHeadings = [
 ];
 
 const ToggleCheckboxContainer = styled(CheckboxContainer)`
-  margin-top: ${props => props.theme.spaceUnits.xs};
+  margin-top: 0;
+  margin-bottom: 0;
+  text-align: left;
 `;
 
 const ToggleCheckboxLabel = styled(CheckboxLabel)`
-  padding-left: 0;
-  padding-right: ${props => props.theme.spaceUnits.xs};
+  padding-left: ${props => props.theme.spaceUnits.xs};
 `;
 
 export const FundOverview: React.FC = () => {
   const connection = useConnectionState();
   const history = useHistory();
   const [funds, query] = useFundOverviewQuery();
+  const [version] = useVersionQuery();
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState(false);
+  const [filter, setFilter] = useState<Filter>({ active: true, funded: false, version: false });
 
-  const filtered = useFilteredFunds(funds, search, filter);
+  const filtered = useFilteredFunds(funds, search, filter, version?.name);
   const sorted = useSortedFunds(filtered.funds);
   const pagination = usePagination(sorted.funds, 15);
   const account = useAccount();
@@ -243,19 +258,49 @@ export const FundOverview: React.FC = () => {
 
           <GridCol>
             <ToggleCheckboxContainer>
-              <ToggleCheckboxLabel htmlFor="filter">Show only active funds</ToggleCheckboxLabel>
               <CheckboxPositioning>
                 <CheckboxInput
                   type="checkbox"
                   id="filter"
                   name="filter"
-                  checked={filter}
-                  onChange={() => setFilter(!filter)}
+                  checked={filter.active}
+                  onChange={() => setFilter({ ...filter, active: !filter.active })}
                 />
                 <CheckboxMask>
                   <CheckboxIcon />
                 </CheckboxMask>
               </CheckboxPositioning>
+              <ToggleCheckboxLabel htmlFor="filter">Active</ToggleCheckboxLabel>
+            </ToggleCheckboxContainer>
+            <ToggleCheckboxContainer>
+              <CheckboxPositioning>
+                <CheckboxInput
+                  type="checkbox"
+                  id="filter"
+                  name="filter"
+                  checked={filter.funded}
+                  onChange={() => setFilter({ ...filter, funded: !filter.funded })}
+                />
+                <CheckboxMask>
+                  <CheckboxIcon />
+                </CheckboxMask>
+              </CheckboxPositioning>
+              <ToggleCheckboxLabel htmlFor="filter">Funded</ToggleCheckboxLabel>
+            </ToggleCheckboxContainer>
+            <ToggleCheckboxContainer>
+              <CheckboxPositioning>
+                <CheckboxInput
+                  type="checkbox"
+                  id="filter"
+                  name="filter"
+                  checked={filter.version}
+                  onChange={() => setFilter({ ...filter, version: !filter.version })}
+                />
+                <CheckboxMask>
+                  <CheckboxIcon />
+                </CheckboxMask>
+              </CheckboxPositioning>
+              <ToggleCheckboxLabel htmlFor="filter">Current protocol version</ToggleCheckboxLabel>
             </ToggleCheckboxContainer>
           </GridCol>
         </GridRow>
