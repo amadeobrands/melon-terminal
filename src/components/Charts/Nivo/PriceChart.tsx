@@ -2,7 +2,7 @@ import React from 'react';
 import { useTheme } from 'styled-components';
 import { Serie, ResponsiveLine } from '@nivo/line';
 import { LinearScale, LogScale } from '@nivo/scales';
-import { subMonths, startOfDay, isAfter, isBefore, getUnixTime, startOfYear } from 'date-fns';
+import { subMonths, startOfDay, isAfter, getUnixTime, startOfYear } from 'date-fns';
 import * as S from './PriceChart.styles';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 
@@ -68,9 +68,7 @@ export const PriceChart: React.FC<LineChartProps> = props => {
 
   const historicalDates = React.useMemo<ButtonDate[]>(() => {
     const options = [
-      // { label: '1w', timeStamp: getUnixTime(subWeeks(today, 1)) },
       { label: '1m', timeStamp: getUnixTime(subMonths(today, 1)) },
-      // { label: '2m', timeStamp: getUnixTime(subMonths(today, 2)) },
       { label: '3m', timeStamp: getUnixTime(subMonths(today, 3)) },
       { label: '6m', timeStamp: getUnixTime(subMonths(today, 6)) },
       { label: '1y', timeStamp: getUnixTime(subMonths(today, 12)) },

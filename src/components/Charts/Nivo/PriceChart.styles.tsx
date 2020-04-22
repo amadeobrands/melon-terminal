@@ -44,10 +44,10 @@ export const ChartButton = styled(Button)`
   height: auto;
   padding: ${props => props.theme.spaceUnits.xxs};
   border: ${props => props.theme.border.borderColor};
-  ${props => 
+  ${props =>
     props.disabled &&
-  css`
-    opacity: 0.50;
-    background: none;
-  `}
+    css`
+      opacity: 0.5;
+      background: none;
+    `}
 `;

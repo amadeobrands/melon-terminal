@@ -2,7 +2,7 @@ import React from 'react';
 import { fromUnixTime, format, isBefore, startOfDay } from 'date-fns';
 import { PriceChart, LineChartData } from './PriceChart';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
-import { Serie, Datum } from '@nivo/line';
+import { Serie } from '@nivo/line';
 import { differenceInDays, addDays } from 'date-fns/esm';
 import { useEffectOnce } from 'react-use';
 
@@ -5118,7 +5118,7 @@ function parseSharePriceQueryData(input: any[], startDate: number): LineChartDat
 
       // if it's a valid price, check that it's more recent than the chart's start date and
       // continue if not. Timestamp is in seconds, start date is in seconds (getUnixTime)
-      
+
       if (j.timestamp < startDate) {
         continue;
       }
@@ -5136,9 +5136,11 @@ function parseSharePriceQueryData(input: any[], startDate: number): LineChartDat
       });
 
       // finally add the date to the dictionary so you ignore all subsequent calcHistories
-      seenDates[`${date}`] = true
+      seenDates[`${date}`] = true;
     }
-    returnObject.data.push(fundInfo)
+
+    // push the complete fundInfo object into the data array on returnObject
+    returnObject.data.push(fundInfo);
   }
 
   return returnObject;
@@ -5157,6 +5159,6 @@ export const Default: React.FC = () => {
 
   // const yScale = React.useMemo(() => (yScaleType === 'linear' ? linearProps : logProps), [yScaleType]);
   useEffectOnce(() => trigger(0));
-  console.log(data)
+  
   return <PriceChart loading={false} chartData={data} startDate={startDate} triggerFunction={trigger} />;
 };
