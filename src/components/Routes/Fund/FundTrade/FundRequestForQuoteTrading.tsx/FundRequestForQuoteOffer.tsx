@@ -67,7 +67,7 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
           meta: { taker: props.trading },
         };
 
-        const query = await fetch(`${process.env.MELON_API_GATEWAY}/rfq/quotes`, {
+        const query = await fetch(`${process.env.MELON_TERMINAL_API_GATEWAY}/rfq/quotes`, {
           body: JSON.stringify(body),
           method: 'POST',
           headers: {
@@ -107,7 +107,7 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
     };
 
     try {
-      const query = await fetch(`${process.env.MELON_API_GATEWAY}/rfq/quotes`, {
+      const query = await fetch(`${process.env.MELON_TERMINAL_API_GATEWAY}/rfq/quotes`, {
         body: JSON.stringify(body),
         method: 'POST',
         headers: {

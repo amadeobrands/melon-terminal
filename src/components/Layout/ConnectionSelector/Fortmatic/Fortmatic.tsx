@@ -22,11 +22,11 @@ interface Resource extends Rx.Unsubscribable {
 const connect = () => {
   const create = () => {
     const customNodeOptions = {
-      rpcUrl: process.env.MELON_MAINNET_PROVIDER,
+      rpcUrl: process.env.MELON_TERMINAL_MAINNET_PROVIDER,
       chainId: 1,
     };
 
-    const fm = new Fortmatic(process.env.MELON_FORTMATIC_KEY, customNodeOptions);
+    const fm = new Fortmatic(process.env.MELON_TERMINAL_FORTMATIC_KEY, customNodeOptions);
     const provider = fm.getProvider();
     const eth = new Eth(provider, undefined, {
       transactionConfirmationBlocks: 1,
@@ -79,7 +79,7 @@ export const FortmaticComponent: React.FC<ConnectionMethodProps> = ({ connect, d
 
 export const method: ConnectionMethod = {
   connect,
-  supported: () => !!process.env.MELON_FORTMATIC_KEY,
+  supported: () => !!process.env.MELON_TERMINAL_FORTMATIC_KEY,
   component: FortmaticComponent,
   icon: 'FORTMATIC',
   name: 'fortmatic',

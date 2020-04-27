@@ -22,7 +22,7 @@ export const useCoinAPI = (props?: UseCoinAPIProps) => {
       try {
         const base = props?.base || 'ETH';
         const quote = props?.quote || 'USD';
-        const url = `${process.env.MELON_API_GATEWAY}/coinapi?base=${base}&quote=${quote}`;
+        const url = `${process.env.MELON_TERMINAL_API_GATEWAY}/coinapi?base=${base}&quote=${quote}`;
         const result = await fetch(url);
         const json = (await result.json()) as CoinAPIResult;
         setState({ state: 'success', data: json });

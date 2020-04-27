@@ -20,7 +20,7 @@ import { method as anonymous } from './Layout/ConnectionSelector/Anonymous/Anony
 
 const common = [metamask, dapper, coinbase, frame, fortmatic, walletconnect];
 let start = anonymous;
-let methods = process.env.MELON_TESTNET ? [ganache, ...common] : common;
+let methods = process.env.MELON_TERMINAL_TESTNET ? [ganache, ...common] : common;
 let switchable = true;
 
 if (coinbase.supported()) {

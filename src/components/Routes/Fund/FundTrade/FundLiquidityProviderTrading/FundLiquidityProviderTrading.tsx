@@ -133,11 +133,9 @@ const validationSchema = Yup.object().shape({
   takerAsset: Yup.string().required(),
   takerQuantity: Yup.mixed()
     .required('Missing sell quantity.')
-    // tslint:disable-next-line
     .test('valid-number', 'The given value is not a valid number.', function(value) {
       return !value.isNaN() && !value.isZero() && value.isPositive();
     })
-    // tslint:disable-next-line
     .test('balance-too-low', 'Your balance of the token is lower than the provided value.', function(value) {
       const holdings = (this.options.context as any).holdings as Holding[];
       const holding = holdings.find(item => sameAddress(item.token!.address, this.parent.takerAsset))!;

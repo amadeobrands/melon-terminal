@@ -8,7 +8,7 @@ import { Spinner } from '../storybook/Spinner/Spinner';
 import { ErrorFallback } from './Common/ErrorFallback/ErrorFallback';
 import { Layout } from './Layout/Layout';
 
-const graphiql = JSON.parse(process.env.MELON_INCLUDE_GRAPHIQL || 'false');
+const graphiql = JSON.parse(process.env.MELON_TERMINAL_INCLUDE_GRAPHIQL || 'false');
 
 const Home = React.lazy(() => import('./Routes/Home/Home'));
 const Wallet = React.lazy(() => import('./Routes/Wallet/Wallet'));

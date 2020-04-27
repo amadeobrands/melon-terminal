@@ -142,7 +142,7 @@ export const RequestInvestment = forwardRef(
       .multipliedBy('1e18');
     const totalDaiExposure = currentDaiExposure.plus(additionalDaiExposure);
 
-    const councilExposureLimit = parseInt(process.env.MELON_MAX_EXPOSURE, 10);
+    const councilExposureLimit = parseInt(process.env.MELON_TERMINAL_MAX_EXPOSURE, 10);
     const needsAcknowledgement = totalDaiExposure.isGreaterThanOrEqualTo(
       new BigNumber(councilExposureLimit).multipliedBy('1e18')
     );

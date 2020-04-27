@@ -96,7 +96,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const currentStep = progressToStep(state.progress);
 
   if (error) {
-    // tslint:disable
     error.issueUri = encodeURI(
       `https://github.com/avantgardefinance/melon-terminal/issues/new?title=Error in transaction "${state.name}";
         body=
@@ -114,7 +113,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         (connection?.network ? `Network: ${NetworkEnum[connection.network]}` : '') +
         (error?.stack ? `\nStack trace: ${error?.stack}` : '')
     );
-    // tslint:enable
   }
 
   return (

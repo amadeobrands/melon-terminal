@@ -52,12 +52,15 @@ export const config: ConfigMap = {
   [NetworkEnum.MAINNET]: {
     label: 'Mainnet',
     name: 'mainnet',
-    supported: !!JSON.parse(process.env.MELON_MAINNET),
-    subgraph: process.env.MELON_MAINNET_SUBGRAPH,
-    provider: process.env.MELON_MAINNET_PROVIDER,
+    supported: !!JSON.parse(process.env.MELON_TERMINAL_MAINNET),
+    subgraph: process.env.MELON_TERMINAL_MAINNET_SUBGRAPH,
+    provider: process.env.MELON_TERMINAL_MAINNET_PROVIDER,
     deployment: async () => {
-      // @ts-ignore
-      return loadDeployment(() => import('deployments/mainnet-deployment'), process.env.MELON_MAINNET_DEPLOYMENT);
+      return loadDeployment(
+        // @ts-ignore
+        () => import('deployments/mainnet-deployment'),
+        process.env.MELON_TERMINAL_MAINNET_DEPLOYMENT
+      );
     },
     tokens: [
       {
@@ -172,34 +175,40 @@ export const config: ConfigMap = {
   [NetworkEnum.KOVAN]: {
     label: 'Kovan',
     name: 'kovan',
-    supported: !!JSON.parse(process.env.MELON_KOVAN),
-    subgraph: process.env.MELON_KOVAN_SUBGRAPH,
-    provider: process.env.MELON_KOVAN_PROVIDER,
+    supported: !!JSON.parse(process.env.MELON_TERMINAL_KOVAN),
+    subgraph: process.env.MELON_TERMINAL_KOVAN_SUBGRAPH,
+    provider: process.env.MELON_TERMINAL_KOVAN_PROVIDER,
     deployment: async () => {
       // @ts-ignore
-      return loadDeployment(() => import('deployments/kovan-deployment'), process.env.MELON_KOVAN_DEPLOYMENT);
+      return loadDeployment(() => import('deployments/kovan-deployment'), process.env.MELON_TERMINAL_KOVAN_DEPLOYMENT);
     },
   },
   [NetworkEnum.RINKEBY]: {
     label: 'Rinkeby',
     name: 'rinkeby',
-    supported: !!JSON.parse(process.env.MELON_RINKEBY),
-    subgraph: process.env.MELON_RINKEBY_SUBGRAPH,
-    provider: process.env.MELON_RINKEBY_PROVIDER,
+    supported: !!JSON.parse(process.env.MELON_TERMINAL_RINKEBY),
+    subgraph: process.env.MELON_TERMINAL_RINKEBY_SUBGRAPH,
+    provider: process.env.MELON_TERMINAL_RINKEBY_PROVIDER,
     deployment: async () => {
-      // @ts-ignore
-      return loadDeployment(() => import('deployments/rinkeby-deployment'), process.env.MELON_RINKEBY_DEPLOYMENT);
+      return loadDeployment(
+        // @ts-ignore
+        () => import('deployments/rinkeby-deployment'),
+        process.env.MELON_TERMINAL_RINKEBY_DEPLOYMENT
+      );
     },
   },
   [NetworkEnum.TESTNET]: {
     label: 'Testnet',
     name: 'testnet',
-    supported: !!JSON.parse(process.env.MELON_TESTNET),
-    subgraph: process.env.MELON_TESTNET_SUBGRAPH,
-    provider: process.env.MELON_TESTNET_PROVIDER,
+    supported: !!JSON.parse(process.env.MELON_TERMINAL_TESTNET),
+    subgraph: process.env.MELON_TERMINAL_TESTNET_SUBGRAPH,
+    provider: process.env.MELON_TERMINAL_TESTNET_PROVIDER,
     deployment: async () => {
-      // @ts-ignore
-      return loadDeployment(() => import('deployments/testnet-deployment'), process.env.MELON_TESTNET_DEPLOYMENT);
+      return loadDeployment(
+        // @ts-ignore
+        () => import('deployments/testnet-deployment'),
+        process.env.MELON_TERMINAL_TESTNET_DEPLOYMENT
+      );
     },
   },
 };

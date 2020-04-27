@@ -24,7 +24,7 @@ interface Resource extends Rx.Unsubscribable {
 const connect = () => {
   const create = () => {
     const provider = new WalletConnectProvider({
-      infuraId: process.env.MELON_WALLETCONNECT_INFURA_ID,
+      infuraId: process.env.MELON_TERMINAL_WALLETCONNECT_INFURA_ID,
     });
 
     const eth = new Eth(provider, undefined, {
@@ -79,7 +79,7 @@ export const WalletConnectComponent: React.FC<ConnectionMethodProps> = ({ connec
 export const method: ConnectionMethod = {
   connect,
   // TODO: Re-enable this connection method once it's confirmed to work fully.
-  // supported: () => !!process.env.MELON_WALLETCONNECT_INFURA_ID,
+  // supported: () => !!process.env.MELON_TERMINAL_WALLETCONNECT_INFURA_ID,
   supported: () => false,
   component: WalletConnectComponent,
   icon: 'WALLETCONNECT',

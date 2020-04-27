@@ -49,7 +49,7 @@ function useMarkets() {
   useEffect(() => {
     (async () => {
       try {
-        const result = await (await fetch(`${process.env.MELON_API_GATEWAY}/rfq/markets`)).json();
+        const result = await (await fetch(`${process.env.MELON_TERMINAL_API_GATEWAY}/rfq/markets`)).json();
 
         setState({
           loading: false,

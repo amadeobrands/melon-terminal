@@ -27,7 +27,7 @@ import { FormattedDate } from '../Common/FormattedDate/FormattedDate';
 import { useConnectionState } from '~/hooks/useConnectionState';
 import { getNetworkName } from '~/config';
 
-const graphiql = JSON.parse(process.env.MELON_INCLUDE_GRAPHIQL || 'false');
+const graphiql = JSON.parse(process.env.MELON_TERMINAL_INCLUDE_GRAPHIQL || 'false');
 
 export interface LayoutProps {
   connectionSwitch: boolean;

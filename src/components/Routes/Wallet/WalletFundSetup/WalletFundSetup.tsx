@@ -85,7 +85,6 @@ const validationSchema = Yup.object().shape({
   name: Yup.string()
     .required()
     .min(1, 'The fund name must be at least one character.')
-    // tslint:disable-next-line
     .test('nameTest', 'The fund name contains invalid characters.', async function(value) {
       if (!value) {
         return true;
@@ -95,7 +94,6 @@ const validationSchema = Yup.object().shape({
       const registry = new Registry(environment, environment.deployment.melon.addr.Registry);
       return await registry.isValidFundName(value);
     })
-    // tslint:disable-next-line
     .test('nameTest', 'The fund name is reserved by another manager.', async function(value) {
       if (!value) {
         return true;
