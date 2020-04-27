@@ -13,7 +13,6 @@ import {
 import { SectionTitle } from '~/storybook/Title/Title';
 import { Button } from '~/storybook/Button/Button.styles';
 import { networkFromId } from '~/utils/networkFromId';
-import { NetworkEnum } from '~/types';
 
 interface Resource extends Rx.Unsubscribable {
   eth: Eth;
@@ -22,7 +21,12 @@ interface Resource extends Rx.Unsubscribable {
 
 const connect = () => {
   const create = () => {
-    const fm = new Fortmatic(process.env.MELON_FORTMATIC_KEY);
+    const customNodeOptions = {
+      rpcUrl: process.env.MELON_MAINNET_PROVIDER,
+      chainId: 1,
+    };
+
+    const fm = new Fortmatic(process.env.MELON_FORTMATIC_KEY, customNodeOptions);
     const provider = fm.getProvider();
     const eth = new Eth(provider, undefined, {
       transactionConfirmationBlocks: 1,
