@@ -16,7 +16,3 @@
 
 # Configuration
 !config-overrides.js
-
-# Environment variables.
-!.env.defaults
-!.env.schema
