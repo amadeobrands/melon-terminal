@@ -35,6 +35,7 @@
     "@apollo/react-hooks": "^3.1.5",
     "@melonproject/melongql": "^1.0.0",
     "@melonproject/melonjs": "^1.0.4",
+    "@nivo/line": "^0.61.1",
     "@popperjs/core": "^2.3.3",
     "@styled-icons/fa-solid": "^10.0.0",
     "apollo-cache-inmemory": "^1.6.3",

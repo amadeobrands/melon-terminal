@@ -57,42 +57,42 @@ interface FundOrderbookMarketFormValues {
   total: string;
 }
 
-export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = props => {
+export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = (props) => {
   const environment = useEnvironment()!;
   const account = useAccount()!;
   const transaction = useTransaction(environment, {
     onAcknowledge: () => props.unsetOrder(),
   });
 
-  const assetWhitelists = props.policies?.filter(policy => policy.identifier === 'AssetWhitelist') as
+  const assetWhitelists = props.policies?.filter((policy) => policy.identifier === 'AssetWhitelist') as
     | AssetWhitelist[]
     | undefined;
-  const assetBlacklists = props.policies?.filter(policy => policy.identifier === 'AssetBlacklist') as
+  const assetBlacklists = props.policies?.filter((policy) => policy.identifier === 'AssetBlacklist') as
     | AssetBlacklist[]
     | undefined;
-  const maxPositionsPolicies = props.policies?.filter(policy => policy.identifier === 'MaxPositions') as
+  const maxPositionsPolicies = props.policies?.filter((policy) => policy.identifier === 'MaxPositions') as
     | MaxPositions[]
     | undefined;
-  const maxConcentrationPolicies = props.policies?.filter(policy => policy.identifier === 'MaxConcentration') as
+  const maxConcentrationPolicies = props.policies?.filter((policy) => policy.identifier === 'MaxConcentration') as
     | MaxConcentration[]
     | undefined;
-  const priceTolerancePolicies = props.policies?.filter(policy => policy.identifier === 'PriceTolerance') as
+  const priceTolerancePolicies = props.policies?.filter((policy) => policy.identifier === 'PriceTolerance') as
     | PriceTolerance[]
     | undefined;
 
-  const nonZeroHoldings = props.holdings.filter(holding => !holding.amount?.isZero());
+  const nonZeroHoldings = props.holdings.filter((holding) => !holding.amount?.isZero());
 
   const gav = nonZeroHoldings?.reduce(
     (carry, item) => carry.plus(item.value || new BigNumber(0)),
     new BigNumber(0)
   ) as BigNumber;
 
-  const exchanges = props.exchanges.map(item => ({
+  const exchanges = props.exchanges.map((item) => ({
     value: item.id,
     name: item.name,
   }));
 
-  const exchange = (props.exchanges.find(item => item.id === props.order?.exchange) ?? props.exchanges[0]).id;
+  const exchange = (props.exchanges.find((item) => item.id === props.order?.exchange) ?? props.exchanges[0]).id;
   const direction = props.order?.side === 'bid' ? 'sell' : 'buy';
   const directions = [
     {
@@ -136,7 +136,7 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
         .test(
           'maxPositions',
           'Investing with this asset would violate the maximum number of positions policy',
-          value => {
+          (value) => {
             const newAsset = value === 'buy' ? base.address : quote.address;
             return (
               // no policies
@@ -144,36 +144,40 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
               // new investment is in denomination asset
               sameAddress(props.denominationAsset?.address, value) ||
               // already existing token
-              !!nonZeroHoldings?.some(holding => sameAddress(holding.token?.address, newAsset)) ||
+              !!nonZeroHoldings?.some((holding) => sameAddress(holding.token?.address, newAsset)) ||
               // max positions larger than holdings (so new token would still fit in)
               maxPositionsPolicies.every(
-                policy => policy.maxPositions && nonZeroHoldings && policy.maxPositions > nonZeroHoldings?.length
+                (policy) => policy.maxPositions && nonZeroHoldings && policy.maxPositions > nonZeroHoldings?.length
               )
             );
           }
         )
-        .test('assetWhitelist', 'You cannot invest with this asset because it is not on the asset whitelist', value => {
-          const newAsset = value === 'buy' ? base.address : quote.address;
-          return (
-            // no policies
-            !assetWhitelists?.length ||
-            // asset is on whitelist
-            assetWhitelists.every(list => list.assetWhitelist?.some(item => sameAddress(item, newAsset)))
-          );
-        })
-        .test('assetBlacklist', 'You cannot invest with this asset because it is on the asset blacklist', value => {
+        .test(
+          'assetWhitelist',
+          'You cannot invest with this asset because it is not on the asset whitelist',
+          (value) => {
+            const newAsset = value === 'buy' ? base.address : quote.address;
+            return (
+              // no policies
+              !assetWhitelists?.length ||
+              // asset is on whitelist
+              assetWhitelists.every((list) => list.assetWhitelist?.some((item) => sameAddress(item, newAsset)))
+            );
+          }
+        )
+        .test('assetBlacklist', 'You cannot invest with this asset because it is on the asset blacklist', (value) => {
           const newAsset = value === 'buy' ? base.address : quote.address;
           return (
             // no policies
             !assetBlacklists?.length ||
             // asset is on whitelist
-            !assetBlacklists.some(list => list.assetBlacklist?.some(item => sameAddress(item, newAsset)))
+            !assetBlacklists.some((list) => list.assetBlacklist?.some((item) => sameAddress(item, newAsset)))
           );
         }),
       price: Yup.string().test(
         'priceTolerance',
         'This price is outside the price tolerance set by the price tolerance policy',
-        async function() {
+        async function () {
           if (!order) {
             return true;
           }
@@ -213,7 +217,7 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
           ]);
 
           return priceTolerancePolicies?.every(
-            policy =>
+            (policy) =>
               policy.priceTolerance &&
               orderPrice.isGreaterThan(
                 referencePrice.price.minus(policy.priceTolerance.multipliedBy(referencePrice.price).dividedBy('1e18'))
@@ -223,27 +227,27 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
       ),
       quantity: Yup.string()
         .required('Missing quantity.')
-        .test('valid-number', 'The given value is not a valid number.', value => {
+        .test('valid-number', 'The given value is not a valid number.', (value) => {
           const bn = new BigNumber(value);
           return !bn.isNaN() && !bn.isZero() && bn.isPositive();
         })
-        .test('max-quantity', 'Maximum quantity exceeded.', value => {
+        .test('max-quantity', 'Maximum quantity exceeded.', (value) => {
           const quantity = orderRef.current?.quantity;
           return new BigNumber(value).isLessThanOrEqualTo(quantity ?? new BigNumber(0));
         })
-        .test('balance-exceeded', 'Available balance exceeded.', value => {
+        .test('balance-exceeded', 'Available balance exceeded.', (value) => {
           const order = orderRef.current;
           if (order?.side === 'bid') {
             const holdings = holdingsRef.current;
             const asset = baseRef.current;
-            const holding = holdings.find(holding => holding.token?.symbol === asset.symbol);
+            const holding = holdings.find((holding) => holding.token?.symbol === asset.symbol);
             const available = fromTokenBaseUnit(holding?.amount ?? new BigNumber(0), holding?.token?.decimals ?? 18);
             return new BigNumber(value).isLessThanOrEqualTo(available);
           }
 
           return true;
         })
-        .test('maxConcentration', 'This investment amount would violate the maximum concentration policy', function(
+        .test('maxConcentration', 'This investment amount would violate the maximum concentration policy', function (
           value
         ) {
           if (order?.side === 'bid') {
@@ -260,7 +264,7 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
           const holdings = holdingsRef.current;
           const asset = baseRef.current;
 
-          const investmentAsset = holdings?.find(holding => sameAddress(holding.token?.address, asset.address));
+          const investmentAsset = holdings?.find((holding) => sameAddress(holding.token?.address, asset.address));
           const investmentAmountInDenominationAsset = new BigNumber(value)
             .multipliedBy(investmentAsset?.token?.price || new BigNumber(0))
             .multipliedBy('1e18');
@@ -270,20 +274,20 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
           const concentration = futureAssetGav.multipliedBy('1e18').dividedBy(futureGav);
 
           return !!maxConcentrationPolicies?.every(
-            policy => policy.maxConcentration && policy.maxConcentration.isGreaterThanOrEqualTo(concentration)
+            (policy) => policy.maxConcentration && policy.maxConcentration.isGreaterThanOrEqualTo(concentration)
           );
         }),
       total: Yup.string()
         .required('Missing total.')
-        .test('max-total', 'Maximum total exceeded.', value => {
+        .test('max-total', 'Maximum total exceeded.', (value) => {
           const total = orderRef.current?.quantity.multipliedBy(orderRef.current!.price);
           return new BigNumber(value).isLessThanOrEqualTo(total ?? new BigNumber(0));
         })
-        .test('balance-exceeded', 'Available balance exceeded.', value => {
+        .test('balance-exceeded', 'Available balance exceeded.', (value) => {
           const order = orderRef.current;
           if (order?.side === 'ask') {
             const holdings = holdingsRef.current;
-            const holding = holdings.find(holding => holding.token?.symbol === quote.symbol);
+            const holding = holdings.find((holding) => holding.token?.symbol === quote.symbol);
             const available = fromTokenBaseUnit(holding?.amount ?? new BigNumber(0), holding?.token?.decimals ?? 18);
             return new BigNumber(value).isLessThanOrEqualTo(available);
           }
@@ -303,7 +307,7 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
     form.triggerValidation().catch(() => {});
   }, [order]);
 
-  const submit = form.handleSubmit(async values => {
+  const submit = form.handleSubmit(async (values) => {
     const trading = new Trading(environment, props.trading);
     const exchange = environment.getExchange(order!.exchange);
 
@@ -369,7 +373,7 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
             type="text"
             name="quantity"
             label={`Quantity (${base.symbol})`}
-            onChange={event => changeQuantity(event.target.value)}
+            onChange={(event) => changeQuantity(event.target.value)}
           />
 
           <Input
@@ -384,7 +388,7 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = p
             type="text"
             name="total"
             label={`Total (${quote.symbol})`}
-            onChange={event => changeTotal(event.target.value)}
+            onChange={(event) => changeTotal(event.target.value)}
           />
 
           {description && (

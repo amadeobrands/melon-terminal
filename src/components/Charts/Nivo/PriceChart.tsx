@@ -58,7 +58,7 @@ interface ButtonDate {
 const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false } as LinearScale;
 const logProps = { type: 'log', max: 'auto', min: 'auto' } as LogScale;
 
-export const PriceChart: React.FC<LineChartProps> = props => {
+export const PriceChart: React.FC<LineChartProps> = (props) => {
   const [yScaleType, setYScaleType] = React.useState<'linear' | 'log'>('linear');
   const today = React.useMemo(() => startOfDay(new Date()), []);
   const ytdDate = React.useMemo(() => getUnixTime(startOfYear(new Date())), []);
@@ -74,7 +74,7 @@ export const PriceChart: React.FC<LineChartProps> = props => {
       { label: '1y', timeStamp: getUnixTime(subMonths(today, 12)) },
     ];
 
-    return options.map(item => ({
+    return options.map((item) => ({
       ...item,
       disabled: !props.chartData || isAfter(props.chartData.earliestDate, item.timeStamp),
       active: item.timeStamp === props.startDate,
@@ -166,7 +166,7 @@ export const PriceChart: React.FC<LineChartProps> = props => {
               return (
                 <S.ToolTipContainer>
                   <S.ToolTipText>Date: {slice.points[0].data.xFormatted}</S.ToolTipText>
-                  {slice.points.map(point => (
+                  {slice.points.map((point) => (
                     <S.ToolTipText
                       key={point.id}
                       style={{

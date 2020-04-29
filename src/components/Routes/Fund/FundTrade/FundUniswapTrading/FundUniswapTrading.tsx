@@ -35,7 +35,7 @@ export interface FundUniswapTradingProps {
   active: boolean;
 }
 
-export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
+export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = (props) => {
   const [state, setState] = useState(() => ({
     rate: new BigNumber('NaN'),
     maker: props.maker,
@@ -52,7 +52,7 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
   const transaction = useTransaction(environment);
 
   useEffect(() => {
-    setState(previous => ({
+    setState((previous) => ({
       ...previous,
       maker: props.maker,
       taker: props.taker,
@@ -99,12 +99,14 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
     // Refetch every 5 seconds.
     const polling$ = fetch$.pipe(expand(() => Rx.timer(5000).pipe(switchMapTo(fetch$))));
     const observable$ = polling$.pipe(
-      map(value => value.multipliedBy(new BigNumber(10).exponentiatedBy(props.taker.decimals - props.maker.decimals))),
+      map((value) =>
+        value.multipliedBy(new BigNumber(10).exponentiatedBy(props.taker.decimals - props.maker.decimals))
+      ),
       catchError(() => Rx.of(new BigNumber('NaN')))
     );
 
-    const subscription = observable$.subscribe(rate => {
-      setState(previous => ({
+    const subscription = observable$.subscribe((rate) => {
+      setState((previous) => ({
         ...previous,
         rate,
         state: 'idle',

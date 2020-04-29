@@ -18,7 +18,7 @@ export const ControlBox = styled.div`
   flex-direction: row;
   justify-content: left;
   align-items: center;
-  padding: ${props => props.theme.spaceUnits.s};
+  padding: ${(props) => props.theme.spaceUnits.s};
 `;
 
 export const ButtonBox = styled.div`
@@ -34,17 +34,17 @@ export const Chart = styled.div`
   display: flex;
   flex-direction: column;
   height: 397px;
-  padding-bottom: ${props => props.theme.spaceUnits.xxxl};
+  padding-bottom: ${(props) => props.theme.spaceUnits.xxxl};
 `;
 
 export const ChartButton = styled(Button)`
-  font-size: ${props => props.theme.spaceUnits.s};
+  font-size: ${(props) => props.theme.spaceUnits.s};
   text-align: center;
   width: auto;
   height: auto;
-  padding: ${props => props.theme.spaceUnits.xxs};
-  border: ${props => props.theme.border.borderColor};
-  ${props =>
+  padding: ${(props) => props.theme.spaceUnits.xxs};
+  border: ${(props) => props.theme.border.borderColor};
+  ${(props) =>
     props.disabled &&
     css`
       opacity: 0.5;

@@ -27,7 +27,7 @@ export interface FundMelonEngineTradingProps {
   active: boolean;
 }
 
-export const FundMelonEngineTrading: React.FC<FundMelonEngineTradingProps> = props => {
+export const FundMelonEngineTrading: React.FC<FundMelonEngineTradingProps> = (props) => {
   const [price, liquid, query] = useMelonEngineTradingQuery();
   const environment = useEnvironment()!;
   const account = useAccount()!;

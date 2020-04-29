@@ -36,7 +36,7 @@ export interface FundKyberTradingProps {
   active: boolean;
 }
 
-export const FundKyberTrading: React.FC<FundKyberTradingProps> = props => {
+export const FundKyberTrading: React.FC<FundKyberTradingProps> = (props) => {
   const [state, setState] = useState(() => ({
     rate: new BigNumber('NaN'),
     maker: props.maker,
@@ -55,7 +55,7 @@ export const FundKyberTrading: React.FC<FundKyberTradingProps> = props => {
   });
 
   useEffect(() => {
-    setState(previous => ({
+    setState((previous) => ({
       ...previous,
       maker: props.maker,
       taker: props.taker,
@@ -81,12 +81,12 @@ export const FundKyberTrading: React.FC<FundKyberTradingProps> = props => {
     // Refetch every 5 seconds.
     const polling$ = fetch$.pipe(expand(() => Rx.timer(5000).pipe(switchMapTo(fetch$))));
     const observable$ = polling$.pipe(
-      map(value => fromTokenBaseUnit(value, 18)),
+      map((value) => fromTokenBaseUnit(value, 18)),
       catchError(() => Rx.of(new BigNumber('NaN')))
     );
 
-    const subscription = observable$.subscribe(rate => {
-      setState(previous => ({
+    const subscription = observable$.subscribe((rate) => {
+      setState((previous) => ({
         ...previous,
         rate,
         state: 'idle',
