@@ -30,7 +30,7 @@ import { useInvestorTotalExposureQuery } from './InvestorTotalExposure.query';
 import { useCoinAPI } from '~/hooks/useCoinAPI';
 
 import { RequiresFundManager } from '~/components/Gates/RequiresFundManager/RequiresFundManager';
-import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import {
   CheckboxContainer,
   CheckboxInput,
@@ -68,7 +68,7 @@ export const RequestInvestment = forwardRef(
     const [formValues, setFormValues] = useState<RequestInvestmentFormValues>();
     const daiRate = useCoinAPI();
 
-    const maxPositionsPolicies = props.policies?.filter(policy => policy.identifier === 'MaxPositions') as
+    const maxPositionsPolicies = props.policies?.filter((policy) => policy.identifier === 'MaxPositions') as
       | MaxPositions[]
       | undefined;
 
@@ -103,10 +103,10 @@ export const RequestInvestment = forwardRef(
           // new investment is in denomination asset
           sameAddress(props.denominationAsset?.address, value) ||
           // already existing token
-          !!props.holdings?.some(holding => sameAddress(holding.token?.address, value)) ||
+          !!props.holdings?.some((holding) => sameAddress(holding.token?.address, value)) ||
           // max positions larger than holdings (so new token would still fit)
           maxPositionsPolicies.every(
-            policy => policy.maxPositions && props.holdings && policy.maxPositions > props.holdings?.length
+            (policy) => policy.maxPositions && props.holdings && policy.maxPositions > props.holdings?.length
           )
       ),
       acknowledgeLimit: Yup.boolean(),
@@ -130,7 +130,7 @@ export const RequestInvestment = forwardRef(
     const investmentAsset = form.watch('investmentAsset') as string;
     const investmentAmount = form.watch('investmentAmount') as BigNumber;
     const token = (investmentAsset && environment.getToken(investmentAsset)) as TokenDefinition;
-    const asset = allowedAssets.find(allowedAsset => sameAddress(allowedAsset.token?.address, investmentAsset));
+    const asset = allowedAssets.find((allowedAsset) => sameAddress(allowedAsset.token?.address, investmentAsset));
     const participation = props.account?.participation?.address;
     const [allowance, query] = useAccountAllowanceQuery(account.address, investmentAsset, participation);
 
@@ -215,7 +215,7 @@ export const RequestInvestment = forwardRef(
       },
     }));
 
-    const submit = form.handleSubmit(async values => {
+    const submit = form.handleSubmit(async (values) => {
       switch (action) {
         case 'approve': {
           setFormValues({
@@ -260,7 +260,7 @@ export const RequestInvestment = forwardRef(
       }
     };
 
-    const investmentAssetOptions = (props.allowedAssets ?? []).map(holding => ({
+    const investmentAssetOptions = (props.allowedAssets ?? []).map((holding) => ({
       value: holding.token!.address!,
       name: holding.token!.symbol!,
     }));
@@ -297,7 +297,7 @@ export const RequestInvestment = forwardRef(
                 <NotificationBar kind="neutral">
                   <NotificationContent>
                     Your balance:{' '}
-                    <TokenValue
+                    <TokenValueDisplay
                       value={allowance?.balance}
                       decimals={asset!.token!.decimals!}
                       symbol={asset?.token?.symbol}

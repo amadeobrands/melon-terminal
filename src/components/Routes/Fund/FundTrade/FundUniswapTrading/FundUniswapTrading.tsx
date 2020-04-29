@@ -124,13 +124,13 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
     (async () =>
       await validatePolicies({
         environment,
+        setPolicyValidation,
+        value,
         policies: props.policies,
         taker: props.taker,
         maker: props.maker,
         holdings: props.holdings,
         denominationAsset: props.denominationAsset,
-        setPolicyValidation,
-        value,
         quantity: props.quantity,
         trading: props.trading,
       }))();
@@ -139,13 +139,13 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
   const submit = async () => {
     await validatePolicies({
       environment,
+      setPolicyValidation,
+      value,
       policies: props.policies,
       taker: props.taker,
       maker: props.maker,
       holdings: props.holdings,
       denominationAsset: props.denominationAsset,
-      setPolicyValidation,
-      value,
       quantity: props.quantity,
       trading: props.trading,
     });
@@ -154,7 +154,7 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
     }
 
     const trading = new Trading(environment, props.trading);
-    const adapter = await UniswapTradingAdapter.create(environment, props.exchange.exchange, trading);
+    const adapter = await UniswapTradingAdapter.create(environment, props.exchange.adapter, trading);
 
     const tx = adapter.takeOrder(account.address!, {
       makerQuantity: toTokenBaseUnit(value, props.maker.decimals),

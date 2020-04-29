@@ -302,27 +302,27 @@ export const Global = createGlobalStyle`
   body {
     margin: 0;
     min-height: 100%;
-    background-color: ${props => props.theme.mainColors.secondary};
-    color: ${props => props.theme.mainColors.textColor}
+    background-color: ${(props) => props.theme.mainColors.secondary};
+    color: ${(props) => props.theme.mainColors.textColor}
   }
 
   h1, h2, h3 {
-    margin-bottom: ${props => props.theme.spaceUnits.m};
-    font-size: ${props => props.theme.fontSizes.xxl};
+    margin-bottom: ${(props) => props.theme.spaceUnits.m};
+    font-size: ${(props) => props.theme.fontSizes.xxl};
     font-weight: bold;
     position: relative;
   }
 
 
   h2, h3 {
-    padding-bottom: ${props => props.theme.spaceUnits.xs};
-    border-bottom : ${props => props.theme.border.borderSecondary};
-    margin-bottom: ${props => props.theme.spaceUnits.xs};
+    padding-bottom: ${(props) => props.theme.spaceUnits.xs};
+    border-bottom : ${(props) => props.theme.border.borderSecondary};
+    margin-bottom: ${(props) => props.theme.spaceUnits.xs};
   }
 
   h4 {
-    font-size: ${props => props.theme.fontSizes.xl};
-    margin-bottom: ${props => props.theme.spaceUnits.xs};
+    font-size: ${(props) => props.theme.fontSizes.xl};
+    margin-bottom: ${(props) => props.theme.spaceUnits.xs};
   }
 
   a {
@@ -330,8 +330,8 @@ export const Global = createGlobalStyle`
     align-items: center;
     text-decoration: underline;
     cursor: pointer;
-    color: ${props => props.theme.mainColors.textColor};
-    transition: ${props => props.theme.transition.defaultAll};
+    color: ${(props) => props.theme.mainColors.textColor};
+    transition: ${(props) => props.theme.transition.defaultAll};
     :hover{
       opacity: 0.6;
     }
@@ -340,12 +340,12 @@ export const Global = createGlobalStyle`
   hr {
     border: 0;
     height: 0;
-    border-top: 1px solid ${props => props.theme.mainColors.border};
-    margin: ${props => props.theme.spaceUnits.s} 0;
+    border-top: 1px solid ${(props) => props.theme.mainColors.border};
+    margin: ${(props) => props.theme.spaceUnits.s} 0;
   }
 
   p {
-    margin-bottom: ${props => props.theme.spaceUnits.m};
+    margin-bottom: ${(props) => props.theme.spaceUnits.m};
   }
 `;
 

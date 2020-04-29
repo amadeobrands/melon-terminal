@@ -46,7 +46,7 @@ export const FundRegisterPolicies: React.FC<FundRegisterPoliciesProps> = ({ addr
   const [policyManager, query] = useFundPoliciesQuery(address);
 
   const transaction = useTransaction(environment, {
-    onAcknowledge: receipt => {
+    onAcknowledge: (receipt) => {
       if (receipt.contractAddress && selectedPolicy) {
         const manager = new PolicyManager(environment, policyManager!.address);
         const signatures = selectedPolicy.signatures;
@@ -83,7 +83,7 @@ export const FundRegisterPolicies: React.FC<FundRegisterPoliciesProps> = ({ addr
 
       <p>Please select the policy that you want to add:</p>
       <ul>
-        {environment.policies.map(policy => {
+        {environment.policies.map((policy) => {
           return (
             <li key={policy.name}>
               <RadioButtonContainer>

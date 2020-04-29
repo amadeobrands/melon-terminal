@@ -11,7 +11,7 @@ export const Default = () => (
     size={select(
       'Size',
       {
-        undefined: undefined,
+        undefined,
         Large: 'large',
         Small: 'small',
       },
@@ -20,7 +20,7 @@ export const Default = () => (
     length={select(
       'length',
       {
-        undefined: undefined,
+        undefined,
         stretch: 'stretch',
       },
       undefined
@@ -28,7 +28,7 @@ export const Default = () => (
     kind={select(
       'kind',
       {
-        undefined: undefined,
+        undefined,
         secondary: 'secondary',
         warning: 'warning',
         danger: 'danger',

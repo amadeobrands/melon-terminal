@@ -11,7 +11,7 @@ export const Default: React.FC = () => {
         justify={select(
           'Justify',
           {
-            undefined: undefined,
+            undefined,
             Between: 'between',
             Around: 'around',
             End: 'end',

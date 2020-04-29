@@ -18,7 +18,7 @@ import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { EtherscanLink } from '~/components/Common/EtherscanLink/EtherscanLink';
-import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 
 export interface FundInvestmentHistoryListProps {
   address: string;
@@ -63,7 +63,7 @@ export const FundInvestmentHistoryList: React.FC<FundInvestmentHistoryListProps>
             </HeaderRow>
           </thead>
           <tbody>
-            {fundInvestment.map(investment => {
+            {fundInvestment.map((investment) => {
               return (
                 <BodyRow key={investment.id}>
                   <BodyCell>
@@ -74,19 +74,19 @@ export const FundInvestmentHistoryList: React.FC<FundInvestmentHistoryListProps>
                   </BodyCell>
                   <BodyCell>{investment.action}</BodyCell>
                   <BodyCellRightAlign>
-                    <TokenValue value={investment.shares} />
+                    <TokenValueDisplay value={investment.shares} />
                   </BodyCellRightAlign>
                   <BodyCellRightAlign>
-                    <TokenValue value={investment.sharePrice} />
+                    <TokenValueDisplay value={investment.sharePrice} />
                   </BodyCellRightAlign>
                   <BodyCellRightAlign>
                     {investment.action === 'Investment' && (
-                      <TokenValue value={investment.amount} decimals={investment.asset.decimals} />
+                      <TokenValueDisplay value={investment.amount} decimals={investment.asset.decimals} />
                     )}
                   </BodyCellRightAlign>
                   <BodyCell>{investment.action === 'Investment' ? investment.asset.symbol : '(in kind)'}</BodyCell>
                   <BodyCellRightAlign>
-                    <TokenValue value={investment.amountInDenominationAsset} />
+                    <TokenValueDisplay value={investment.amountInDenominationAsset} />
                   </BodyCellRightAlign>
                 </BodyRow>
               );

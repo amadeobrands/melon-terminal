@@ -5,7 +5,7 @@ export interface DataBlockProps {
   label: React.ReactNode;
 }
 
-export const DataBlock: React.FC<DataBlockProps> = props => {
+export const DataBlock: React.FC<DataBlockProps> = (props) => {
   return (
     <S.DataBlock>
       <S.DataLabel>{props.label}</S.DataLabel>
@@ -14,6 +14,6 @@ export const DataBlock: React.FC<DataBlockProps> = props => {
   );
 };
 
-export const DataBlockSection: React.FC = props => {
+export const DataBlockSection: React.FC = (props) => {
   return <S.DataBlockSection>{props.children}</S.DataBlockSection>;
 };

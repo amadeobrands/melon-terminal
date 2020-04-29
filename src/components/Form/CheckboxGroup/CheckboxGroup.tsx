@@ -12,12 +12,12 @@ export interface CheckboxGroupProps extends CheckboxProps {
   options: CheckboxGroupOption[];
 }
 
-export const CheckboxGroup: React.FC<CheckboxGroupProps> = props => {
+export const CheckboxGroup: React.FC<CheckboxGroupProps> = (props) => {
   const [field, meta] = useField({ type: 'checkbox', ...props });
   const mapping = React.useMemo(() => {
     if (Array.isArray(field.value)) {
       return field.value.reduce<{ [key: number]: number }>((carry, current, index) => {
-        const key = props.options.findIndex(inner => inner.value === current);
+        const key = props.options.findIndex((inner) => inner.value === current);
         return key !== -1 ? { ...carry, [key]: index } : carry;
       }, {});
     }
@@ -30,7 +30,7 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = props => {
       {props.label && <Label>{props.label}</Label>}
 
       <FieldArray name={field.name}>
-        {array => {
+        {(array) => {
           const handle = (event: ChangeEvent<HTMLInputElement>) => {
             if (field.value.includes(event.target.value)) {
               array.remove(field.value.indexOf(event.target.value));
@@ -78,7 +78,7 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = props => {
         }}
       </FieldArray>
 
-      {typeof meta.error === 'string' && <Error>{meta.error}</Error>}
+      {typeof meta.error === 'string' && meta.touched && <Error>{meta.error}</Error>}
     </Wrapper>
   );
 };

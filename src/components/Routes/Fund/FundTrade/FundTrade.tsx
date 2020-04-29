@@ -24,12 +24,12 @@ export const FundTrade: React.FC<FundTradeProps> = ({ address }) => {
   const [holdings, holdingsQuery] = useFundHoldingsQuery(address);
   const loading = exchangesQuery.loading || holdingsQuery.loading;
 
-  const markets = exchanges.filter(exchange => {
+  const markets = exchanges.filter((exchange) => {
     const supported = [ExchangeIdentifier.OasisDex, ExchangeIdentifier.ZeroExV3];
     return supported.includes(exchange.id as ExchangeIdentifier);
   });
 
-  const providers = exchanges.filter(exchange => {
+  const providers = exchanges.filter((exchange) => {
     const supported = [ExchangeIdentifier.KyberNetwork, ExchangeIdentifier.Uniswap, ExchangeIdentifier.MelonEngine];
     // Old Uniswap adapter.
     const legacy = ['0x3fda51d218919b96a850e7b66d412a4604e4901d'];
@@ -38,7 +38,7 @@ export const FundTrade: React.FC<FundTradeProps> = ({ address }) => {
 
   const rfq =
     environment.network === NetworkEnum.MAINNET &&
-    exchanges.find(exchange => exchange.id === ExchangeIdentifier.ZeroExV2);
+    exchanges.find((exchange) => exchange.id === ExchangeIdentifier.ZeroExV2);
 
   return (
     <Grid>

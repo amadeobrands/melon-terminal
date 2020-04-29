@@ -130,7 +130,7 @@ const useTheGraphApollo = (environment?: DeployedEnvironment) => {
   return client;
 };
 
-export const ApolloProvider: React.FC = props => {
+export const ApolloProvider: React.FC = (props) => {
   const environment = useEnvironment();
   const graph = useTheGraphApollo(environment);
   const chain = useOnChainApollo(environment);

@@ -11,7 +11,7 @@ import { Block, BlockActions } from '~/storybook/Block/Block';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { DictionaryData, DictionaryEntry, DictionaryLabel } from '~/storybook/Dictionary/Dictionary';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
-import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 import BigNumber from 'bignumber.js';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
@@ -61,13 +61,13 @@ export const ClaimFees: React.FC<ClaimFeesProps> = ({ address }) => {
       <DictionaryEntry>
         <DictionaryLabel>Accrued management fee</DictionaryLabel>
         <DictionaryData>
-          <TokenValue value={feeManagerInfo!.managementFeeAmount} />
+          <TokenValueDisplay value={feeManagerInfo!.managementFeeAmount} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Accrued performance fee</DictionaryLabel>
         <DictionaryData>
-          <TokenValue value={feeManagerInfo!.performanceFeeAmount} />
+          <TokenValueDisplay value={feeManagerInfo!.performanceFeeAmount} />
         </DictionaryData>
       </DictionaryEntry>
 

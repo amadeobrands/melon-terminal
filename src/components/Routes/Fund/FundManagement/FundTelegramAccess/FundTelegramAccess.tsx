@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Block } from '~/storybook/Block/Block';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { useEnvironment } from '~/hooks/useEnvironment';
@@ -19,9 +19,9 @@ export const FundTelegramAccess: React.FC = () => {
   const [status, setStatus] = useTelegramStatus(account.address);
 
   const handleAuth = React.useCallback(
-    async user => {
+    async (user) => {
       try {
-        setStatus(previous => ({ ...previous, state: 'loading', error: undefined }));
+        setStatus((previous) => ({ ...previous, state: 'loading', error: undefined }));
 
         const signature =
           connection.method === 'ganache'
@@ -41,9 +41,9 @@ export const FundTelegramAccess: React.FC = () => {
         }
 
         if (result.error) {
-          setStatus(previous => ({ ...previous, state: 'idle', error: result.error }));
+          setStatus((previous) => ({ ...previous, state: 'idle', error: result.error }));
         } else {
-          setStatus(previous => ({
+          setStatus((previous) => ({
             ...previous,
             state: 'idle',
             error: result.error,
@@ -55,7 +55,7 @@ export const FundTelegramAccess: React.FC = () => {
           return;
         }
 
-        setStatus(previous => ({ ...previous, state: 'idle', error: 'An unknown error has occurred.' }));
+        setStatus((previous) => ({ ...previous, state: 'idle', error: 'An unknown error has occurred.' }));
       }
     },
     [connection.method]

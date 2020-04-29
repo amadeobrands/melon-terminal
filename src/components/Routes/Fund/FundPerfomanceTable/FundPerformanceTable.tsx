@@ -27,9 +27,9 @@ export interface FundPerformanceTableProps {
 
 const TableDescription = styled.span`
   text-align: right;
-  color: ${props => props.theme.mainColors.secondaryDark};
-  font-size: ${props => props.theme.fontSizes.s};
-  margin-bottom: ${props => props.theme.spaceUnits.m};
+  color: ${(props) => props.theme.mainColors.secondaryDark};
+  font-size: ${(props) => props.theme.fontSizes.s};
+  margin-bottom: ${(props) => props.theme.spaceUnits.m};
   margin-left: 0;
 `;
 
@@ -38,20 +38,20 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
   const startingTokens = ['WETH', 'DAI', 'WBTC'];
 
   const tokens = useEnvironment()!
-    .tokens.filter(token => !excludedTokens.includes(token.symbol))
-    .map(token => ({
+    .tokens.filter((token) => !excludedTokens.includes(token.symbol))
+    .map((token) => ({
       name: token.symbol,
       value: token.symbol,
     }));
 
   const [selectedTokens, setSelectedTokens] = useState(() =>
-    tokens.filter(token => startingTokens.includes(token.name)).map(token => token.name)
+    tokens.filter((token) => startingTokens.includes(token.name)).map((token) => token.name)
   );
 
   const unselectedTokens = useMemo(
     () =>
       tokens
-        .filter(token => !selectedTokens.includes(token.name))
+        .filter((token) => !selectedTokens.includes(token.name))
         .concat({ name: 'Choose an asset to compare', value: '' }),
     [selectedTokens]
   );
@@ -63,7 +63,7 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
       return;
     }
     if (selectedTokens.includes(symbol)) {
-      setSelectedTokens(selectedTokens.filter(token => token !== symbol));
+      setSelectedTokens(selectedTokens.filter((token) => token !== symbol));
     } else {
       setSelectedTokens(selectedTokens.concat([symbol]));
     }
@@ -78,7 +78,7 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
     );
   }
 
-  const items = assets && selectedTokens.filter(symbol => assets[symbol]).map(symbol => assets[symbol]);
+  const items = assets && selectedTokens.filter((symbol) => assets[symbol]).map((symbol) => assets[symbol]);
 
   return (
     <Block>
@@ -100,7 +100,7 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
             </thead>
 
             <tbody>
-              {(items ?? []).map(item => (
+              {(items ?? []).map((item) => (
                 <Fragment key={item.symbol}>
                   <BodyRow>
                     <BodyCell>
@@ -167,7 +167,7 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
         </ScrollableTable>
       )}
       {unselectedTokens.length > 1 && (
-        <Dropdown options={unselectedTokens} onChange={event => toggleTokenSelection(event?.target.value)} value="" />
+        <Dropdown options={unselectedTokens} onChange={(event) => toggleTokenSelection(event?.target.value)} value="" />
       )}
       <TableDescription>Fund share price and assets benchmarked against ETH</TableDescription>
     </Block>

@@ -109,7 +109,7 @@ export const useFundOverviewQuery = () => {
   const rate = coinApi.data.rate ?? 0;
 
   const funds = (result && result.data && result.data.funds) || [];
-  const processed = funds.map(item => ({
+  const processed = funds.map((item) => ({
     id: item.id,
     name: item.name,
     address: item.id.substr(0, 8),

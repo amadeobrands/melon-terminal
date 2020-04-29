@@ -2,7 +2,7 @@ import React from 'react';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner';
-import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { useAccountBalanceQuery } from '~/components/Routes/Wallet/WalletOverview/WalletOverviewAccountBalance/AccountBalances.query';
 import * as S from './WalletOverviewAccount.styles';
 
@@ -25,9 +25,9 @@ export const WalletOverviewAccountBalance: React.FC<WalletOverviewAccountBalance
   return (
     <Block>
       <SectionTitle>Account Balances</SectionTitle>
-      {balances.map(token => (
+      {balances.map((token) => (
         <S.Balance key={token.symbol}>
-          <TokenValue value={token.balance} decimals={token.decimals} symbol={token.symbol} />
+          <TokenValueDisplay value={token.balance} decimals={token.decimals} symbol={token.symbol} />
         </S.Balance>
       ))}
     </Block>

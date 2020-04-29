@@ -41,14 +41,14 @@ const connect = (): Rx.Observable<ConnectionAction> => {
     return { eth, unsubscribe: () => provider.disconnect() };
   };
 
-  return Rx.using(create, resource => {
+  return Rx.using(create, (resource) => {
     const eth = (resource as Resource).eth;
     const connect$ = Rx.defer(async () => {
       const [id, accounts] = await Promise.all([eth.net.getId(), eth.getAccounts().catch(() => [])]);
       const network = networkFromId(id);
       return [network, accounts] as [typeof network, typeof accounts];
     }).pipe(
-      retryWhen(error => error.pipe(delay(1000))),
+      retryWhen((error) => error.pipe(delay(1000))),
       take(1),
       share()
     );
@@ -64,7 +64,7 @@ const connect = (): Rx.Observable<ConnectionAction> => {
         )
       ),
       distinctUntilChanged((a, b) => equals(a, b)),
-      map(accounts => accountsChanged(accounts)),
+      map((accounts) => accountsChanged(accounts)),
       skip(1)
     );
 
@@ -73,12 +73,12 @@ const connect = (): Rx.Observable<ConnectionAction> => {
       expand(() =>
         Rx.timer(1000).pipe(
           concatMap(() => eth.net.getId()),
-          map(id => networkFromId(id)),
+          map((id) => networkFromId(id)),
           catchError(() => Rx.of(undefined))
         )
       ),
       distinctUntilChanged((a, b) => equals(a, b)),
-      map(network => networkChanged(network)),
+      map((network) => networkChanged(network)),
       skip(1)
     );
 

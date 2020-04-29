@@ -1,20 +1,24 @@
 import React from 'react';
 import * as Yup from 'yup';
-import { useForm, FormContext } from 'react-hook-form';
-import { useEnvironment } from '~/hooks/useEnvironment';
+import { BigNumber } from 'bignumber.js';
 import { MaxConcentration, Deployment, PolicyDefinition } from '@melonproject/melonjs';
 import { MaxConcentrationBytecode } from '@melonproject/melonjs/abis/MaxConcentration.bin';
-import { BigNumber } from 'bignumber.js';
+import { Form, useFormik } from '~/components/Form/Form';
+import { useEnvironment } from '~/hooks/useEnvironment';
 import { useAccount } from '~/hooks/useAccount';
-import { Input } from '~/storybook/Input/Input';
-import { Button } from '~/storybook/Button/Button';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { BlockActions } from '~/storybook/Block/Block';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
+import { Input } from '~/components/Form/Input/Input';
+import { Button } from '~/components/Form/Button/Button';
 
-interface MaxConcentrationConfigurationForm {
-  maxConcentration: number;
-}
+const validationSchema = Yup.object().shape({
+  maxConcentration: Yup.number().label('Maximum concentration (%)').required().min(0).max(100),
+});
+
+const initialValues = {
+  maxConcentration: 20,
+};
 
 export interface MaxConcentrationConfigurationProps {
   policyManager: string;
@@ -22,37 +26,22 @@ export interface MaxConcentrationConfigurationProps {
   startTransaction: (tx: Deployment<MaxConcentration>, name: string) => void;
 }
 
-export const MaxConcentrationConfiguration: React.FC<MaxConcentrationConfigurationProps> = props => {
+export const MaxConcentrationConfiguration: React.FC<MaxConcentrationConfigurationProps> = (props) => {
   const environment = useEnvironment()!;
   const account = useAccount();
 
-  const validationSchema = Yup.object().shape({
-    maxConcentration: Yup.number()
-      .label('Maximum concentration (%)')
-      .required()
-      .min(0)
-      .max(100),
-  });
-
-  const defaultValues = {
-    maxConcentration: 20,
-  };
-
-  const form = useForm<MaxConcentrationConfigurationForm>({
-    defaultValues,
+  const formik = useFormik({
     validationSchema,
-    mode: 'onSubmit',
-    reValidateMode: 'onBlur',
-  });
-
-  const submit = form.handleSubmit(async data => {
-    const tx = MaxConcentration.deploy(
-      environment,
-      MaxConcentrationBytecode,
-      account.address!,
-      new BigNumber(data.maxConcentration!).multipliedBy('1e16')
-    );
-    props.startTransaction(tx, 'Deploy MaxConcentration Contract');
+    initialValues,
+    onSubmit: async (data) => {
+      const tx = MaxConcentration.deploy(
+        environment,
+        MaxConcentrationBytecode,
+        account.address!,
+        new BigNumber(data.maxConcentration!).multipliedBy('1e16')
+      );
+      props.startTransaction(tx, 'Deploy MaxConcentration Contract');
+    },
   });
 
   return (
@@ -65,21 +54,13 @@ export const MaxConcentrationConfiguration: React.FC<MaxConcentrationConfigurati
           make up at most 33% of the fund's total asset value.
         </NotificationContent>
       </NotificationBar>
-      <FormContext {...form}>
-        <form onSubmit={submit}>
-          <Input
-            name="maxConcentration"
-            label="Maximum concentration (%)"
-            type="number"
-            step="any"
-            id="maxConcentration"
-          />
+      <Form formik={formik}>
+        <Input name="maxConcentration" label="Maximum concentration (%)" type="number" step="any" />
 
-          <BlockActions>
-            <Button type="submit">Add Max Concentration Policy</Button>
-          </BlockActions>
-        </form>
-      </FormContext>
+        <BlockActions>
+          <Button type="submit">Add Max Concentration Policy</Button>
+        </BlockActions>
+      </Form>
     </>
   );
 };

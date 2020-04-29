@@ -7,7 +7,7 @@ export interface FormattedDateProps {
   format?: string;
 }
 
-export const FormattedDate: React.FC<FormattedDateProps> = props => {
+export const FormattedDate: React.FC<FormattedDateProps> = (props) => {
   if (!props.timestamp) {
     return <>N/A</>;
   }

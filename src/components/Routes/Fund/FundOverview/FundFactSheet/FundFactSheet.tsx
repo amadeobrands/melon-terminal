@@ -13,7 +13,7 @@ import BigNumber from 'bignumber.js';
 import { standardDeviation } from '~/utils/finance';
 import { TwitterLink } from '~/components/Common/TwitterLink/TwitterLink';
 import { useAccount } from '~/hooks/useAccount';
-import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { range } from 'ramda';
 import { useFundSlug } from '../../FundHeader/FundSlug.query';
 import { NetworkEnum } from '~/types';
@@ -59,7 +59,7 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
 
   const slugUrl =
     slug &&
-    slug + (environment.network > 1 ? `.${NetworkEnum[environment.network].toLowerCase()}` : '') + '.melon.fund';
+    slug + (environment.network > 1 ? `.${NetworkEnum[environment.network].toLowerCase()}.melon.fund` : '.melon.fund');
 
   const routes = fund.routes;
   const creation = fund.creationTime;
@@ -122,11 +122,11 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
 
   const volatility =
     normalizedCalculations &&
-    standardDeviation(normalizedCalculations.map(item => item.logReturn)) * 100 * Math.sqrt(365.25);
+    standardDeviation(normalizedCalculations.map((item) => item.logReturn)) * 100 * Math.sqrt(365.25);
 
   const exchanges = routes?.trading?.exchanges
-    ?.map(exchange => environment?.getExchange(exchange as any))
-    .filter(item => !!item)
+    ?.map((exchange) => environment?.getExchange(exchange as any))
+    .filter((item) => !!item)
     .sort((a, b) => {
       if (a.historic === b.historic) {
         return 0;
@@ -135,12 +135,12 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
       return a.historic ? 1 : -1;
     })
     .filter((item, index, array) => {
-      const found = array.findIndex(inner => sameAddress(item.exchange, inner.exchange));
+      const found = array.findIndex((inner) => sameAddress(item.exchange, inner.exchange));
       return found >= index;
     });
 
   const allowedAssets = routes?.participation?.allowedAssets;
-  const allowedAssetsSymbols = allowedAssets?.map(asset => asset?.token?.symbol);
+  const allowedAssetsSymbols = allowedAssets?.map((asset) => asset?.token?.symbol);
 
   return (
     <Dictionary>
@@ -190,28 +190,28 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
         <DictionaryLabel>Gross asset value (GAV)</DictionaryLabel>
         <DictionaryData>
           <span>{numberPadding(gavDigits || 0, maxDigits)}</span>
-          <TokenValue value={accounting?.grossAssetValue} symbol="WETH" decimals={0} />
+          <TokenValueDisplay value={accounting?.grossAssetValue} symbol="WETH" decimals={0} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Net asset value (NAV)</DictionaryLabel>
         <DictionaryData>
           <span>{numberPadding(navDigits || 0, maxDigits)}</span>
-          <TokenValue value={accounting?.netAssetValue} symbol="WETH" decimals={0} />
+          <TokenValueDisplay value={accounting?.netAssetValue} symbol="WETH" decimals={0} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Total number of shares</DictionaryLabel>
         <DictionaryData>
           <span>{numberPadding(sharesDigits || 0, maxDigits)}</span>
-          <TokenValue value={shares?.totalSupply} decimals={0} />
+          <TokenValueDisplay value={shares?.totalSupply} decimals={0} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Share price</DictionaryLabel>
         <DictionaryData>
           <span>{numberPadding(sharePriceDigits || 0, maxDigits)}</span>
-          <TokenValue value={accounting?.sharePrice} symbol="WETH" decimals={0} />
+          <TokenValueDisplay value={accounting?.sharePrice} symbol="WETH" decimals={0} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>

@@ -39,7 +39,7 @@ export function findPriceChange(base: BigNumber, comparison?: BigNumber) {
   const compString = comparison.toFixed(8);
   const offset = baseString.length - compString.length;
 
-  for (let i = 0; i < baseString.length; i++) {
+  for (let i = 0; i < baseString.length; i += 1) {
     const current = baseString[i + offset];
 
     if (!current) {
@@ -81,7 +81,7 @@ export function aggregatedOrderbook(
   makerAsset: TokenDefinition,
   takerAsset?: TokenDefinition
 ) {
-  const ids = exchanges.map(item => item.id);
+  const ids = exchanges.map((item) => item.id);
 
   const zeroExActive = ids.includes(ExchangeIdentifier.ZeroExV3);
   const zeroEx = zeroExOrderbook(zeroExActive, environment, makerAsset, takerAsset);
@@ -100,7 +100,7 @@ export function aggregatedOrderbook(
     return Rx.combineLatest(streams, (...groups) => {
       const empty = [] as OrderbookItem[];
 
-      const asksOnly = groups.map(item => item.asks);
+      const asksOnly = groups.map((item) => item.asks);
       const asksFlat = empty.concat
         .apply(empty, asksOnly)
         .sort((a, b) => a.price.comparedTo(b.price))
@@ -111,11 +111,7 @@ export function aggregatedOrderbook(
         .reduce((carry, current, index) => {
           const previous = carry[index - 1]?.total ?? new BigNumber(0);
           const total = current.quantity.plus(previous);
-          const relative = total
-            .dividedBy(asksQuantity)
-            .multipliedBy(100)
-            .decimalPlaces(0)
-            .toNumber();
+          const relative = total.dividedBy(asksQuantity).multipliedBy(100).decimalPlaces(0).toNumber();
 
           const change = findPriceChange(current.price, carry[index - 1]?.price);
 
@@ -130,7 +126,7 @@ export function aggregatedOrderbook(
         }, [] as OrderbookItem[])
         .reverse();
 
-      const bidsOnly = groups.map(item => item.bids);
+      const bidsOnly = groups.map((item) => item.bids);
       const bidsFlat = empty.concat
         .apply(empty, bidsOnly)
         .sort((a, b) => b.price.comparedTo(a.price))
@@ -140,11 +136,7 @@ export function aggregatedOrderbook(
       const bids = bidsFlat.reduce((carry, current, index) => {
         const previous = carry[index - 1]?.total ?? new BigNumber(0);
         const total = current.quantity.plus(previous);
-        const relative = total
-          .dividedBy(bidsQuantity)
-          .multipliedBy(100)
-          .decimalPlaces(0)
-          .toNumber();
+        const relative = total.dividedBy(bidsQuantity).multipliedBy(100).decimalPlaces(0).toNumber();
 
         const change = findPriceChange(current.price, carry[index - 1]?.price);
 

@@ -12,7 +12,7 @@ import { SignedOrder, assetDataUtils } from '@0x/order-utils-v2';
 import { Subtitle } from '~/storybook/Title/Title';
 import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
-import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 
 export interface FundRequestForQuoteOfferProps {
@@ -25,7 +25,7 @@ export interface FundRequestForQuoteOfferProps {
   side?: 'buy' | 'sell';
 }
 
-export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> = props => {
+export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> = (props) => {
   const [quote, setQuote] = useState<{
     offer: SignedOrder;
     taker: TokenDefinition;
@@ -85,7 +85,7 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
     );
 
     const empty$ = Rx.of(new BigNumber(0));
-    const subscription = (active ? observable$ : empty$).subscribe(price => {
+    const subscription = (active ? observable$ : empty$).subscribe((price) => {
       setState(() => ({
         price,
         loading: false,
@@ -182,16 +182,16 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
         <NotificationBar kind="neutral">
           <NotificationContent>
             Final quote: You are selling{' '}
-            <TokenValue value={quantity} decimals={quote?.taker.decimals} symbol={quote?.taker.symbol} /> in exchange
-            for{' '}
-            <TokenValue
+            <TokenValueDisplay value={quantity} decimals={quote?.taker.decimals} symbol={quote?.taker.symbol} /> in
+            exchange for{' '}
+            <TokenValueDisplay
               value={quote?.offer.makerAssetAmount}
               decimals={quote?.maker.decimals}
               symbol={quote?.maker.symbol}
             />
             .<br />
-            (Rate: <TokenValue value={1} digits={0} decimals={0} symbol={maker} /> ={' '}
-            <TokenValue value={rate} decimals={0} symbol={taker} />)
+            (Rate: <TokenValueDisplay value={1} digits={0} decimals={0} symbol={maker} /> ={' '}
+            <TokenValueDisplay value={rate} decimals={0} symbol={taker} />)
             <br />
             <br />
             This quote is valid until <FormattedDate timestamp={quote?.offer?.expirationTimeSeconds} />.

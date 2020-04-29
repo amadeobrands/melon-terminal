@@ -30,14 +30,14 @@ const connect = (): Rx.Observable<ConnectionAction> => {
     return { eth, unsubscribe: () => provider.disconnect() };
   };
 
-  return Rx.using(create, resource => {
+  return Rx.using(create, (resource) => {
     const eth = (resource as Resource).eth;
 
     const connection$ = Rx.defer(async () => {
       const [id, accounts] = await Promise.all([eth.net.getId(), eth.getAccounts()]);
       const network = networkFromId(id);
       return connectionEstablished(eth, network, accounts);
-    }).pipe(retryWhen(error => error.pipe(delay(1000))));
+    }).pipe(retryWhen((error) => error.pipe(delay(1000))));
 
     return Rx.concat(connection$, Rx.NEVER);
   });

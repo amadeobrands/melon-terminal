@@ -5,10 +5,7 @@ export function calculateChangeFromSharePrice(current?: BigNumber, previous?: Bi
   const bnPrevious = BigNumber.isBigNumber(previous) ? previous : new BigNumber(previous ?? 'NaN');
 
   if (!bnCurrent.isZero() && !bnPrevious.isZero()) {
-    return bnCurrent
-      .dividedBy(bnPrevious)
-      .minus(1)
-      .multipliedBy(100);
+    return bnCurrent.dividedBy(bnPrevious).minus(1).multipliedBy(100);
   }
   return new BigNumber(0);
 }

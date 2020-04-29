@@ -23,16 +23,16 @@ function mapOrders(
   takerAsset: TokenDefinition,
   side: 'bid' | 'ask'
 ) {
-  return orders.map(order => {
+  return orders.map((order) => {
     const buyQuantity =
       side === 'bid'
-        ? fromTokenBaseUnit(order.buyQuantity, makerAsset.decimals)
-        : fromTokenBaseUnit(order.sellQuantity, takerAsset.decimals);
+        ? fromTokenBaseUnit(order.buyQuantity, takerAsset.decimals)
+        : fromTokenBaseUnit(order.sellQuantity, makerAsset.decimals);
 
     const sellQuantity =
       side === 'bid'
-        ? fromTokenBaseUnit(order.sellQuantity, takerAsset.decimals)
-        : fromTokenBaseUnit(order.buyQuantity, makerAsset.decimals);
+        ? fromTokenBaseUnit(order.sellQuantity, makerAsset.decimals)
+        : fromTokenBaseUnit(order.buyQuantity, takerAsset.decimals);
 
     const price = sellQuantity.dividedBy(buyQuantity);
 

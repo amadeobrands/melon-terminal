@@ -1,19 +1,23 @@
 import React from 'react';
 import * as Yup from 'yup';
-import { useForm, FormContext } from 'react-hook-form';
-import { useEnvironment } from '~/hooks/useEnvironment';
-import { PriceTolerance, Deployment, PolicyDefinition } from '@melonproject/melonjs';
+import { Form, useFormik } from '~/components/Form/Form';
 import { PriceToleranceBytecode } from '@melonproject/melonjs/abis/PriceTolerance.bin';
+import { PriceTolerance, Deployment, PolicyDefinition } from '@melonproject/melonjs';
+import { useEnvironment } from '~/hooks/useEnvironment';
 import { useAccount } from '~/hooks/useAccount';
-import { Input } from '~/storybook/Input/Input';
-import { Button } from '~/storybook/Button/Button';
+import { Input } from '~/components/Form/Input/Input';
+import { Button } from '~/components/Form/Button/Button';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { BlockActions } from '~/storybook/Block/Block';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 
-interface PriceToleranceConfigurationForm {
-  priceTolerance: number;
-}
+const validationSchema = Yup.object().shape({
+  priceTolerance: Yup.number().required().min(0).max(100),
+});
+
+const initialValues = {
+  priceTolerance: 10,
+};
 
 export interface PriceToleranceConfigurationProps {
   policyManager: string;
@@ -21,32 +25,17 @@ export interface PriceToleranceConfigurationProps {
   startTransaction: (tx: Deployment<PriceTolerance>, name: string) => void;
 }
 
-export const PriceToleranceConfiguration: React.FC<PriceToleranceConfigurationProps> = props => {
+export const PriceToleranceConfiguration: React.FC<PriceToleranceConfigurationProps> = (props) => {
   const environment = useEnvironment()!;
   const account = useAccount();
 
-  const validationSchema = Yup.object().shape({
-    priceTolerance: Yup.number()
-      .label('Price tolerance (%)')
-      .required()
-      .min(0)
-      .max(100),
-  });
-
-  const defaultValues = {
-    priceTolerance: 10,
-  };
-
-  const form = useForm<PriceToleranceConfigurationForm>({
-    defaultValues,
+  const formik = useFormik({
     validationSchema,
-    mode: 'onSubmit',
-    reValidateMode: 'onBlur',
-  });
-
-  const submit = form.handleSubmit(async data => {
-    const tx = PriceTolerance.deploy(environment, PriceToleranceBytecode, account.address!, data.priceTolerance!);
-    props.startTransaction(tx, 'Deploy PriceTolerance Contract');
+    initialValues,
+    onSubmit: async (data) => {
+      const tx = PriceTolerance.deploy(environment, PriceToleranceBytecode, account.address!, data.priceTolerance!);
+      props.startTransaction(tx, 'Deploy PriceTolerance Contract');
+    },
   });
 
   return (
@@ -59,14 +48,12 @@ export const PriceToleranceConfiguration: React.FC<PriceToleranceConfigurationPr
           previous asset price update.
         </NotificationContent>
       </NotificationBar>
-      <FormContext {...form}>
-        <form onSubmit={submit}>
-          <Input name="priceTolerance" label="Price tolerance (%)" type="number" step="any" id="priceTolerance" />
-          <BlockActions>
-            <Button type="submit">Add Price Tolerance Policy</Button>
-          </BlockActions>
-        </form>
-      </FormContext>
+      <Form formik={formik}>
+        <Input name="priceTolerance" label="Price tolerance (%)" type="number" step="any" />
+        <BlockActions>
+          <Button type="submit">Add Price Tolerance Policy</Button>
+        </BlockActions>
+      </Form>
     </>
   );
 };

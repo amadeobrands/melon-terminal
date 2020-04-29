@@ -17,7 +17,7 @@ const OverflowEllipsis = styled.a`
   cursor: pointer;
 `;
 
-export const EtherscanLink: React.FC<EtherscanLinkProps> = props => {
+export const EtherscanLink: React.FC<EtherscanLinkProps> = (props) => {
   const args: EtherscanLinkProps = {
     ...(props.address && { address: isAddress(props.address) ? toChecksumAddress(props.address) : props.address }),
     ...(props.hash && { hash: props.hash }),

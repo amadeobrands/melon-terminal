@@ -11,7 +11,7 @@ export const Account = createContext<AccountContextValue>({
   loading: true,
 });
 
-export const AccountProvider: React.FC = props => {
+export const AccountProvider: React.FC = (props) => {
   const connection = useConnectionState();
   const [account, query] = useAccountContextQuery(connection.account);
   const output = useMemo(() => ({ ...account, address: connection.account, loading: query.loading }), [

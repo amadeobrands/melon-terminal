@@ -19,12 +19,12 @@ export const CheckboxItem: React.FC<CheckboxProps> = ({ label, ...rest }) => {
       </CheckboxMask>
 
       {label && <CheckboxLabel htmlFor={id}>{label}</CheckboxLabel>}
-      {rest.error && <Error>{rest.error}</Error>}
+      {rest.touched && rest.error && <Error>{rest.error}</Error>}
     </CheckboxContainer>
   );
 };
 
-export const Checkbox: React.FC<CheckboxProps> = props => {
+export const Checkbox: React.FC<CheckboxProps> = (props) => {
   const [field, meta] = useField({ type: 'checkbox', ...props });
 
   return (

@@ -1,9 +1,9 @@
 import React from 'react';
+import { Hub, Trading } from '@melonproject/melonjs';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { useTransaction } from '~/hooks/useTransaction';
 import { Button } from '~/storybook/Button/Button';
 import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
-import { Hub, Trading } from '@melonproject/melonjs';
 import { useAccount } from '~/hooks/useAccount';
 import { Block, BlockActions } from '~/storybook/Block/Block';
 import { SectionTitle } from '~/storybook/Title/Title';

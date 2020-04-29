@@ -7,20 +7,20 @@ export const InputContainer = styled.div`
 
 export const SelectTrigger = styled.div`
   cursor: pointer;
-  border-color: ${props => props.theme.mainColors.secondaryDarkAlpha};
-  border-color: ${props => props.theme.mainColors.secondaryDarkAlpha};
+  border-color: ${(props) => props.theme.mainColors.secondaryDarkAlpha};
+  border-color: ${(props) => props.theme.mainColors.secondaryDarkAlpha};
   border-style: solid;
   border-width: 1px 0px 1px 1px;
   white-space: nowrap;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: ${props => props.theme.mainColors.primary};
+  background: ${(props) => props.theme.mainColors.primary};
   border-radius: 0;
-  color: ${props => props.theme.mainColors.textColor};
+  color: ${(props) => props.theme.mainColors.textColor};
   box-shadow: inset 1px 4px 4px rgba(200, 200, 200, 0.25);
-  padding: 0px ${props => props.theme.spaceUnits.m};
+  padding: 0px ${(props) => props.theme.spaceUnits.m};
   &:focus {
-    outline-color: ${props => props.theme.mainColors.secondaryDarkAlpha};
+    outline-color: ${(props) => props.theme.mainColors.secondaryDarkAlpha};
   }
 `;
