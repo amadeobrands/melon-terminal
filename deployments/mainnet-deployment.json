@@ -7,7 +7,7 @@
   },
   "melon": {
     "addr": {
-      "KyberPriceFeed": "0xdfd119c2e48a92873c211f6266ed6b132678b705",
+      "KyberPriceFeed": "0x7fe3fe4b523d7f83dc05224573b01296877dc163",
       "EthfinexAdapter": "0x42cAD86BEEF643B6669A3f134B67D4287edaDdD3",
       "KyberAdapter": "0x33D9a2a17A237c4815586B099F49bCE0005a927f",
       "OasisDexAdapter": "0xaEc9b76C4e01976C3711125A5A1a2911c0165399",
