@@ -2689,6 +2689,11 @@
   dependencies:
     any-observable "^0.3.0"
 
+"@scarf/scarf@^1.0.0":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@scarf/scarf/-/scarf-1.0.4.tgz#d7c09e7d38428123df18a8d83a4bb5d09517d952"
+  integrity sha512-lkhjzeYyYAG4VvdrjvbZCOYzXH5vCwfzYj9xJ4zHDgyYIOzObZwcsbW6W1q5Z4tywrb14oG/tfsFAMMQPCTFqw==
+
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
@@ -16870,6 +16875,14 @@ react-popper@^1.3.6, react-popper@^1.3.7:
     typed-styles "^0.0.7"
     warning "^4.0.2"
 
+react-query@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/react-query/-/react-query-1.3.0.tgz#4ee11ed0abe3e21b79210d8e83e06083fd0c0f25"
+  integrity sha512-itSMBvP7s2D713ujt6tVIZjsk3mmKp9lvOFrfcyTdmlytCdlnNyWl/vNOHJAbMrkr+vT0lwj7vaTUGkGVaJ8Pg==
+  dependencies:
+    "@scarf/scarf" "^1.0.0"
+    ts-toolbelt "^6.4.2"
+
 react-refresh@^0.7.1:
   version "0.7.2"
   resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.7.2.tgz#f30978d21eb8cac6e2f2fde056a7d04f6844dd50"
@@ -19587,6 +19600,11 @@ ts-toolbelt@^6.3.3:
   version "6.3.6"
   resolved "https://registry.yarnpkg.com/ts-toolbelt/-/ts-toolbelt-6.3.6.tgz#2bde29106c013ed520c32f30e1248daf8fd4f5f9"
   integrity sha512-eVzym+LyQodOCfyVyQDQ6FGYbO2Xf9Nc4dGLRKlKSUpAs+8qQWHG+grDiA3ciEuNPNZ0qJnNIYkdqBW1rCWuUA==
+
+ts-toolbelt@^6.4.2:
+  version "6.6.2"
+  resolved "https://registry.yarnpkg.com/ts-toolbelt/-/ts-toolbelt-6.6.2.tgz#2e1681ff654bf0ab24636d2ff1cbc802316b391f"
+  integrity sha512-P0fN4yv9rkTmKsu/Xew8heopmQ3fDnCF5tY4CV1ZMAUeBHJA6QsJhMEdxtWNdgV7dnKKAAw+A12azm2cONQ6NQ==
 
 tslib@1.9.0:
   version "1.9.0"
