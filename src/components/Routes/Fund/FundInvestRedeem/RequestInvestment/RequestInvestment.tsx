@@ -39,6 +39,7 @@ import {
   CheckboxLabel,
 } from '~/storybook/Checkbox/Checkbox';
 import { getNetworkName } from '~/config';
+import { classNames } from 'react-select/src/utils';
 
 export interface RequestInvestmentProps {
   address: string;
@@ -56,6 +57,8 @@ export interface RequestInvestmentProps {
 interface RequestInvestmentFormValues {
   investmentAsset?: string;
   investmentAmount: BigNumber;
+  premium: BigNumber;
+  sharePrice: BigNumber;
   requestedShares: BigNumber;
   acknowledgeLimit: boolean;
 }
@@ -68,16 +71,13 @@ export const RequestInvestment = forwardRef(
     const [formValues, setFormValues] = useState<RequestInvestmentFormValues>();
     const daiRate = useCoinAPI();
 
-    const maxPositionsPolicies = props.policies?.filter(policy => policy.identifier === 'MaxPositions') as
+    const maxPositionsPolicies = props.policies?.filter((policy) => policy.identifier === 'MaxPositions') as
       | MaxPositions[]
       | undefined;
 
     const allowedAssets = props.allowedAssets || [];
     const initialAsset = allowedAssets[0];
     const totalSupply = props.totalSupply;
-    const multiplier = useMemo(() => {
-      return totalSupply?.isZero() ? new BigNumber(1) : new BigNumber(1.1);
-    }, [totalSupply]);
 
     const validationSchema = Yup.object().shape({
       investmentAmount: Yup.mixed<BigNumber>()
@@ -103,21 +103,27 @@ export const RequestInvestment = forwardRef(
           // new investment is in denomination asset
           sameAddress(props.denominationAsset?.address, value) ||
           // already existing token
-          !!props.holdings?.some(holding => sameAddress(holding.token?.address, value)) ||
+          !!props.holdings?.some((holding) => sameAddress(holding.token?.address, value)) ||
           // max positions larger than holdings (so new token would still fit)
           maxPositionsPolicies.every(
-            policy => policy.maxPositions && props.holdings && policy.maxPositions > props.holdings?.length
+            (policy) => policy.maxPositions && props.holdings && policy.maxPositions > props.holdings?.length
           )
       ),
       acknowledgeLimit: Yup.boolean(),
     });
 
+    const premium = totalSupply?.isZero() ? new BigNumber(0) : new BigNumber(0.1);
+
     const defaultValues = {
       requestedShares: new BigNumber(1),
       investmentAsset: initialAsset?.token?.address,
       investmentAmount: fromTokenBaseUnit(initialAsset?.shareCostInAsset || 0, initialAsset?.token?.decimals || 18)
-        .multipliedBy(multiplier)
+        .multipliedBy(premium.plus(1))
         .decimalPlaces(initialAsset?.token?.decimals || 18),
+      premium,
+      sharePrice: fromTokenBaseUnit(initialAsset!.shareCostInAsset!, initialAsset!.token!.decimals!)
+        .multipliedBy(premium.plus(1))
+        .toFixed(initialAsset?.token?.decimals!),
     };
 
     const form = useForm<RequestInvestmentFormValues>({
@@ -130,7 +136,7 @@ export const RequestInvestment = forwardRef(
     const investmentAsset = form.watch('investmentAsset') as string;
     const investmentAmount = form.watch('investmentAmount') as BigNumber;
     const token = (investmentAsset && environment.getToken(investmentAsset)) as TokenDefinition;
-    const asset = allowedAssets.find(allowedAsset => sameAddress(allowedAsset.token?.address, investmentAsset));
+    const asset = allowedAssets.find((allowedAsset) => sameAddress(allowedAsset.token?.address, investmentAsset));
     const participation = props.account?.participation?.address;
     const [allowance, query] = useAccountAllowanceQuery(account.address, investmentAsset, participation);
 
@@ -163,16 +169,23 @@ export const RequestInvestment = forwardRef(
     useEffect(() => {
       const values = form.getValues();
       if (asset && token) {
-        const amount = new BigNumber(values.requestedShares ?? 0)
-          .multipliedBy(fromTokenBaseUnit(asset.shareCostInAsset!, token.decimals))
-          .multipliedBy(multiplier);
+        const sharePrice = fromTokenBaseUnit(asset.shareCostInAsset!, token.decimals).multipliedBy(
+          new BigNumber(values.premium).plus(1)
+        );
+
+        const amount = new BigNumber(values.requestedShares ?? 0).multipliedBy(sharePrice);
+
+        form.setValue(
+          'sharePrice',
+          sharePrice.isNaN() ? new BigNumber(0) : sharePrice.decimalPlaces(asset!.token!.decimals!)
+        );
 
         form.setValue(
           'investmentAmount',
           amount.isNaN() ? new BigNumber(0) : amount.decimalPlaces(asset!.token!.decimals!)
         );
       }
-    }, [asset, multiplier]);
+    }, [asset]);
 
     const action = useMemo(() => {
       if (allowance?.allowance.isGreaterThanOrEqualTo(toTokenBaseUnit(investmentAmount, token!.decimals))) {
@@ -215,12 +228,14 @@ export const RequestInvestment = forwardRef(
       },
     }));
 
-    const submit = form.handleSubmit(async values => {
+    const submit = form.handleSubmit(async (values) => {
       switch (action) {
         case 'approve': {
           setFormValues({
             investmentAsset: values.investmentAsset!,
             investmentAmount: values.investmentAmount,
+            premium: values.premium,
+            sharePrice: values.sharePrice,
             requestedShares: values.requestedShares,
             acknowledgeLimit: values.acknowledgeLimit,
           });
@@ -236,10 +251,11 @@ export const RequestInvestment = forwardRef(
     });
 
     const handleInvestmentAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const values = form.getValues();
       if (asset && token) {
         const shares = toTokenBaseUnit(event.target.value, token.decimals)
           .dividedBy(asset.shareCostInAsset!)
-          .dividedBy(multiplier)
+          .dividedBy(new BigNumber(values.premium).plus(1))
           .decimalPlaces(18, BigNumber.ROUND_DOWN);
 
         form.setValue('requestedShares', shares.isNaN() ? new BigNumber(0) : shares);
@@ -247,10 +263,12 @@ export const RequestInvestment = forwardRef(
     };
 
     const handleRequestedSharesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const values = form.getValues();
+
       if (asset && token) {
         const amount = new BigNumber(event.target.value ?? 0)
           .multipliedBy(fromTokenBaseUnit(asset.shareCostInAsset!, token.decimals))
-          .multipliedBy(multiplier)
+          .multipliedBy(new BigNumber(values.premium).plus(1))
           .decimalPlaces(token.decimals, BigNumber.ROUND_UP);
 
         form.setValue(
@@ -260,10 +278,40 @@ export const RequestInvestment = forwardRef(
       }
     };
 
-    const investmentAssetOptions = (props.allowedAssets ?? []).map(holding => ({
+    const handlePremiumChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+      const values = form.getValues();
+
+      const sharePrice = fromTokenBaseUnit(asset!.shareCostInAsset!, token.decimals).multipliedBy(
+        parseFloat(event.target.value) + 1
+      );
+
+      const amount = new BigNumber(values.requestedShares)
+        .multipliedBy(sharePrice)
+        .decimalPlaces(token.decimals, BigNumber.ROUND_UP);
+
+      form.setValue(
+        'investmentAmount',
+        amount.isNaN() ? new BigNumber(0) : amount.decimalPlaces(asset!.token!.decimals!)
+      );
+
+      form.setValue(
+        'sharePrice',
+        sharePrice.isNaN() ? new BigNumber(0) : sharePrice.decimalPlaces(asset!.token!.decimals!)
+      );
+    };
+
+    const premiumOptions = [0, 0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.25].map((value) => ({
+      value: new BigNumber(value).toString(),
+      name: `${(value * 100).toFixed(0)}%`,
+    }));
+
+    const investmentAssetOptions = (props.allowedAssets ?? []).map((holding) => ({
       value: holding.token!.address!,
       name: holding.token!.symbol!,
     }));
+
+    const requestedSharePrice = new BigNumber(form.getValues().sharePrice).toFixed(4);
+    const requestedPremium = new BigNumber(form.getValues().premium).times(100).toFixed(0);
 
     if (!props.allowedAssets?.length) {
       return (
@@ -321,15 +369,37 @@ export const RequestInvestment = forwardRef(
                   onChange={handleRequestedSharesChange}
                 />
 
+                <Dropdown
+                  name="premium"
+                  label="Maximum premium to current share price"
+                  id="premium"
+                  options={premiumOptions}
+                  disabled={props.loading}
+                  onChange={handlePremiumChange}
+                />
+
                 <Input
                   id="sharePrice"
                   name="sharePrice"
-                  label={`Share price in ${asset?.token?.symbol}`}
-                  value={fromTokenBaseUnit(asset!.shareCostInAsset!, asset!.token!.decimals!)
-                    .multipliedBy(multiplier)
-                    .toFixed(asset?.token?.decimals!)}
+                  label={`Maximum share price in ${asset?.token?.symbol}`}
                   disabled={true}
                 />
+
+                <NotificationBar kind="neutral">
+                  <NotificationContent>
+                    <p>
+                      You are requesting an investment at a maximum share price of {requestedSharePrice}. This is a{' '}
+                      {requestedPremium}% premium to the current share price of{' '}
+                      {fromTokenBaseUnit(asset!.shareCostInAsset!, asset!.token!.decimals!).toFixed(4)}{' '}
+                      {asset?.token?.symbol} / share.{' '}
+                    </p>
+                    <p>
+                      Your investment request will be executed at the share price that is valid after the next price
+                      update. If the share price at that point in time is higher than your maximum share price, your
+                      investment request will not be executed.
+                    </p>
+                  </NotificationContent>
+                </NotificationBar>
 
                 <Input
                   id="investmentAmount"
