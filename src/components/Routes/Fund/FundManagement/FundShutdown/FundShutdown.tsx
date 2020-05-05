@@ -1,9 +1,9 @@
 import React from 'react';
+import { Version, Trading } from '@melonproject/melonjs';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { useTransaction } from '~/hooks/useTransaction';
 import { Button } from '~/storybook/Button/Button';
 import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
-import { Version, Trading } from '@melonproject/melonjs';
 import { useAccount } from '~/hooks/useAccount';
 import { Block, BlockActions } from '~/storybook/Block/Block';
 import { SectionTitle } from '~/storybook/Title/Title';
@@ -36,7 +36,7 @@ export const Shutdown: React.FC<ShutdownProps> = ({ address }) => {
   const submit = async () => {
     if (!!assets?.length) {
       const trading = new Trading(environment, tradingAddress!);
-      const tokens = assets.map(asset => asset.address!);
+      const tokens = assets.map((asset) => asset.address!);
       const tx = trading.returnBatchToVault(account.address!, tokens);
       transaction.start(tx, 'Return assets to vault');
     } else {

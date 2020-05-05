@@ -10,14 +10,14 @@ export const IconsWrapper = styled.div<IconProps>`
   position: relative;
   display: block;
 
-  ${props =>
+  ${(props) =>
     props.size &&
     props.size === 'normal' &&
     css`
       height: 32px;
       width: 32px;
     `}
-  ${props =>
+  ${(props) =>
     props.size &&
     props.size === 'small' &&
     css`
@@ -25,24 +25,24 @@ export const IconsWrapper = styled.div<IconProps>`
       width: 16px;
     `}
 
-    ${props =>
+    ${(props) =>
       props.pointer &&
       css`
         cursor: pointer;
       `}
 
   svg {
-    fill: ${props => props.colored && props.theme.mainColors.textColor};
+    fill: ${(props) => props.colored && props.theme.mainColors.textColor};
     display: block;
     overflow: visible;
-    ${props =>
+    ${(props) =>
       props.size &&
       props.size === 'normal' &&
       css`
         height: 32px;
         width: 32px;
       `}
-    ${props =>
+    ${(props) =>
       props.size &&
       props.size === 'small' &&
       css`

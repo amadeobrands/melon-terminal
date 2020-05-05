@@ -46,7 +46,7 @@ export const FundTradeHistory: React.FC<FundTradeHistoryProps> = ({ address }) =
               </HeaderRow>
             </thead>
             <tbody>
-              {trades.map(trade => (
+              {trades.map((trade) => (
                 <BodyRow key={trade.id}>
                   <BodyCell>
                     <FormattedDate timestamp={trade.timestamp} />

@@ -9,7 +9,7 @@ export default {
 };
 
 const omit = (options: SelectOption[], ...keys: string[]) => {
-  return options.map(item => R.omit(keys, item)) as SelectOption[];
+  return options.map((item) => R.omit(keys, item)) as SelectOption[];
 };
 
 const options = [

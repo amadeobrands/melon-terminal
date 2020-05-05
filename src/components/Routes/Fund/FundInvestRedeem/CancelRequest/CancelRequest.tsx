@@ -13,7 +13,7 @@ export interface CancelRequestProps {
   transaction: TransactionHookValues<TransactionFormValues>;
 }
 
-export const CancelRequest: React.FC<CancelRequestProps> = props => {
+export const CancelRequest: React.FC<CancelRequestProps> = (props) => {
   const environment = useEnvironment()!;
   const account = useAccount();
 

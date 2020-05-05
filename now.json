@@ -18,7 +18,7 @@
       "MELON_RINKEBY_DEPLOYMENT": "./deployments/rinkeby-deployment.json",
       "MELON_RINKEBY_SUBGRAPH": "https://api.thegraph.com/subgraphs/name/melonproject/melon-rinkeby",
       "MELON_RINKEBY_PROVIDER": "https://rinkeby.infura.io/v3/b39a0d1b493b42fd8d9bdc8f91d2d0bb",
-      "MELON_FORTMATIC_KEY": "pk_live_AA6406E4FFE5E2F0",
+      "MELON_FORTMATIC_KEY": "pk_live_30DA7601B45F19D8",
       "MELON_WALLETCONNECT_INFURA_ID": "b39a0d1b493b42fd8d9bdc8f91d2d0bb",
       "MELON_API_GATEWAY": "https://gateway.avantgarde.finance",
       "MELON_MAX_EXPOSURE": "50000",

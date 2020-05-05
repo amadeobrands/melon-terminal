@@ -27,13 +27,11 @@ import { FormattedDate } from '../Common/FormattedDate/FormattedDate';
 import { useConnectionState } from '~/hooks/useConnectionState';
 import { getNetworkName } from '~/config';
 
-const graphiql = JSON.parse(process.env.MELON_INCLUDE_GRAPHIQL || 'false');
-
 export interface LayoutProps {
   connectionSwitch: boolean;
 }
 
-export const Layout: React.FC<LayoutProps> = props => {
+export const Layout: React.FC<LayoutProps> = (props) => {
   const location = useLocation()!;
   const [update] = usePriceFeedUpdateQuery();
   const environment = useEnvironment();
@@ -119,17 +117,6 @@ export const Layout: React.FC<LayoutProps> = props => {
                 Report an Issue
               </a>
             </FooterItem>
-
-            {graphiql && (
-              <>
-                <FooterItem>
-                  <Link to="/playground/onchain">Network Explorer</Link>
-                </FooterItem>
-                <FooterItem>
-                  <Link to="/playground/thegraph">Graph Explorer</Link>
-                </FooterItem>
-              </>
-            )}
 
             {update && (
               <FooterItem>

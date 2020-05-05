@@ -12,6 +12,10 @@ export class TokenValue {
     }
   }
 
+  public static fromToken(token: TokenDefinition, value: BigNumber.Value) {
+    return new TokenValue(token, new BigNumber(value).dividedBy(new BigNumber(10).exponentiatedBy(token.decimals)));
+  }
+
   public setValue(value: BigNumber.Value) {
     return new TokenValue(this.token, value);
   }

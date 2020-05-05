@@ -1,21 +1,21 @@
 import styled, { css } from 'styled-components';
 
 export const DropdownWrapper = styled.div`
-  margin-bottom: ${props => props.theme.spaceUnits.l};
+  margin-bottom: ${(props) => props.theme.spaceUnits.l};
   width: 100%;
 `;
 
 export const DropdownLabel = styled.span`
   display: inline-block;
-  margin-bottom: ${props => props.theme.spaceUnits.xs};
-  color: ${props => props.theme.mainColors.primaryDark};
+  margin-bottom: ${(props) => props.theme.spaceUnits.xs};
+  color: ${(props) => props.theme.mainColors.primaryDark};
 `;
 
 export const DropdownError = styled.span`
   display: inline-block;
-  margin-top: ${props => props.theme.spaceUnits.xs};
-  color: ${props => props.theme.statusColors.primaryLoss};
-  font-size: ${props => props.theme.fontSizes.s};
+  margin-top: ${(props) => props.theme.spaceUnits.xs};
+  color: ${(props) => props.theme.statusColors.primaryLoss};
+  font-size: ${(props) => props.theme.fontSizes.s};
 `;
 
 export interface DropdownSelectContainerProps {
@@ -26,34 +26,34 @@ export interface DropdownSelectContainerProps {
 export const DropdownSelectContainer = styled.div<DropdownSelectContainerProps>`
   position: relative;
   width: 100%;
-  background-color: ${props => props.theme.mainColors.primary};
-  color: ${props => props.theme.mainColors.primaryDark};
-  border: ${props => props.theme.border.borderDefault};
+  background-color: ${(props) => props.theme.mainColors.primary};
+  color: ${(props) => props.theme.mainColors.primaryDark};
+  border: ${(props) => props.theme.border.borderDefault};
   &:before {
     content: '';
     position: absolute;
-    right: ${props => props.theme.spaceUnits.s};
-    top: ${props => props.theme.spaceUnits.m};
+    right: ${(props) => props.theme.spaceUnits.s};
+    top: ${(props) => props.theme.spaceUnits.m};
     width: 0;
     height: 0;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
-    border-top: 6px solid ${props => props.theme.border.borderColor};
+    border-top: 6px solid ${(props) => props.theme.border.borderColor};
     pointer-events: none;
   }
-  ${props => {
+  ${(props) => {
     if (props.disabled) {
       return css`
-        background: ${props => props.theme.mainColors.secondary};
-        border-color: ${props => props.theme.mainColors.secondaryDarkAlpha};
+        background: ${(props) => props.theme.mainColors.secondary};
+        border-color: ${(props) => props.theme.mainColors.secondaryDarkAlpha};
         pointer-events: none;
       `;
     }
   }}
-  ${props => {
+  ${(props) => {
     if (props.error) {
       return css`
-        border-color: ${props => props.theme.statusColors.primaryLoss};
+        border-color: ${(props) => props.theme.statusColors.primaryLoss};
       `;
     }
   }}
@@ -65,13 +65,13 @@ export const DropdownSelect = styled.select`
   border-radius: 0;
   border: none;
   background: transparent;
-  color: ${props => props.theme.mainColors.textColor};
-  padding: ${props => props.theme.spaceUnits.xs} ${props => props.theme.spaceUnits.xl}
-    ${props => props.theme.spaceUnits.xs} ${props => props.theme.spaceUnits.s};
+  color: ${(props) => props.theme.mainColors.textColor};
+  padding: ${(props) => props.theme.spaceUnits.xs} ${(props) => props.theme.spaceUnits.xl}
+    ${(props) => props.theme.spaceUnits.xs} ${(props) => props.theme.spaceUnits.s};
   line-height: 1.6;
   margin: 0;
   :focus {
-    outline-color: ${props => props.theme.mainColors.secondaryDarkAlpha};
+    outline-color: ${(props) => props.theme.mainColors.secondaryDarkAlpha};
   }
   &::-ms-expand {
     display: none;

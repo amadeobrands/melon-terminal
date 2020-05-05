@@ -66,7 +66,7 @@ function useMarkets() {
 
   const markets = useMemo(() => {
     return state.markets
-      .filter(item => item.status === 'available')
+      .filter((item) => item.status === 'available')
       .reduce((carry, current) => {
         const baseToken = environment.getToken(current.base.address);
         const quoteToken = environment.getToken(current.quote.address);
@@ -87,21 +87,21 @@ function useMarkets() {
   return [markets, state.loading] as [typeof markets, typeof state.loading];
 }
 
-export const FundRequestForQuoteTrading: React.FC<FundRequestForQuoteTradingProps> = props => {
+export const FundRequestForQuoteTrading: React.FC<FundRequestForQuoteTradingProps> = (props) => {
   const [markets, loading] = useMarkets();
   const environment = useEnvironment()!;
 
-  const assetWhitelists = props.policies?.filter(policy => policy.identifier === 'AssetWhitelist') as
+  const assetWhitelists = props.policies?.filter((policy) => policy.identifier === 'AssetWhitelist') as
     | AssetWhitelist[]
     | undefined;
-  const assetBlacklists = props.policies?.filter(policy => policy.identifier === 'AssetBlacklist') as
+  const assetBlacklists = props.policies?.filter((policy) => policy.identifier === 'AssetBlacklist') as
     | AssetBlacklist[]
     | undefined;
-  const maxPositionsPolicies = props.policies?.filter(policy => policy.identifier === 'MaxPositions') as
+  const maxPositionsPolicies = props.policies?.filter((policy) => policy.identifier === 'MaxPositions') as
     | MaxPositions[]
     | undefined;
 
-  const nonZeroHoldings = props.holdings.filter(holding => !holding.amount?.isZero());
+  const nonZeroHoldings = props.holdings.filter((holding) => !holding.amount?.isZero());
 
   // TODO: These refs are used for validation. Fix this after https://github.com/react-hook-form/react-hook-form/pull/817
   const holdingsRef = useRef(props.holdings);
@@ -117,41 +117,41 @@ export const FundRequestForQuoteTrading: React.FC<FundRequestForQuoteTradingProp
         .test(
           'maxPositions',
           'Investing with this asset would violate the maximum number of positions policy',
-          value =>
+          (value) =>
             // no policies
             !maxPositionsPolicies?.length ||
             // new investment is in denomination asset
             sameAddress(props.denominationAsset?.address, value) ||
             // already existing token
-            !!nonZeroHoldings?.some(holding => sameAddress(holding.token?.address, value)) ||
+            !!nonZeroHoldings?.some((holding) => sameAddress(holding.token?.address, value)) ||
             // max positions larger than holdings (so new token would still fit in)
             maxPositionsPolicies.every(
-              policy => policy.maxPositions && nonZeroHoldings && policy.maxPositions > nonZeroHoldings?.length
+              (policy) => policy.maxPositions && nonZeroHoldings && policy.maxPositions > nonZeroHoldings?.length
             )
         )
         .test(
           'assetWhitelist',
           'This fund operates an asset whitelist and the asset you are intending to buy is not on that whitelist',
-          asset =>
+          (asset) =>
             !assetWhitelists?.length ||
-            assetWhitelists.every(list => list.assetWhitelist?.some(item => sameAddress(item, asset.address)))
+            assetWhitelists.every((list) => list.assetWhitelist?.some((item) => sameAddress(item, asset.address)))
         )
         .test(
           'assetBlacklist',
           'This fund operates an asset blacklist and the asset you are intending to buy is on that blacklist',
-          asset =>
+          (asset) =>
             !assetBlacklists?.length ||
-            !assetBlacklists.some(list => list.assetBlacklist?.some(item => sameAddress(item, asset.address)))
+            !assetBlacklists.some((list) => list.assetBlacklist?.some((item) => sameAddress(item, asset.address)))
         ),
       takerAsset: Yup.string().required('Missing required sell asset.'),
       takerQuantity: Yup.string()
         .required('Missing sell quantity.')
-        .test('valid-number', 'The given value is not a valid number.', function(value) {
+        .test('valid-number', 'The given value is not a valid number.', (value) => {
           const bn = new BigNumber(value);
           return !bn.isNaN() && !bn.isZero() && bn.isPositive();
         })
-        .test('balance-too-low', 'The balance of the fund is lower than the provided value.', function(value) {
-          const holding = holdingsRef.current.find(item => sameAddress(item.token!.address, this.parent.takerAsset))!;
+        .test('balance-too-low', 'The balance of the fund is lower than the provided value.', function (value) {
+          const holding = holdingsRef.current.find((item) => sameAddress(item.token!.address, this.parent.takerAsset))!;
           const divisor = holding ? new BigNumber(10).exponentiatedBy(holding.token!.decimals!) : new BigNumber('NaN');
           const balance = holding ? holding.amount!.dividedBy(divisor) : new BigNumber('NaN');
           return new BigNumber(value).isLessThanOrEqualTo(balance);
@@ -192,12 +192,12 @@ export const FundRequestForQuoteTrading: React.FC<FundRequestForQuoteTradingProp
     form.triggerValidation().catch(() => {});
   }, [makerCandidates, makerAsset]);
 
-  const takerOptions = takerCandidates.map(token => ({
+  const takerOptions = takerCandidates.map((token) => ({
     value: token.address,
     name: token.symbol,
   }));
 
-  const makerOptions = makerCandidates.map(token => ({
+  const makerOptions = makerCandidates.map((token) => ({
     value: token.address,
     name: token.symbol,
   }));
@@ -237,7 +237,7 @@ export const FundRequestForQuoteTrading: React.FC<FundRequestForQuoteTradingProp
                 label="Sell this asset"
                 disabled={loading}
                 options={takerOptions}
-                onChange={event => handleTakerAssetChange(event.target.value)}
+                onChange={(event) => handleTakerAssetChange(event.target.value)}
               />
 
               <Dropdown name="makerAsset" label="To buy this asset" disabled={loading} options={makerOptions} />

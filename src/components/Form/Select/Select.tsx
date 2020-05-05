@@ -29,20 +29,20 @@ export interface SelectProps<TOption extends SelectOption = SelectOption> extend
   Component?: React.ElementType<SelectPropsBase<TOption>>;
 }
 
-export const Select: React.FC<SelectProps> = props => {
+export const Select: React.FC<SelectProps> = (props) => {
   const [field, meta, { setValue }] = useField({ type: 'select', name: props.name });
   const value = React.useMemo(() => {
     if (props.isMulti) {
-      return props.options?.filter(option => field.value?.includes(option.value));
+      return props.options?.filter((option) => field.value?.includes(option.value));
     }
 
     return props.options?.find((option: SelectOption) => option.value === field.value);
   }, [field.value, props.options, props.isMulti]);
 
   const onChange = React.useCallback(
-    (option: ValueType<SelectOption>, action: ActionMeta) => {
+    (option: ValueType<SelectOption>, action: ActionMeta<SelectOption>) => {
       const selection = props.isMulti
-        ? ((option as any) as SelectOption[]).map(item => item.value)
+        ? ((option as any) as SelectOption[]).map((item) => item.value)
         : ((option as any) as SelectOption).value;
 
       setValue(selection);
@@ -62,7 +62,7 @@ export const SelectWidget: React.FC<SelectProps> = ({ label, ...props }) => {
     <Wrapper>
       {label && <Label>{label}</Label>}
       <SelectField {...props} />
-      {props.error && <Error>{props.error}</Error>}
+      {props.touched && props.error && <Error>{props.error}</Error>}
     </Wrapper>
   );
 };
@@ -91,7 +91,7 @@ export interface SelectLabelProps {
   icon?: string;
 }
 
-export const SelectLabel: React.FC<SelectLabelProps> = props => (
+export const SelectLabel: React.FC<SelectLabelProps> = (props) => (
   <S.SelectWrapper>
     {props.icon ? (
       <S.SelectIcon>
@@ -102,7 +102,7 @@ export const SelectLabel: React.FC<SelectLabelProps> = props => (
   </S.SelectWrapper>
 );
 
-const Option: React.FC<OptionProps<SelectOption>> = props => {
+const Option: React.FC<OptionProps<SelectOption>> = (props) => {
   const hasDescriptions = !!props.selectProps.hasDescriptions;
 
   return (
@@ -127,13 +127,13 @@ const Option: React.FC<OptionProps<SelectOption>> = props => {
   );
 };
 
-const SingleValue: React.FC<SingleValueProps<SelectOption>> = props => (
+const SingleValue: React.FC<SingleValueProps<SelectOption>> = (props) => (
   <components.SingleValue {...props}>
     <SelectLabel {...props.data} />
   </components.SingleValue>
 );
 
-const MultiValue: React.FC<MultiValueProps<SelectOption>> = props => (
+const MultiValue: React.FC<MultiValueProps<SelectOption>> = (props) => (
   <components.MultiValue {...props}>
     <SelectLabel {...props.data} />
   </components.MultiValue>

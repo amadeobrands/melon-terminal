@@ -5159,6 +5159,6 @@ export const Default: React.FC = () => {
 
   // const yScale = React.useMemo(() => (yScaleType === 'linear' ? linearProps : logProps), [yScaleType]);
   useEffectOnce(() => trigger(0));
-  
+
   return <PriceChart loading={false} chartData={data} startDate={startDate} triggerFunction={trigger} />;
 };

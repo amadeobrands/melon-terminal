@@ -3,10 +3,10 @@ import { DecoratorFn } from '@storybook/react';
 import { useFormik, Form } from './Form';
 
 export function withForm(): DecoratorFn {
-  return story => {
+  return (story) => {
     const formik = useFormik({
       initialValues: {},
-      onSubmit: values => {
+      onSubmit: (values) => {
         alert(JSON.stringify(values, null, 2));
       },
     });

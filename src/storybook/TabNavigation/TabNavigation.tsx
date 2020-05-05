@@ -7,8 +7,8 @@ export const TabBar = styled(Bar)`
   padding: 0px;
 
   ${Block} & {
-    margin: -${props => props.theme.spaceUnits.l};
-    margin-bottom: ${props => props.theme.spaceUnits.l};
+    margin: -${(props) => props.theme.spaceUnits.l};
+    margin-bottom: ${(props) => props.theme.spaceUnits.l};
     width: auto;
   }
 `;
@@ -24,12 +24,12 @@ export const TabBarSection = styled.div``;
 const tabStyles = css`
   display: inline-block;
   position: relative;
-  padding: ${props => props.theme.spaceUnits.m} ${props => props.theme.spaceUnits.xl};
+  padding: ${(props) => props.theme.spaceUnits.m} ${(props) => props.theme.spaceUnits.xl};
   cursor: pointer;
   text-decoration: none;
 
   &::before {
-    transition: ${props => props.theme.transition.defaultAll};
+    transition: ${(props) => props.theme.transition.defaultAll};
     position: absolute;
     content: '';
     bottom: -1px;
@@ -39,12 +39,12 @@ const tabStyles = css`
   }
 
   :hover::before {
-    border-bottom: 3px solid ${props => props.theme.mainColors.secondaryDarkAlpha};
+    border-bottom: 3px solid ${(props) => props.theme.mainColors.secondaryDarkAlpha};
   }
 
   ${Block} & {
-    padding-left: ${props => props.theme.spaceUnits.l};
-    padding-right: ${props => props.theme.spaceUnits.l};
+    padding-left: ${(props) => props.theme.spaceUnits.l};
+    padding-right: ${(props) => props.theme.spaceUnits.l};
   }
 `;
 
@@ -55,7 +55,7 @@ export interface TabItemProps {
 export const TabItem = styled.a<TabItemProps>`
   ${tabStyles}
 
-  ${props =>
+  ${(props) =>
     props.active &&
     `
     &::before {
@@ -68,6 +68,6 @@ export const TabLink = styled(NavLink)`
   ${tabStyles}
 
   &.active::before {
-    border-bottom: 3px solid ${props => props.theme.mainColors.primaryDark};
+    border-bottom: 3px solid ${(props) => props.theme.mainColors.primaryDark};
   }
 `;

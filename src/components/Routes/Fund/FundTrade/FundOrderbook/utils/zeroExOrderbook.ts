@@ -37,7 +37,7 @@ function mapOrders(
   takerAsset: TokenDefinition,
   side: 'bid' | 'ask'
 ) {
-  return orders.map(order => {
+  return orders.map((order) => {
     const buyQuantity =
       side === 'bid'
         ? fromTokenBaseUnit(order.order.takerAssetAmount, takerAsset.decimals)

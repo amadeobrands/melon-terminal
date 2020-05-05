@@ -12,6 +12,7 @@ export interface TokenValueInputProps {
   name: string;
   label?: string;
   token: TokenDefinition;
+  disabled?: boolean;
 }
 
 export const TokenValueInput: React.FC<TokenValueInputProps> = ({ token, label, ...props }) => {
@@ -29,11 +30,11 @@ export const TokenValueInput: React.FC<TokenValueInputProps> = ({ token, label, 
   const onValueChange = React.useCallback(
     (values: NumberFormatValues) => {
       if (!values.value) {
-        return;
+        return setValue(new TokenValue(token));
       }
       setValue(new TokenValue(token, new BigNumber(values.value)));
     },
-    [setValue]
+    [token, setValue]
   );
 
   return (
@@ -55,7 +56,7 @@ export const TokenValueInput: React.FC<TokenValueInputProps> = ({ token, label, 
         />
       </S.InputContainer>
 
-      {meta.error && <Error>{meta.error}</Error>}
+      {meta.touched && meta.error && <Error>{meta.error}</Error>}
     </Wrapper>
   );
 };

@@ -2,7 +2,7 @@ import React from 'react';
 import BigNumber from 'bignumber.js';
 import { FormattedNumber } from '../FormattedNumber/FormattedNumber';
 
-export interface TokenValueProps {
+export interface TokenValueDisplayProps {
   value?: BigNumber.Value;
   symbol?: string;
   decimals?: number;
@@ -10,7 +10,7 @@ export interface TokenValueProps {
   tooltipDigits?: number;
 }
 
-export const TokenValue: React.FC<TokenValueProps> = ({
+export const TokenValueDisplay: React.FC<TokenValueDisplayProps> = ({
   value,
   symbol = '',
   decimals = 18,

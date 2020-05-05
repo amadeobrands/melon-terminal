@@ -1,5 +1,5 @@
 import styled, { keyframes } from 'styled-components';
-import { CircleNotch } from 'styled-icons/fa-solid/CircleNotch';
+import { CircleNotch } from '@styled-icons/fa-solid/CircleNotch';
 
 const rotate = keyframes`
   from {

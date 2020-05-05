@@ -1,19 +1,11 @@
 language: node_js
 dist: bionic
-addons:
-  chrome: beta
 branches:
   only:
     - master
 
-env:
-  global:
-    - GOOGLE_CHROME_BINARY="/usr/bin/google-chrome-beta"
-    - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true"
-
 node_js:
-  - '8'
-  - '10'
+  - '12'
 
 before_install:
   - curl -o- -L https://yarnpkg.com/install.sh | bash

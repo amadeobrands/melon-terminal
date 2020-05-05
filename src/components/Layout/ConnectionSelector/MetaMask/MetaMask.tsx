@@ -31,18 +31,18 @@ const connect = (): Rx.Observable<ConnectionAction> => {
 
   const enable$ = Rx.defer(() => ethereum.enable() as Promise<string[]>).pipe(startWith([]));
   const initial$ = enable$.pipe(
-    switchMap(async accounts => {
+    switchMap(async (accounts) => {
       const network = networkFromId(await eth.net.getId());
       return connectionEstablished(eth, network, accounts);
     })
   );
 
   const network$ = Rx.fromEvent<string>(ethereum, 'networkChanged').pipe(
-    map(id => networkChanged(networkFromId(parseInt(id, 10))))
+    map((id) => networkChanged(networkFromId(parseInt(id, 10))))
   );
 
   const accounts$ = Rx.concat(enable$, Rx.fromEvent<string[]>(ethereum, 'accountsChanged')).pipe(
-    map(accounts => accountsChanged(accounts))
+    map((accounts) => accountsChanged(accounts))
   );
 
   return Rx.concat(initial$, Rx.merge(accounts$, network$));

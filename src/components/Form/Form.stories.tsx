@@ -45,36 +45,43 @@ const tokens = [
 ] as TokenDefinition[];
 
 const validationSchema = Yup.object({
-  input: Yup.string()
-    .max(15, 'Must be 15 characters or less')
-    .required('Required'),
-  noLabel: Yup.string()
-    .max(15, 'Must be 15 characters or less')
-    .required('Required'),
-  textarea: Yup.string()
-    .max(20, 'Must be 20 characters or less')
-    .required('Required'),
-  checkboxes: Yup.array()
-    .min(1)
-    .max(2)
-    .required(),
+  input: Yup.string().max(15, 'Must be 15 characters or less').required('Required'),
+  noLabel: Yup.string().max(15, 'Must be 15 characters or less').required('Required'),
+  textarea: Yup.string().required().max(20, 'Must be 20 characters or less').required('Required'),
+  checkboxes: Yup.array().min(1).max(2).required(),
   bigNumber: Yup.mixed()
     .required()
-    .test('is-big-number', 'Has to be a big number', (value: BigNumber) => {
+    .test('is-big-number', 'Has to be a big number', (value?: BigNumber) => {
+      if (!value) {
+        return false;
+      }
+
       return BigNumber.isBigNumber(value);
     })
-    .test('greater-or-equal', 'Must be bigger than 100', (value: BigNumber) => {
+    .test('greater-or-equal', 'Must be bigger than 100', (value?: BigNumber) => {
+      if (!value) {
+        return false;
+      }
+
       return value.isGreaterThanOrEqualTo(100);
     }),
   tokenValue: Yup.mixed()
     .required()
-    .test('has-enough-decimals', 'Must have at the full decimal amount.', (value: TokenValue) => {
+    .test('has-enough-decimals', 'Must have at the full decimal amount.', (value?: TokenValue) => {
+      if (!value) {
+        return false;
+      }
+
       const decimals = value.value?.decimalPlaces();
       return !!decimals && new BigNumber(value.token.decimals).isEqualTo(decimals);
     }),
   tokenValueInput: Yup.mixed()
     .required()
-    .test('has-enough-decimals', 'Must have at the full decimal amount.', (value: TokenValue) => {
+    .test('has-enough-decimals', 'Must have at the full decimal amount.', (value?: TokenValue) => {
+      if (!value) {
+        return false;
+      }
+
       const decimals = value.value?.decimalPlaces();
       return !!decimals && new BigNumber(value.token.decimals).isEqualTo(decimals);
     }),
@@ -93,7 +100,7 @@ export const Basic = () => {
   const formik = useFormik({
     validationSchema,
     initialValues,
-    onSubmit: values => {
+    onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));
     },
   });

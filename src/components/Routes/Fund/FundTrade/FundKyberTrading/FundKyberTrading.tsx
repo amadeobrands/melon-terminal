@@ -15,7 +15,7 @@ import { useTransaction } from '~/hooks/useTransaction';
 import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
-import { Holding, Token, Policy, MaxConcentration, PriceTolerance } from '@melonproject/melongql';
+import { Holding, Token, Policy } from '@melonproject/melongql';
 import { Subtitle } from '~/storybook/Title/Title';
 import { Button } from '~/storybook/Button/Button';
 import { catchError, map, expand, switchMapTo } from 'rxjs/operators';
@@ -36,7 +36,7 @@ export interface FundKyberTradingProps {
   active: boolean;
 }
 
-export const FundKyberTrading: React.FC<FundKyberTradingProps> = props => {
+export const FundKyberTrading: React.FC<FundKyberTradingProps> = (props) => {
   const [state, setState] = useState(() => ({
     rate: new BigNumber('NaN'),
     maker: props.maker,
@@ -55,7 +55,7 @@ export const FundKyberTrading: React.FC<FundKyberTradingProps> = props => {
   });
 
   useEffect(() => {
-    setState(previous => ({
+    setState((previous) => ({
       ...previous,
       maker: props.maker,
       taker: props.taker,
@@ -81,12 +81,12 @@ export const FundKyberTrading: React.FC<FundKyberTradingProps> = props => {
     // Refetch every 5 seconds.
     const polling$ = fetch$.pipe(expand(() => Rx.timer(5000).pipe(switchMapTo(fetch$))));
     const observable$ = polling$.pipe(
-      map(value => fromTokenBaseUnit(value, 18)),
+      map((value) => fromTokenBaseUnit(value, 18)),
       catchError(() => Rx.of(new BigNumber('NaN')))
     );
 
-    const subscription = observable$.subscribe(rate => {
-      setState(previous => ({
+    const subscription = observable$.subscribe((rate) => {
+      setState((previous) => ({
         ...previous,
         rate,
         state: 'idle',
@@ -106,13 +106,13 @@ export const FundKyberTrading: React.FC<FundKyberTradingProps> = props => {
     (async () =>
       await validatePolicies({
         environment,
+        setPolicyValidation,
+        value,
         policies: props.policies,
         taker: props.taker,
         maker: props.maker,
         holdings: props.holdings,
         denominationAsset: props.denominationAsset,
-        setPolicyValidation,
-        value,
         quantity: props.quantity,
         trading: props.trading,
       }))();
@@ -121,13 +121,13 @@ export const FundKyberTrading: React.FC<FundKyberTradingProps> = props => {
   const submit = async () => {
     await validatePolicies({
       environment,
+      setPolicyValidation,
+      value,
       policies: props.policies,
       taker: props.taker,
       maker: props.maker,
       holdings: props.holdings,
       denominationAsset: props.denominationAsset,
-      setPolicyValidation,
-      value,
       quantity: props.quantity,
       trading: props.trading,
     });
@@ -136,7 +136,7 @@ export const FundKyberTrading: React.FC<FundKyberTradingProps> = props => {
     }
 
     const trading = new Trading(environment, props.trading);
-    const adapter = await KyberTradingAdapter.create(environment, props.exchange.exchange, trading);
+    const adapter = await KyberTradingAdapter.create(environment, props.exchange.adapter, trading);
 
     const tx = adapter.takeOrder(account.address!, {
       makerQuantity: toTokenBaseUnit(value, props.maker.decimals),

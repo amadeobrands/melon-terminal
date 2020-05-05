@@ -10,15 +10,15 @@ export interface ButtonProps {
 
 const ButtonBase = css`
   width: auto;
-  height: ${props => props.theme.spaceUnits.xxl};
-  padding: 0px ${props => props.theme.spaceUnits.m};
+  height: ${(props) => props.theme.spaceUnits.xxl};
+  padding: 0px ${(props) => props.theme.spaceUnits.m};
   justify-content: center;
   align-items: center;
   border: none;
-  border-radius: ${props => props.theme.border.borderRadius};
+  border-radius: ${(props) => props.theme.border.borderRadius};
   white-space: nowrap;
   cursor: pointer;
-  transition: ${props => props.theme.transition.defaultAll};
+  transition: ${(props) => props.theme.transition.defaultAll};
   a {
     text-decoration: none;
   }
@@ -26,70 +26,70 @@ const ButtonBase = css`
 
 export const Button = styled.button<ButtonProps>`
   ${ButtonBase}
-  color: ${props => props.theme.mainColors.primary};
-  background: ${props => props.theme.mainColors.primaryDark};
+  color: ${(props) => props.theme.mainColors.primary};
+  background: ${(props) => props.theme.mainColors.primaryDark};
   :hover{
     opacity: 0.75;
   }
   :active{
-    background: ${props => props.theme.otherColors.white};
+    background: ${(props) => props.theme.otherColors.white};
   }
-  ${props =>
+  ${(props) =>
     props.kind === 'secondary' &&
     css`
-      color: ${props => props.theme.mainColors.primaryDark};
-      background: ${props => props.theme.mainColors.primary};
-      border: ${props => props.theme.border.borderDefault};
+      color: ${(props) => props.theme.mainColors.primaryDark};
+      background: ${(props) => props.theme.mainColors.primary};
+      border: ${(props) => props.theme.border.borderDefault};
       :hover {
-        background: ${props => props.theme.mainColors.secondary};
+        background: ${(props) => props.theme.mainColors.secondary};
       }
     `}
-  ${props =>
+  ${(props) =>
     props.kind === 'warning' &&
     css`
-      background: ${props => props.theme.statusColors.warning};
+      background: ${(props) => props.theme.statusColors.warning};
     `}
-  ${props =>
+  ${(props) =>
     props.kind === 'danger' &&
     css`
-      background: ${props => props.theme.statusColors.primaryLoss};
+      background: ${(props) => props.theme.statusColors.primaryLoss};
     `}
-  ${props =>
+  ${(props) =>
     props.kind === 'success' &&
     css`
-      background: ${props => props.theme.statusColors.primaryProfit};
+      background: ${(props) => props.theme.statusColors.primaryProfit};
     `}
-  ${props =>
+  ${(props) =>
     props.disabled &&
     css`
-      background: ${props => props.theme.mainColors.secondaryDarkAlpha};
+      background: ${(props) => props.theme.mainColors.secondaryDarkAlpha};
       pointer-events: none;
     `}
-  ${props =>
+  ${(props) =>
     props.size === 'large' &&
     css`
       height: 48px;
     `}
-  ${props =>
+  ${(props) =>
     props.size === 'small' &&
     css`
       height: 32px;
     `}
-    ${props =>
+    ${(props) =>
       props.size === 'extrasmall' &&
       css`
         height: 24px;
       `}
-    ${props =>
+    ${(props) =>
       props.length === 'stretch' &&
       css`
         width: 100%;
       `}
   & + & {
-    margin-left: ${props => props.theme.spaceUnits.m};
+    margin-left: ${(props) => props.theme.spaceUnits.m};
   }
   svg {
-    margin-left: ${props => props.theme.spaceUnits.xs};
+    margin-left: ${(props) => props.theme.spaceUnits.xs};
   }
 `;
 

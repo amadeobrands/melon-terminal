@@ -17,7 +17,7 @@ import { SectionTitle } from '~/storybook/Title/Title';
 import { Block } from '~/storybook/Block/Block';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { Icons, IconName } from '~/storybook/Icons/Icons';
-import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 
 export interface FundHoldingsProps {
   address: string;
@@ -35,7 +35,7 @@ export const FundHoldings: React.FC<FundHoldingsProps> = ({ address }) => {
     );
   }
 
-  const nonZeroHoldings = holdings.filter(holding => !holding.amount?.isZero());
+  const nonZeroHoldings = holdings.filter((holding) => !holding.amount?.isZero());
 
   const totalValue = nonZeroHoldings.reduce((acc, current) => {
     return acc.plus(current.value || new BigNumber(0));
@@ -81,10 +81,10 @@ export const FundHoldings: React.FC<FundHoldingsProps> = ({ address }) => {
                   <FormattedNumber value={holding.token?.price} />
                 </BodyCellRightAlign>
                 <BodyCellRightAlign>
-                  <TokenValue value={holding.amount!} decimals={holding.token!.decimals!} />
+                  <TokenValueDisplay value={holding.amount!} decimals={holding.token!.decimals!} />
                 </BodyCellRightAlign>
                 <BodyCellRightAlign>
-                  <TokenValue value={holding.value!} />
+                  <TokenValueDisplay value={holding.value!} />
                 </BodyCellRightAlign>
                 <BodyCellRightAlign>
                   <FormattedNumber value={holding.value?.dividedBy(totalValue).times(100)} decimals={2} suffix="%" />

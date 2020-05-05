@@ -29,7 +29,7 @@ const connect = (): Rx.Observable<ConnectionAction> => {
 
   const enable$ = Rx.defer(() => ethereum.enable() as Promise<string[]>);
   const initial$ = enable$.pipe(
-    switchMap(async accounts => {
+    switchMap(async (accounts) => {
       const network = networkFromId(await eth.net.getId());
       return connectionEstablished(eth, network, accounts);
     })

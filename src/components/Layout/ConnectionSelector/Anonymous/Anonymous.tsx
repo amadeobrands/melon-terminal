@@ -30,7 +30,7 @@ const connect = (): Rx.Observable<ConnectionAction> => {
     rinkeby: getConfig(NetworkEnum.RINKEBY)?.provider,
   };
 
-  const endpoint = providers[path] || Object.values(providers).find(provider => !!provider);
+  const endpoint = providers[path] || Object.values(providers).find((provider) => !!provider);
   if (!endpoint) {
     return Rx.EMPTY;
   }
@@ -44,15 +44,15 @@ const connect = (): Rx.Observable<ConnectionAction> => {
     return { eth, unsubscribe: () => provider.disconnect() };
   };
 
-  return Rx.using(create, resource => {
+  return Rx.using(create, (resource) => {
     const eth = (resource as Resource).eth;
     const connect$ = Rx.defer(async () => networkFromId(await eth.net.getId())).pipe(
-      retryWhen(error => error.pipe(delay(10000))),
+      retryWhen((error) => error.pipe(delay(10000))),
       take(1),
       share()
     );
 
-    const initial$ = connect$.pipe(map(network => connectionEstablished(eth, network)));
+    const initial$ = connect$.pipe(map((network) => connectionEstablished(eth, network)));
     return initial$;
   });
 };

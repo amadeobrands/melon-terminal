@@ -145,7 +145,7 @@ export const FundSetupTransactions: React.FC = () => {
   });
 
   useEffect(() => {
-    const index = pipelineOrder.findIndex(item => item === progress);
+    const index = pipelineOrder.findIndex((item) => item === progress);
     const newChecked = R.range(0, index + 1).map(() => true);
     setChecked(newChecked);
 

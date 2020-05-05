@@ -26,6 +26,6 @@ export const useFundReturnBatchToVaultQuery = (address: string) => {
   };
 
   const result = useOnChainQuery<FundReturnBatchToVaultQueryVariables>(FundReturnBatchToVaultQuery, options);
-  const addresses = (result.data?.fund?.routes?.trading?.lockedAssets ?? []).map(item => item.address!);
+  const addresses = (result.data?.fund?.routes?.trading?.lockedAssets ?? []).map((item) => item.address!);
   return [addresses, result] as [typeof addresses, typeof result];
 };

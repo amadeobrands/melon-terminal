@@ -35,7 +35,7 @@ export interface FundUniswapTradingProps {
   active: boolean;
 }
 
-export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
+export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = (props) => {
   const [state, setState] = useState(() => ({
     rate: new BigNumber('NaN'),
     maker: props.maker,
@@ -52,7 +52,7 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
   const transaction = useTransaction(environment);
 
   useEffect(() => {
-    setState(previous => ({
+    setState((previous) => ({
       ...previous,
       maker: props.maker,
       taker: props.taker,
@@ -99,12 +99,14 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
     // Refetch every 5 seconds.
     const polling$ = fetch$.pipe(expand(() => Rx.timer(5000).pipe(switchMapTo(fetch$))));
     const observable$ = polling$.pipe(
-      map(value => value.multipliedBy(new BigNumber(10).exponentiatedBy(props.taker.decimals - props.maker.decimals))),
+      map((value) =>
+        value.multipliedBy(new BigNumber(10).exponentiatedBy(props.taker.decimals - props.maker.decimals))
+      ),
       catchError(() => Rx.of(new BigNumber('NaN')))
     );
 
-    const subscription = observable$.subscribe(rate => {
-      setState(previous => ({
+    const subscription = observable$.subscribe((rate) => {
+      setState((previous) => ({
         ...previous,
         rate,
         state: 'idle',
@@ -124,13 +126,13 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
     (async () =>
       await validatePolicies({
         environment,
+        setPolicyValidation,
+        value,
         policies: props.policies,
         taker: props.taker,
         maker: props.maker,
         holdings: props.holdings,
         denominationAsset: props.denominationAsset,
-        setPolicyValidation,
-        value,
         quantity: props.quantity,
         trading: props.trading,
       }))();
@@ -139,13 +141,13 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
   const submit = async () => {
     await validatePolicies({
       environment,
+      setPolicyValidation,
+      value,
       policies: props.policies,
       taker: props.taker,
       maker: props.maker,
       holdings: props.holdings,
       denominationAsset: props.denominationAsset,
-      setPolicyValidation,
-      value,
       quantity: props.quantity,
       trading: props.trading,
     });
@@ -154,7 +156,7 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
     }
 
     const trading = new Trading(environment, props.trading);
-    const adapter = await UniswapTradingAdapter.create(environment, props.exchange.exchange, trading);
+    const adapter = await UniswapTradingAdapter.create(environment, props.exchange.adapter, trading);
 
     const tx = adapter.takeOrder(account.address!, {
       makerQuantity: toTokenBaseUnit(value, props.maker.decimals),

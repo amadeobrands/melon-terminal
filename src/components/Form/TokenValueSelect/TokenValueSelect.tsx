@@ -13,9 +13,10 @@ export interface TokenValueSelectProps {
   name: string;
   label?: string;
   tokens: TokenDefinition[];
+  disabled?: boolean;
 }
 
-export const TokenValueSelect: React.FC<TokenValueSelectProps> = ({ tokens, label, ...props }) => {
+export const TokenValueSelect: React.FC<TokenValueSelectProps> = ({ tokens, label, disabled, ...props }) => {
   const [{ onChange, ...field }, meta, { setValue }] = useField<TokenValue | undefined>(props.name);
 
   const inputRef = React.useRef<undefined | HTMLInputElement>();
@@ -23,7 +24,7 @@ export const TokenValueSelect: React.FC<TokenValueSelectProps> = ({ tokens, labe
   const toggleOpen = React.useCallback(() => setOpen(!open), [open, setOpen]);
 
   const options = React.useMemo<SelectOption[]>(() => {
-    return tokens.map(item => ({
+    return tokens.map((item) => ({
       value: item.address,
       label: item.symbol,
       icon: item.symbol,
@@ -32,7 +33,7 @@ export const TokenValueSelect: React.FC<TokenValueSelectProps> = ({ tokens, labe
   }, [tokens]);
 
   const selection = React.useMemo(() => {
-    return options.find(option => sameAddress(option.value, field.value?.token.address));
+    return options.find((option) => sameAddress(option.value, field.value?.token.address));
   }, [options, field.value]);
 
   const number = React.useMemo(() => {
@@ -90,7 +91,7 @@ export const TokenValueSelect: React.FC<TokenValueSelectProps> = ({ tokens, labe
           decimalScale={selection?.token.decimals}
           onValueChange={onValueChange}
           isAllowed={isAllowed}
-          disabled={!field.value}
+          disabled={!field.value || disabled}
           placeholder={field.value ? 'Enter a value ...' : undefined}
         />
       </S.InputContainer>
@@ -115,7 +116,8 @@ export const TokenValueSelect: React.FC<TokenValueSelectProps> = ({ tokens, labe
           placeholder="Search ..."
         />
       ) : null}
-      {meta.error && <Error>{meta.error}</Error>}
+
+      {meta.touched && meta.error && <Error>{meta.error}</Error>}
     </Wrapper>
   );
 };

@@ -33,10 +33,10 @@ const availableIcons = {
   SWAPARROWS: React.lazy(() => import('./svg/SwapArrows')),
   EXCHANGE: React.lazy(() => import('./svg/Exchange')),
   FORTMATIC: React.lazy(() => import('./svg/wallet/Fortmatic')),
-  WALLETCONNECT: React.lazy(() => import('./svg/wallet/WalletConnect')),
   SUN: React.lazy(() => import('./svg/Sun')),
   MOON: React.lazy(() => import('./svg/Moon')),
   ETHEREUM: React.lazy(() => import('./svg/Ethereum')),
+  ETHER: React.lazy(() => import('./svg/Ethereum')),
   WALLET: React.lazy(() => import('./svg/Wallet')),
 };
 

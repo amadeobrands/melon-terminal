@@ -36,7 +36,7 @@ export const Disabled: React.FC = () => {
 export const DisabledChecked: React.FC = () => {
   return (
     <RadioButtonContainer>
-      <RadioButtonInput type="radio" id="idradio" name="my_RadioButton" value="1" disabled={true} checked />
+      <RadioButtonInput type="radio" id="idradio" name="my_RadioButton" value="1" disabled={true} checked={true} />
       <RadioButtonMask>
         <RadioButtonIcon />
       </RadioButtonMask>

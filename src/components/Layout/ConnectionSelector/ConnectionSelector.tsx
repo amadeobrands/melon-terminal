@@ -54,7 +54,7 @@ export const ConnectionButton: React.FC<ConnectionButtonProps> = ({
         <Dropdown
           options={accounts}
           value={connection.account}
-          onChange={event => connection.switch(event.target.value)}
+          onChange={(event) => connection.switch(event.target.value)}
         />
       )) ||
         null}
@@ -66,7 +66,7 @@ export const ConnectionSelector = () => {
   const ref = useRef<any>();
   const [open, setOpen] = useState(false);
   const connection = useConnectionState();
-  const current = connection.methods.find(item => item.name === connection.method);
+  const current = connection.methods.find((item) => item.name === connection.method);
 
   useEffect(() => {
     if (!open) {
@@ -100,7 +100,7 @@ export const ConnectionSelector = () => {
 
       {open && (
         <S.ConnectionSelectorBox>
-          {connection.methods.map(method => {
+          {connection.methods.map((method) => {
             const active = method.name === connection.method;
             const accounts = active
               ? (connection.accounts || []).map((address, index) => ({

@@ -22,14 +22,14 @@ interface ValidatePoliciesArguments {
 }
 
 export const validatePolicies = async (args: ValidatePoliciesArguments) => {
-  const maxConcentrationPolicies = args.policies?.filter(policy => policy.identifier === 'MaxConcentration') as
+  const maxConcentrationPolicies = args.policies?.filter((policy) => policy.identifier === 'MaxConcentration') as
     | MaxConcentration[]
     | undefined;
-  const priceTolerancePolicies = args.policies?.filter(policy => policy.identifier === 'PriceTolerance') as
+  const priceTolerancePolicies = args.policies?.filter((policy) => policy.identifier === 'PriceTolerance') as
     | PriceTolerance[]
     | undefined;
 
-  const nonZeroHoldings = args.holdings.filter(holding => !holding.amount?.isZero());
+  const nonZeroHoldings = args.holdings.filter((holding) => !holding.amount?.isZero());
   const gav = nonZeroHoldings?.reduce(
     (carry, item) => carry.plus(item.value || new BigNumber(0)),
     new BigNumber(0)
@@ -38,7 +38,7 @@ export const validatePolicies = async (args: ValidatePoliciesArguments) => {
   if (!maxConcentrationPolicies?.length || sameAddress(args.taker.address, args.denominationAsset?.address)) {
     args.setPolicyValidation({ valid: true, message: '' });
   } else {
-    const investmentAsset = args.holdings?.find(holding => sameAddress(holding.token?.address, args.maker.address));
+    const investmentAsset = args.holdings?.find((holding) => sameAddress(holding.token?.address, args.maker.address));
     const investmentAmountInDenominationAsset = new BigNumber(args.value)
       .multipliedBy(investmentAsset?.token?.price || new BigNumber(0))
       .multipliedBy(investmentAsset?.token?.decimals || new BigNumber(18));
@@ -48,7 +48,7 @@ export const validatePolicies = async (args: ValidatePoliciesArguments) => {
     const concentration = futureAssetGav.multipliedBy('1e18').dividedBy(futureGav);
 
     const valid = !!maxConcentrationPolicies?.every(
-      policy => policy.maxConcentration && policy.maxConcentration.isGreaterThanOrEqualTo(concentration)
+      (policy) => policy.maxConcentration && policy.maxConcentration.isGreaterThanOrEqualTo(concentration)
     );
 
     if (!valid) {
@@ -76,7 +76,7 @@ export const validatePolicies = async (args: ValidatePoliciesArguments) => {
     ]);
 
     const valid = priceTolerancePolicies?.every(
-      policy =>
+      (policy) =>
         policy.priceTolerance &&
         orderPrice.isGreaterThan(
           referencePrice.price.minus(policy.priceTolerance.multipliedBy(referencePrice.price).dividedBy('1e18'))

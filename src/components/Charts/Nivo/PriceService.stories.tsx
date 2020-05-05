@@ -28,17 +28,17 @@ interface PriceResults {
 }
 
 function parsePrices(prices: PriceResults): LineChartData {
-  const series = prices.data.map(price => ({
+  const series = prices.data.map((price) => ({
     x: format(fromUnixTime(price[0]), 'yyyy-MM-dd'),
     y: price[1],
   }));
-  const aThing = series.pop()
-  console.log(aThing)
+  const aThing = series.pop();
+  console.log(aThing);
   const data = {
     id: `${prices.base}/${prices.quote}`,
-    data: prices.data.map(price => ({
+    data: prices.data.map((price) => ({
       x: format(fromUnixTime(price[0]), 'yyyy-MM-dd'),
-      y: price[1]
+      y: price[1],
     })),
   };
   console.log(data);
@@ -47,7 +47,7 @@ function parsePrices(prices: PriceResults): LineChartData {
 
 async function fetchPrices(key: string, quote: string, base: string, from: number, to: number) {
   const url = `https://rates.avantgarde.finance/api/historical?quote=${quote}&base=${base}&from=${from.toString()}&to=${to.toString()}`;
-  const data = await fetch(url).then(res => res.json());
+  const data = await fetch(url).then((res) => res.json());
 
   return parsePrices(data) as LineChartData;
 }

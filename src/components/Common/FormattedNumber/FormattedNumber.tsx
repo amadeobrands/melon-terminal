@@ -23,7 +23,7 @@ const NoWrap = styled.span`
 `;
 
 const Color = styled(NoWrap)<ColorProps>`
-  color: ${props => props.theme.otherColors[props.color]};
+  color: ${(props) => props.theme.otherColors[props.color]};
 `;
 
 export const FormattedNumber: React.FC<FormattedNumberData> = ({
@@ -54,8 +54,9 @@ export const FormattedNumber: React.FC<FormattedNumberData> = ({
       <Color color={color}>
         {tooltip ? (
           <Tooltip
-            value={`${prefix ? ' ' : ''}${numberWithCommas(bnFixed)}${!suffix || suffix === '%' ? '' : ' '}${suffix ||
-              ''}`}
+            value={`${prefix ? ' ' : ''}${numberWithCommas(bnFixed)}${!suffix || suffix === '%' ? '' : ' '}${
+              suffix || ''
+            }`}
           >
             {output}
           </Tooltip>
@@ -70,8 +71,9 @@ export const FormattedNumber: React.FC<FormattedNumberData> = ({
     <NoWrap>
       {tooltip ? (
         <Tooltip
-          value={`${prefix ? ' ' : ''}${numberWithCommas(bnFixed)}${!suffix || suffix === '%' ? '' : ' '}${suffix ||
-            ''}`}
+          value={`${prefix ? ' ' : ''}${numberWithCommas(bnFixed)}${!suffix || suffix === '%' ? '' : ' '}${
+            suffix || ''
+          }`}
         >
           {output}
         </Tooltip>

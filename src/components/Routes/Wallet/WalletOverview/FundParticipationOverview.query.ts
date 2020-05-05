@@ -164,7 +164,7 @@ export const useFundParticipationOverviewQuery = (investor?: Address) => {
   );
 
   const investments = (result && result.data && result.data.investor && result.data.investor.investments) || [];
-  const investmentsProcessed = investments.map(item => {
+  const investmentsProcessed = investments.map((item) => {
     const output: Fund = {
       address: item.fund.id,
       name: item.fund.name,
@@ -175,7 +175,7 @@ export const useFundParticipationOverviewQuery = (investor?: Address) => {
       participationAddress: item.fund.participation.id,
       tradingAddress: item.fund.trading.id,
       accountingAddress: item.fund.accounting.id,
-      ownedAssets: (item.fund.accounting.ownedAssets || []).map(asset => asset.id),
+      ownedAssets: (item.fund.accounting.ownedAssets || []).map((asset) => asset.id),
       manager: item.fund.manager,
       gav: item.fund.gav,
       change: calculateChangeFromSharePrice(
@@ -191,7 +191,7 @@ export const useFundParticipationOverviewQuery = (investor?: Address) => {
 
   const investmentRequests =
     (result && result.data && result.data.investor && result.data.investor.investmentRequests) || [];
-  const investmentRequestsProcessed = investmentRequests.map(item => {
+  const investmentRequestsProcessed = investmentRequests.map((item) => {
     const output: InvestmentRequest = {
       address: item.fund.id,
       name: item.fund.name,
@@ -206,7 +206,7 @@ export const useFundParticipationOverviewQuery = (investor?: Address) => {
       participationAddress: item.fund.participation.id,
       tradingAddress: item.fund.trading.id,
       accountingAddress: item.fund.accounting.id,
-      ownedAssets: (item.fund.accounting.ownedAssets || []).map(asset => asset.id),
+      ownedAssets: (item.fund.accounting.ownedAssets || []).map((asset) => asset.id),
       manager: item.fund.manager,
       change: calculateChangeFromSharePrice(
         item.fund.calculationsHistory[0]?.sharePrice,
@@ -218,7 +218,7 @@ export const useFundParticipationOverviewQuery = (investor?: Address) => {
   });
 
   const managed = (result && result.data && result.data.fundManager && result.data.fundManager.funds) || [];
-  const managedProcessed = managed.map(item => {
+  const managedProcessed = managed.map((item) => {
     const output: Fund = {
       address: item.id,
       name: item.name,
@@ -229,7 +229,7 @@ export const useFundParticipationOverviewQuery = (investor?: Address) => {
       participationAddress: item.participation.id,
       tradingAddress: item.trading.id,
       accountingAddress: item.accounting.id,
-      ownedAssets: (item.accounting.ownedAssets || []).map(asset => asset.id),
+      ownedAssets: (item.accounting.ownedAssets || []).map((asset) => asset.id),
       manager: item.manager,
       gav: item.gav,
       change: calculateChangeFromSharePrice(

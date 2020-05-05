@@ -8,7 +8,7 @@ export interface FundOrderbookPriceProps {
   change?: number;
 }
 
-export const FundOrderbookPrice: React.FC<FundOrderbookPriceProps> = props => {
+export const FundOrderbookPrice: React.FC<FundOrderbookPriceProps> = (props) => {
   const decimals = props.decimals ?? 8;
   const changedDigits = props.change !== undefined ? props.price.toFixed(decimals).slice(props.change) : undefined;
   const unchangedDigits =

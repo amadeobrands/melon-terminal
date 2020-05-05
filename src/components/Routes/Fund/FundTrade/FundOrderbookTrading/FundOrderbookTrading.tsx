@@ -18,7 +18,7 @@ export interface FundOrderbookTradingProps {
   policies?: Policy[];
 }
 
-export const FundOrderbookTrading: React.FC<FundOrderbookTradingProps> = props => {
+export const FundOrderbookTrading: React.FC<FundOrderbookTradingProps> = (props) => {
   const environment = useEnvironment()!;
 
   const weth = environment.getToken('WETH');
@@ -31,8 +31,8 @@ export const FundOrderbookTrading: React.FC<FundOrderbookTradingProps> = props =
   }, [asset]);
 
   const tokenOptions = environment.tokens
-    .filter(token => token !== weth && !token.historic)
-    .map(token => ({
+    .filter((token) => token !== weth && !token.historic)
+    .map((token) => ({
       value: token.address,
       name: `${token.symbol} / ${weth.symbol}`,
     }));
@@ -48,7 +48,7 @@ export const FundOrderbookTrading: React.FC<FundOrderbookTradingProps> = props =
             label="Asset pair"
             options={tokenOptions}
             value={asset.address}
-            onChange={event => setAsset(environment.getToken(event.target.value)!)}
+            onChange={(event) => setAsset(environment.getToken(event.target.value)!)}
           />
 
           {asset && (

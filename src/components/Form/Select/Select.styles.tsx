@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 export const SelectWrapper = styled.div`
   display: flex;
+  color: ${(props) => props.theme.mainColors.secondaryDark};
 `;
 
 export const SelecLabelWrapper = styled.span`
@@ -16,6 +17,6 @@ export const SelectIcon = styled.span`
 export const SelectLabel = styled.span``;
 
 export const SelectDescription = styled.span`
-  font-size: ${props => props.theme.fontSizes.m};
-  color: ${props => props.theme.mainColors.secondaryDark};
+  font-size: ${(props) => props.theme.fontSizes.m};
+  color: ${(props) => props.theme.mainColors.secondaryDark};
 `;

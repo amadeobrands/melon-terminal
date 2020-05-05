@@ -62,7 +62,7 @@ export const Nivo: React.FC<NivoProps> = ({ data, generator }) => {
           return (
             <div>
               <div>Date: {slice.points[0].data.xFormatted}</div>
-              {slice.points.map(point => (
+              {slice.points.map((point) => (
                 <div
                   key={point.id}
                   style={{
