@@ -37,12 +37,10 @@ function parsePrices(prices: PriceResults): LineChartData {
   const data = [
     {
       id: `${prices.base}/${prices.quote}`,
-      data: prices.data
-        .sort((a, b) => a[0] - b[0])
-        .map((price) => ({
-          x: format(fromUnixTime(price[0]), 'yyyy-MM-dd'),
-          y: price[1],
-        })),
+      data: prices.data.map((price) => ({
+        x: format(fromUnixTime(price[0]), 'yyyy-MM-dd'),
+        y: price[1],
+      })),
     },
   ];
 
