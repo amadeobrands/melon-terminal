@@ -13,9 +13,10 @@ export interface TokenValueSelectProps {
   name: string;
   label?: string;
   tokens: TokenDefinition[];
+  disabled?: boolean;
 }
 
-export const TokenValueSelect: React.FC<TokenValueSelectProps> = ({ tokens, label, ...props }) => {
+export const TokenValueSelect: React.FC<TokenValueSelectProps> = ({ tokens, label, disabled, ...props }) => {
   const [{ onChange, ...field }, meta, { setValue }] = useField<TokenValue | undefined>(props.name);
 
   const inputRef = React.useRef<undefined | HTMLInputElement>();
@@ -90,7 +91,7 @@ export const TokenValueSelect: React.FC<TokenValueSelectProps> = ({ tokens, labe
           decimalScale={selection?.token.decimals}
           onValueChange={onValueChange}
           isAllowed={isAllowed}
-          disabled={!field.value}
+          disabled={!field.value || disabled}
           placeholder={field.value ? 'Enter a value ...' : undefined}
         />
       </S.InputContainer>

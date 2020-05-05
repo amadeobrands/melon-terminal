@@ -12,6 +12,7 @@ export interface TokenValueInputProps {
   name: string;
   label?: string;
   token: TokenDefinition;
+  disabled?: boolean;
 }
 
 export const TokenValueInput: React.FC<TokenValueInputProps> = ({ token, label, ...props }) => {
