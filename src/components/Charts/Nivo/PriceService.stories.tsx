@@ -1,11 +1,23 @@
 import React from 'react';
 import { useQuery } from 'react-query';
-import { fromUnixTime, format, isBefore, startOfDay, endOfDay, getUnixTime } from 'date-fns';
+import {
+  fromUnixTime,
+  format,
+  isBefore,
+  startOfDay,
+  endOfDay,
+  getUnixTime,
+  addWeeks,
+  subWeeks,
+  subMonths,
+} from 'date-fns';
 import { PriceChart, LineChartData } from './PriceChart';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 import { Serie } from '@nivo/line';
 import { differenceInSeconds, addDays } from 'date-fns/esm';
 import { useEffectOnce } from 'react-use';
+import { BasicPriceChart } from './BareBones';
+import { Button } from '~/storybook/Button/Button.styles';
 
 export default { title: 'Charts|Price Service Testing' };
 
@@ -20,60 +32,85 @@ export default { title: 'Charts|Price Service Testing' };
  
  */
 interface PriceResults {
+  updated: number;
+  revalidate: number;
+  params: {
+    to: number;
+    from: number;
+    base: string;
+    quote: string;
+  };
+  data: [number, number, number, number, number, number, number][];
+}
+
+interface QueryParams {
+  to: number;
+  from: number;
   base: string;
   quote: string;
-  from: number;
-  to: number;
-  data: [number, number, number, number, number, number, number][];
 }
 
 function parsePrices(prices: PriceResults): LineChartData {
   const data = [
     {
-      id: `${prices.base}/${prices.quote}`,
+      id: `${prices.params.base}/${prices.params.quote}`,
       data: prices.data.map((price) => ({
-        x: format(fromUnixTime(price[0]), 'yyyy-MM-dd'),
+        x: fromUnixTime(price[0]),
         y: price[1],
       })),
     },
   ];
 
-  return { earliestDate: prices.from, data: data };
+  return { earliestDate: prices.params.from, data: data };
 }
 
-function findCorrectFromTime(timestamp: number) {
-  // find the timezone offset in minutes
-  // adjust for UTC time
-  // return beginningOfDay()
-  const offset = new Date().getTimezoneOffset();
-
-  const adjustedTime = timestamp + offset;
-  console.log(adjustedTime);
-  return getUnixTime(startOfDay(adjustedTime));
+function findCorrectFromTime(date: Date) {
+  const fromYear = date.getUTCFullYear();
+  const fromMonth = date.getUTCMonth();
+  const fromDay = date.getUTCDay();
+  const beginningOfDay = Date.UTC(fromYear, fromMonth, fromDay, 0, 0, 0, 0) / 1000;
+  return beginningOfDay;
 }
 
-function findCorrectToTime(timestamp: number) {
-  const offset = new Date().getTimezoneOffset();
-  const adjustedTime = timestamp - offset;
-  return getUnixTime(endOfDay(adjustedTime));
+function findCorrectToTime(date: Date) {
+  const toYear = date.getUTCFullYear();
+  const toMonth = date.getUTCMonth();
+  const toDay = date.getUTCDay();
+  const endOfDay = Date.UTC(toYear, toMonth, toDay, 23, 59, 59, 0) / 1000;
+  return endOfDay;
 }
 
 async function fetchPrices(key: string, quote: string, base: string, from: number, to: number) {
+  if (from > to) {
+    // handle this
+    console.log('your dates are screwy');
+  }
   const url = `https://rates.avantgarde.finance/api/historical?quote=${quote}&base=${base}&from=${from.toString()}&to=${to.toString()}`;
   const data = await fetch(url).then((res) => res.json());
   return parsePrices(data) as LineChartData;
 }
 
 export const PriceService: React.FC = () => {
-  const [params, setParams] = React.useState({ quote: 'ETH', base: 'MLN', from: 1548806400, to: 1588636799 });
-  // params is an object, each value passed to the useQuery hook to query the prices endpoint
-  // chart component sends back ONLY the 'from' value, so that may need to be refactored at the chart level
+  const from = findCorrectFromTime(subMonths(new Date(), 2));
 
-  function editParams(newParam: number) {
-    if (typeof newParam === 'number') {
-      setParams({ ...params, from: findCorrectFromTime(newParam) });
+  const to = findCorrectToTime(new Date());
+
+  const [params, setParams] = React.useState({ quote: 'ETH', base: 'MLN', from: from, to: to });
+
+  // how to type this?
+  function editParams(newParam) {
+    console.log('before', params);
+    setParams({ ...params, ...newParam });
+    console.log('after', params);
+  }
+
+  function clickHandler(variable: number) {
+    if (variable === 6) {
+      const newFrom = findCorrectFromTime(addWeeks(fromUnixTime(from), variable));
+      editParams({ from: newFrom });
     } else {
-      setParams({ ...params, newParam });
+      const newTo = findCorrectToTime(subWeeks(fromUnixTime(to), variable));
+      editParams({ to: newTo });
     }
   }
 
@@ -82,7 +119,20 @@ export const PriceService: React.FC = () => {
     fetchPrices
   );
   console.log(data);
-  return <PriceChart loading={isFetching} startDate={params.from} chartData={data} triggerFunction={editParams} />;
+
+  return (
+    <div>
+      <div>
+        From
+        <Button onClick={() => clickHandler(6)}>6 weeks</Button>
+      </div>
+      <div>
+        To
+        <Button onClick={() => clickHandler(1)}>1week</Button>
+      </div>
+      <BasicPriceChart loading={isFetching} chartData={data} />
+    </div>
+  );
 };
 
 /** 
