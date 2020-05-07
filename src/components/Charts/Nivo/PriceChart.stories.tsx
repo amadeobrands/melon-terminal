@@ -5,6 +5,7 @@ import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 import { Serie } from '@nivo/line';
 import { differenceInDays, addDays } from 'date-fns/esm';
 import { useEffectOnce } from 'react-use';
+import { ControlBox } from './ControlBox';
 
 export default { title: 'Charts|Price Chart' };
 
@@ -5132,7 +5133,7 @@ function parseSharePriceQueryData(input: any[], startDate: number): LineChartDat
       // and push it into the fundInfo.data array
       fundInfo.data.push({
         y: fromTokenBaseUnit(j.sharePrice, 18).toFixed(4),
-        x: date,
+        x: new Date(date),
       });
 
       // finally add the date to the dictionary so you ignore all subsequent calcHistories
@@ -5160,5 +5161,5 @@ export const Default: React.FC = () => {
   // const yScale = React.useMemo(() => (yScaleType === 'linear' ? linearProps : logProps), [yScaleType]);
   useEffectOnce(() => trigger(0));
 
-  return <PriceChart loading={false} chartData={data} startDate={startDate} triggerFunction={trigger} />;
+  return <ControlBox loading={false} chartData={data} startDate={startDate} triggerFunction={trigger} />;
 };

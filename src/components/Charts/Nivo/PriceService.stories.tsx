@@ -10,10 +10,12 @@ import {
   addWeeks,
   subWeeks,
   subMonths,
+  subDays,
+  subYears,
 } from 'date-fns';
 import { PriceChart, LineChartData } from './PriceChart';
-import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
-import { Serie } from '@nivo/line';
+
+import { Serie, Datum } from '@nivo/line';
 import { differenceInSeconds, addDays } from 'date-fns/esm';
 import { useEffectOnce } from 'react-use';
 import { BasicPriceChart } from './BareBones';
@@ -37,31 +39,53 @@ interface PriceResults {
   params: {
     to: number;
     from: number;
-    base: string;
-    quote: string;
+    address: string;
   };
   data: [number, number, number, number, number, number, number][];
 }
 
-interface QueryParams {
-  to: number;
-  from: number;
-  base: string;
-  quote: string;
+interface TimelineItem {
+  timestamp: number;
+  rates: {
+    [symbol: string]: number;
+  };
+  holdings: {
+    [symbol: string]: number;
+  };
+  shares: number;
 }
 
-function parsePrices(prices: PriceResults): LineChartData {
-  const data = [
-    {
-      id: `${prices.params.base}/${prices.params.quote}`,
-      data: prices.data.map((price) => ({
-        x: fromUnixTime(price[0]),
-        y: price[1],
-      })),
-    },
-  ];
+interface To {
+  to: number;
+}
 
-  return { earliestDate: prices.params.from, data: data };
+interface From {
+  from: number;
+}
+
+function parsePrices(timeline: TimelineItem[]) {
+  // from holdings and rates, provide value in WETH at the timestamp of every holding
+  // x: timestamp
+  // y: value in WETH
+  // id: Token symbol
+  const data = timeline.reduce((carry, current) => {
+    const timestamp = new Date(current.timestamp * 1000);
+    const symbols = Object.keys(current.rates);
+
+    return symbols.reduce((carry, symbol) => {
+      const value = current.rates[symbol] * current.holdings[symbol];
+      if (!carry[symbol]) {
+        carry[symbol] = [];
+      }
+      carry[symbol].push({ x: timestamp, y: value ? value : null });
+      return carry;
+    }, carry);
+  }, {} as { [symbol: string]: Datum[] });
+  const symbols = Object.keys(data);
+  return symbols.map<Serie>((symbol) => ({
+    id: symbol,
+    data: data[symbol],
+  }));
 }
 
 function findCorrectFromTime(date: Date) {
@@ -85,35 +109,36 @@ async function fetchPrices(key: string, quote: string, base: string, from: numbe
     // handle this
     console.log('your dates are screwy');
   }
-  const url = `https://rates.avantgarde.finance/api/historical?quote=${quote}&base=${base}&from=${from.toString()}&to=${to.toString()}`;
+  const url = `https://metrics.avantgarde.finance/api/portfolio?address=0x69591bfb5667d2d938ad00ef5da8addbcf811bc9&from=${from.toString()}&to=${to.toString()}`;
   const data = await fetch(url).then((res) => res.json());
-  return parsePrices(data) as LineChartData;
+  console.log(data);
+  const parsedData = parsePrices(data.data);
+  return { earliestDate: from, data: parsedData };
 }
 
 export const PriceService: React.FC = () => {
   const from = findCorrectFromTime(subMonths(new Date(), 2));
-
   const to = findCorrectToTime(new Date());
-
   const [params, setParams] = React.useState({ quote: 'ETH', base: 'MLN', from: from, to: to });
 
-  // how to type this?
-  function editParams(newParam) {
-    console.log('before', params);
+  function editParams(newParam: To | From | Base | Quote) {
     setParams({ ...params, ...newParam });
-    console.log('after', params);
   }
 
-  function clickHandler(variable: number) {
-    if (variable === 6) {
-      const newFrom = findCorrectFromTime(addWeeks(fromUnixTime(from), variable));
-      editParams({ from: newFrom });
-    } else {
-      const newTo = findCorrectToTime(subWeeks(fromUnixTime(to), variable));
-      editParams({ to: newTo });
+  function clickHandler(param: string | number) {
+    if (typeof param === 'string') {
+      editParams({ base: param });
     }
-  }
 
+    // if (variable === 6) {
+    //   const newFrom = findCorrectFromTime(addWeeks(fromUnixTime(from), variable));
+    //   editParams({ from: newFrom });
+    // } else {
+    //   const newTo = findCorrectToTime(subWeeks(fromUnixTime(to), variable));
+    //   editParams({ to: newTo });
+    // }
+  }
+  const toggle = params.base === 'MLN' ? 'BAT' : 'MLN';
   const { data, error, isFetching } = useQuery(
     ['prices', params.quote, params.base, params.from, params.to],
     fetchPrices
@@ -122,7 +147,7 @@ export const PriceService: React.FC = () => {
 
   return (
     <div>
-      <div>
+      {/* <div>
         From
         <Button onClick={() => clickHandler(6)}>6 weeks</Button>
       </div>
@@ -130,6 +155,9 @@ export const PriceService: React.FC = () => {
         To
         <Button onClick={() => clickHandler(1)}>1week</Button>
       </div>
+      <div>
+        <Button onClick={() => clickHandler(toggle)}>Toggle Token</Button>
+      </div> */}
       <BasicPriceChart loading={isFetching} chartData={data} />
     </div>
   );

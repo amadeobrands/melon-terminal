@@ -44,21 +44,16 @@ export interface LineChartData {
 export interface BasicLineChartProps {
   chartData?: LineChartData;
   loading: boolean;
+  stacked: boolean;
 }
 
-const linearProps = { type: 'linear', min: 'auto', max: 'auto', reverse: false } as LinearScale;
-const logProps = { type: 'log', max: 'auto', min: 'auto' } as LogScale;
+const stackedProps = { type: 'linear', min: 'auto', stacked: true, max: 'auto', reverse: false } as LinearScale;
+const nonStackedProps = { type: 'linear', min: 'auto', stacked: false, max: 'auto', reverse: false } as LinearScale;
 
 export const BasicPriceChart: React.FC<BasicLineChartProps> = (props) => {
-  const [yScaleType, setYScaleType] = React.useState<'linear' | 'log'>('linear');
-
-  const yScale = React.useMemo(() => (yScaleType === 'linear' ? linearProps : logProps), [yScaleType]);
+  const yScale = props.stacked ? stackedProps : nonStackedProps;
   const areaProp = false;
   const theme = useTheme();
-
-  // const scaleButtonHandler = (type: 'linear' | 'log') => {
-  //   setYScaleType(type === 'linear' ? 'log' : 'linear');
-  // };
 
   const chartColor = theme.mode === 'light' ? 'set2' : 'accent'; // https://nivo.rocks/guides/colors/
 
@@ -74,12 +69,12 @@ export const BasicPriceChart: React.FC<BasicLineChartProps> = (props) => {
             colors={{ scheme: chartColor }} // data colors
             animate={false}
             margin={{ top: 50, right: 50, bottom: 50, left: 50 }}
-            xScale={{ type: 'time', format: 'native', precision: 'day' }} // format: 'native', precision: 'day' }}
-            xFormat="time: %Y-%m-%d"
+            xScale={{ type: 'time', format: 'native', precision: 'hour' }} // format: 'native', precision: 'day' }}
+            xFormat="time: %Y-%m-%d %H:%m"
             yScale={yScale}
             axisTop={null}
             axisRight={null}
-            curve="monotoneX"
+            curve="natural"
             axisBottom={{
               legendPosition: 'end',
               legendOffset: -10,
@@ -106,6 +101,7 @@ export const BasicPriceChart: React.FC<BasicLineChartProps> = (props) => {
             enableArea={areaProp} // fills in the area below the lines
             areaOpacity={1} // opacity of the area underneath the lines
             sliceTooltip={({ slice }) => {
+              console.log(slice);
               return (
                 <S.ToolTipContainer>
                   <S.ToolTipText>Date: {slice.points[0].data.xFormatted}</S.ToolTipText>
