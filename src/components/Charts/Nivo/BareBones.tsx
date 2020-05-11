@@ -1,8 +1,7 @@
 import React from 'react';
 import { useTheme } from 'styled-components';
 import { Serie, ResponsiveLine } from '@nivo/line';
-import { LinearScale, LogScale } from '@nivo/scales';
-import { subMonths, startOfDay, isAfter, getUnixTime, startOfYear } from 'date-fns';
+import { LinearScale } from '@nivo/scales';
 import * as S from './PriceChart.styles';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 

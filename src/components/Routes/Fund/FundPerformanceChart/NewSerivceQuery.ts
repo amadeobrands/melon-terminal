@@ -1,5 +1,5 @@
 import { Serie } from '@nivo/line';
-import { useFund } from '~/hooks/useFund';
+import BigNumber from 'bignumber.js';
 import { LineChartData } from '~/components/Charts/Nivo/ControlBox';
 
 interface TimelineItem {
@@ -22,13 +22,14 @@ export interface FundSharePricesParsed {
 }
 
 function parsePrices(timeline: TimelineItem[]): Serie {
+  console.log(timeline);
   const data = timeline.map((item) => ({
     x: new Date(item.timestamp * 1000),
-    y: item.sharePrice ? item.sharePrice : item.price,
+    y: new BigNumber(item.price!).toPrecision(8),
   }));
 
   const returnObject: Serie = {
-    id: 'MLN',
+    id: 'Share Price',
     data: data,
   };
   return returnObject;
@@ -39,16 +40,13 @@ function findCorrectFromTime(date: Date) {
   const fromMonth = date.getUTCMonth();
   const fromDay = date.getUTCDay();
   const beginningOfDay = Date.UTC(fromYear, fromMonth, fromDay, 0, 0, 0, 0) / 1000;
-  console.log(beginningOfDay);
   return beginningOfDay;
 }
 
 function findCorrectToTime(date: Date) {
-  console.log(date);
   const toYear = date.getUTCFullYear();
   const toMonth = date.getUTCMonth();
   const toDay = date.getUTCDate();
-
   const endOfDay = Date.UTC(toYear, toMonth, toDay, 23, 59, 59, 0) / 1000;
   return endOfDay;
 }

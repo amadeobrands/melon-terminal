@@ -1,7 +1,5 @@
 import React from 'react';
-import { useTheme } from 'styled-components';
-import { Serie, ResponsiveLine } from '@nivo/line';
-import { LinearScale, LogScale } from '@nivo/scales';
+import { Serie } from '@nivo/line';
 import { subMonths, startOfDay, isAfter, getUnixTime, startOfYear } from 'date-fns';
 import * as S from './PriceChart.styles';
 import { Spinner } from '~/storybook/Spinner/Spinner';
@@ -48,6 +46,7 @@ export interface LineChartProps {
   chartData: LineChartData;
   startDate: number;
   loading: boolean;
+  fundCreation: number;
 }
 
 interface ButtonDate {
@@ -59,7 +58,7 @@ interface ButtonDate {
 
 export const ControlBox: React.FC<LineChartProps> = (props) => {
   const today = React.useMemo(() => startOfDay(new Date()), []);
-  const ytdDate = React.useMemo(() => getUnixTime(startOfYear(new Date())), []);
+  const ytdDate = React.useMemo(() => findCorrectFromTime(startOfYear(new Date())), []);
 
   const historicalDates = React.useMemo<ButtonDate[]>(() => {
     const options = [
@@ -71,7 +70,7 @@ export const ControlBox: React.FC<LineChartProps> = (props) => {
 
     return options.map((item) => ({
       ...item,
-      disabled: !props.chartData || isAfter(props.chartData.earliestDate, item.timeStamp),
+      disabled: !props.chartData || isAfter(props.fundCreation, item.timeStamp),
       active: item.timeStamp === props.startDate,
     }));
   }, [props.chartData, props.startDate, today]);
@@ -99,9 +98,9 @@ export const ControlBox: React.FC<LineChartProps> = (props) => {
           YTD
         </S.ChartButton>
         <S.ChartButton
-          kind={props.startDate === 0 ? 'success' : 'secondary'}
+          kind={props.startDate === props.fundCreation ? 'success' : 'secondary'}
           size="small"
-          onClick={() => props.triggerFunction(0)}
+          onClick={() => props.triggerFunction(props.fundCreation)}
         >
           All Time
         </S.ChartButton>
