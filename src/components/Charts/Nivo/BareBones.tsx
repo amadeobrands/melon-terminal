@@ -69,10 +69,11 @@ export const BasicPriceChart: React.FC<BasicLineChartProps> = (props) => {
             colors={{ scheme: chartColor }} // data colors
             animate={false}
             margin={{ top: 50, right: 50, bottom: 50, left: 50 }}
-            xScale={{ type: 'time', format: 'native', precision: 'hour' }} // format: 'native', precision: 'day' }}
+            xScale={{ type: 'time', format: 'native', precision: 'day' }} // format: 'native', precision: 'day' }}
             xFormat="time: %Y-%m-%d %H:%m"
             yScale={yScale}
             axisTop={null}
+            // layers={['crosshair']}
             axisRight={null}
             curve="natural"
             axisBottom={{
@@ -99,9 +100,8 @@ export const BasicPriceChart: React.FC<BasicLineChartProps> = (props) => {
             crosshairType="cross" // sets the type of crosshair (though I can't get it to change)
             enablePoints={false} // enables point graphics for each data point (defaults to true)
             enableArea={areaProp} // fills in the area below the lines
-            areaOpacity={1} // opacity of the area underneath the lines
+            areaOpacity={0.75} // opacity of the area underneath the lines
             sliceTooltip={({ slice }) => {
-              console.log(slice);
               return (
                 <S.ToolTipContainer>
                   <S.ToolTipText>Date: {slice.points[0].data.xFormatted}</S.ToolTipText>

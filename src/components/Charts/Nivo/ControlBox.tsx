@@ -6,6 +6,7 @@ import { subMonths, startOfDay, isAfter, getUnixTime, startOfYear } from 'date-f
 import * as S from './PriceChart.styles';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { BasicPriceChart } from './BareBones';
+import { findCorrectFromTime } from '~/utils/priceServiceDates';
 
 /**
  * A price chart can accept and display price data over time for multiple assets.
@@ -62,10 +63,10 @@ export const ControlBox: React.FC<LineChartProps> = (props) => {
 
   const historicalDates = React.useMemo<ButtonDate[]>(() => {
     const options = [
-      { label: '1m', timeStamp: getUnixTime(subMonths(today, 1)) },
-      { label: '3m', timeStamp: getUnixTime(subMonths(today, 3)) },
-      { label: '6m', timeStamp: getUnixTime(subMonths(today, 6)) },
-      { label: '1y', timeStamp: getUnixTime(subMonths(today, 12)) },
+      { label: '1m', timeStamp: findCorrectFromTime(subMonths(today, 1)) },
+      { label: '3m', timeStamp: findCorrectFromTime(subMonths(today, 3)) },
+      { label: '6m', timeStamp: findCorrectFromTime(subMonths(today, 6)) },
+      { label: '1y', timeStamp: findCorrectFromTime(subMonths(today, 12)) },
     ];
 
     return options.map((item) => ({
