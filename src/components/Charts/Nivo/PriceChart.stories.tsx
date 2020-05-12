@@ -5,7 +5,7 @@ import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 import { Serie } from '@nivo/line';
 import { differenceInDays, addDays } from 'date-fns/esm';
 import { useEffectOnce } from 'react-use';
-import { ControlBox } from './ControlBox';
+import { ControlBox } from './SimpleZoomControl';
 
 export default { title: 'Charts|Price Chart' };
 

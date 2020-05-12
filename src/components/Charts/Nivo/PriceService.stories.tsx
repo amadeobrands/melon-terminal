@@ -13,14 +13,12 @@ import {
   subDays,
   subYears,
 } from 'date-fns';
-import { PriceChart, LineChartData } from './PriceChart';
 
 import { Serie, Datum } from '@nivo/line';
-import { differenceInSeconds, addDays } from 'date-fns/esm';
-import { useEffectOnce } from 'react-use';
-import { BasicPriceChart } from './BareBones';
+import { SimpleZoomControl } from './SimpleZoomControl';
 import { Button } from '~/storybook/Button/Button.styles';
 import BigNumber from '../../../../../melon-js/node_modules/bignumber.js/bignumber';
+import { findCorrectFromTime, findCorrectToTime } from '~/utils/priceServiceDates';
 
 export default { title: 'Charts|Price Service Testing' };
 
@@ -34,18 +32,7 @@ export default { title: 'Charts|Price Service Testing' };
  *
  
  */
-interface PriceResults {
-  updated: number;
-  revalidate: number;
-  params: {
-    to: number;
-    from: number;
-    address: string;
-  };
-  data: [number, number, number, number, number, number, number][];
-}
-
-interface TimelineItem {
+interface TimeLineData {
   timestamp: number;
   rates: {
     [symbol: string]: number;
@@ -54,6 +41,20 @@ interface TimelineItem {
     [symbol: string]: number;
   };
   shares: number;
+  price: number;
+  gav: number;
+  nav: number;
+}
+
+interface TimeLine {
+  updated: number;
+  revalidate: number;
+  params: {
+    to: number;
+    from: number;
+    address: string;
+  };
+  data: TimeLineData[];
 }
 
 interface To {
@@ -64,46 +65,15 @@ interface From {
   from: number;
 }
 
-function parsePrices(timeline: TimelineItem[]) {
-  // from holdings and rates, provide value in WETH at the timestamp of every holding
-  // x: timestamp
-  // y: value in WETH
-  // id: Token symbol
-  // share price ==
-  const data = timeline.reduce((carry, current) => {
-    const timestamp = new Date(current.timestamp * 1000);
-    const symbols = Object.keys(current.rates);
-
-    return symbols.reduce((carry, symbol) => {
-      const value = current.rates[symbol] * current.holdings[symbol];
-      if (!carry[symbol]) {
-        carry[symbol] = [];
-      }
-      carry[symbol].push({ x: timestamp, y: value ? new BigNumber(value).toFixed(8) : null });
-      return carry;
-    }, carry);
-  }, {} as { [symbol: string]: Datum[] });
-  const symbols = Object.keys(data);
-  return symbols.map<Serie>((symbol) => ({
-    id: symbol,
-    data: data[symbol],
+function parsePrices(timeline: TimeLine) {
+  const data = timeline.data.map((item) => ({
+    x: new Date(item.timestamp * 1000),
+    y: new BigNumber(item.price).toPrecision(8),
   }));
-}
-
-function findCorrectFromTime(date: Date) {
-  const fromYear = date.getUTCFullYear();
-  const fromMonth = date.getUTCMonth();
-  const fromDay = date.getUTCDay();
-  const beginningOfDay = Date.UTC(fromYear, fromMonth, fromDay, 0, 0, 0, 0) / 1000;
-  return beginningOfDay;
-}
-
-function findCorrectToTime(date: Date) {
-  const toYear = date.getUTCFullYear();
-  const toMonth = date.getUTCMonth();
-  const toDay = date.getUTCDay();
-  const endOfDay = Date.UTC(toYear, toMonth, toDay, 23, 59, 59, 0) / 1000;
-  return endOfDay;
+  return {
+    id: 'EEK Capital',
+    data: data,
+  };
 }
 
 async function fetchPrices(key: string, from: number, to: number) {
@@ -122,7 +92,6 @@ async function fetchPrices(key: string, from: number, to: number) {
 export const PriceService: React.FC = () => {
   const from = findCorrectFromTime(subMonths(new Date(), 2));
   const to = findCorrectToTime(new Date());
-  const [params, setParams] = React.useState({ quote: 'ETH', base: 'MLN', from: from, to: to });
 
   function editParams(newParam: To | From) {
     setParams({ ...params, ...newParam });
@@ -151,7 +120,7 @@ export const PriceService: React.FC = () => {
         <Button onClick={() => clickHandler(1)}>1week</Button>
       </div>
 
-      <BasicPriceChart loading={isFetching} chartData={data} stacked={true} />
+      <SimpleZoomControl loading={isFetching} chartData={data} stacked={true} />
     </div>
   );
 };

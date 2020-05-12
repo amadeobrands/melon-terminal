@@ -1,39 +1,31 @@
 import React from 'react';
 import { Serie } from '@nivo/line';
-import { subMonths, startOfDay, isAfter, getUnixTime, startOfYear } from 'date-fns';
+import { subMonths, startOfDay, isAfter, startOfYear } from 'date-fns';
 import * as S from './PriceChart.styles';
-import { Spinner } from '~/storybook/Spinner/Spinner';
-import { BasicPriceChart } from './BareBones';
+import { BasicPriceChart } from './SimplePriceChart';
 import { findCorrectFromTime } from '~/utils/priceServiceDates';
 
 /**
- * A price chart can accept and display price data over time for multiple assets.
+ * This component wraps a SimplePriceChart and controls the fetching and parsing of data that
+ * gets passed to it.
  *
- * The query that feeds data to the chart should be called using the useLazyTheGraphQuery hook, which
- * will return a trigger function along with the query data. The trigger function accepts a timestamp
- * as a number and updates the query and results accordingly (used on the zoom buttons).
+ * The query that feeds data to the this control component should return a trigger function
+ * along with the query data. The trigger function accepts a timestamp as a number and updates
+ * the query and results accordingly (used on the zoom buttons).
  *
- * Its recommended to wrap this chart component in a parent component that will handle managing a fund's context,
- * the chart's state, and calling the hooks that query TheGraph. This implementation has been mocked in storybook.
+ * Its recommended to wrap this chart component in a parent component that will handle managing
+ * a fund's context, the chart's state, and calling the hooks that query the price service API.
+ * This implementation has been mocked in storybook.
  *
- * The data that comes back from any TheGraph query will need to be parsed in order to fit the
- * correct shape noted in the LineChartData type below. Notes on how to parse that data below:
+ * Notes on how to prepare data for the SimplePriceChart below:
  *
  * - Price data must be strictly positive in order to display logarithmic charts, and so as not to
  * screw up the display on linear charts.
- * - Linear charts may have gaps in the data, with the x value passed as a date and the y value passed as null
- * - Always check the date format that comes back from the Graph, as it is in seconds since the epoch and various
- * javascript methods generate timestamps in milliseconds. Compare apples to apples.
+ * - Linear charts may have gaps in the data, with the x value passed as a date and the y value
+ * passed as null
+ * - Dates should be passed as the x value as a native javascript date object. If your data isn't showing
+ * up on the chart, dates should be the first place you look.
  *
- *
- * Other notes:
- * - A logarithmic y axis is not yet possible - a bug within Nivo renders data backwards (highest
- * values at the bottom of the axis) occasionally and unpredictably when the y axis is set to log scale.
- * The corresponding code to toggle log/linear has been commented out but left intact.
- *
- * - The values passed to the trigger function are timestamps. Your query should return all valid
- *  records with values greater than the timestamp passed to the trigger. In the case of the All Time
- *  button, this value is 0.
  */
 
 export interface LineChartData {
@@ -56,7 +48,7 @@ interface ButtonDate {
   disabled: boolean;
 }
 
-export const ControlBox: React.FC<LineChartProps> = (props) => {
+export const SimpleZoomControl: React.FC<LineChartProps> = (props) => {
   const today = React.useMemo(() => startOfDay(new Date()), []);
   const ytdDate = React.useMemo(() => findCorrectFromTime(startOfYear(new Date())), []);
 
@@ -105,7 +97,7 @@ export const ControlBox: React.FC<LineChartProps> = (props) => {
           All Time
         </S.ChartButton>
       </S.ControlBox>
-      <BasicPriceChart loading={props.loading} chartData={props.chartData} stacked={false} />
+      <BasicPriceChart area={false} loading={props.loading} chartData={props.chartData} stacked={false} />
     </>
   );
 };

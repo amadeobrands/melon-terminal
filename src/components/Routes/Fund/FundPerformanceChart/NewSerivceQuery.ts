@@ -1,6 +1,6 @@
 import { Serie } from '@nivo/line';
 import BigNumber from 'bignumber.js';
-import { LineChartData } from '~/components/Charts/Nivo/ControlBox';
+import { LineChartData } from '~/components/Charts/Nivo/SimpleZoomControl';
 
 interface TimelineItem {
   timestamp: number;
