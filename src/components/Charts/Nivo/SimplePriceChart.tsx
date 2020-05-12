@@ -41,7 +41,7 @@ export interface BasicLineChartProps {
 const stackedProps = { type: 'linear', min: 'auto', stacked: true, max: 'auto', reverse: false } as LinearScale;
 const nonStackedProps = { type: 'linear', min: 'auto', stacked: false, max: 'auto', reverse: false } as LinearScale;
 
-export const BasicPriceChart: React.FC<BasicLineChartProps> = (props) => {
+export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
   const yScale = props.stacked ? stackedProps : nonStackedProps;
   const areaProp = false;
   const theme = useTheme();

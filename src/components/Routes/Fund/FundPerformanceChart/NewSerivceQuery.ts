@@ -1,6 +1,7 @@
 import { Serie } from '@nivo/line';
 import BigNumber from 'bignumber.js';
 import { LineChartData } from '~/components/Charts/Nivo/SimpleZoomControl';
+import { findCorrectFromTime, findCorrectToTime } from '~/utils/priceServiceDates';
 
 interface TimelineItem {
   timestamp: number;
@@ -22,7 +23,6 @@ export interface FundSharePricesParsed {
 }
 
 function parsePrices(timeline: TimelineItem[]): Serie {
-  console.log(timeline);
   const data = timeline.map((item) => ({
     x: new Date(item.timestamp * 1000),
     y: new BigNumber(item.price!).toPrecision(8),
@@ -33,22 +33,6 @@ function parsePrices(timeline: TimelineItem[]): Serie {
     data: data,
   };
   return returnObject;
-}
-
-function findCorrectFromTime(date: Date) {
-  const fromYear = date.getUTCFullYear();
-  const fromMonth = date.getUTCMonth();
-  const fromDay = date.getUTCDay();
-  const beginningOfDay = Date.UTC(fromYear, fromMonth, fromDay, 0, 0, 0, 0) / 1000;
-  return beginningOfDay;
-}
-
-function findCorrectToTime(date: Date) {
-  const toYear = date.getUTCFullYear();
-  const toMonth = date.getUTCMonth();
-  const toDay = date.getUTCDate();
-  const endOfDay = Date.UTC(toYear, toMonth, toDay, 23, 59, 59, 0) / 1000;
-  return endOfDay;
 }
 
 export async function fetchPricesFromService(key: string, from: number, fund: string) {

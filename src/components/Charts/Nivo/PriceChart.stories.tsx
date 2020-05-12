@@ -5,7 +5,7 @@ import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 import { Serie } from '@nivo/line';
 import { differenceInDays, addDays } from 'date-fns/esm';
 import { useEffectOnce } from 'react-use';
-import { ControlBox } from './SimpleZoomControl';
+import { SimpleZoomControl } from './SimpleZoomControl';
 
 export default { title: 'Charts|Price Chart' };
 
@@ -5161,5 +5161,13 @@ export const Default: React.FC = () => {
   // const yScale = React.useMemo(() => (yScaleType === 'linear' ? linearProps : logProps), [yScaleType]);
   useEffectOnce(() => trigger(0));
 
-  return <ControlBox loading={false} chartData={data} startDate={startDate} triggerFunction={trigger} />;
+  return (
+    <SimpleZoomControl
+      fundCreation={data.earliestDate}
+      loading={false}
+      chartData={data}
+      startDate={startDate}
+      triggerFunction={trigger}
+    />
+  );
 };

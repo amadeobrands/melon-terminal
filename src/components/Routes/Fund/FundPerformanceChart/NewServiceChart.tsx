@@ -17,7 +17,9 @@ export const NewFundPerformanceChart: React.FC = () => {
   const address = fund.address ? fund.address.toLowerCase() : 'sdfjklsd';
 
   const [from, setFrom] = React.useState(fundCreationTime);
-  const { data, error, isFetching } = useQuery(['prices', from, address], fetchPricesFromService);
+  const { data, error, isFetching } = useQuery(['prices', from, address], fetchPricesFromService, {
+    refetchOnWindowFocus: false,
+  });
 
   const trigger = (from: number) => setFrom(from);
 

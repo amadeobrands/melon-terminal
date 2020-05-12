@@ -15,7 +15,7 @@ import {
 } from 'date-fns';
 
 import { Serie, Datum } from '@nivo/line';
-import { SimpleZoomControl } from './SimpleZoomControl';
+import { SimpleZoomControl, LineChartData } from './SimpleZoomControl';
 import { Button } from '~/storybook/Button/Button.styles';
 import BigNumber from '../../../../../melon-js/node_modules/bignumber.js/bignumber';
 import { findCorrectFromTime, findCorrectToTime } from '~/utils/priceServiceDates';
@@ -57,70 +57,52 @@ interface TimeLine {
   data: TimeLineData[];
 }
 
-interface To {
-  to: number;
-}
-
-interface From {
-  from: number;
-}
-
-function parsePrices(timeline: TimeLine) {
-  const data = timeline.data.map((item) => ({
+function parsePrices(timeline: TimeLineData[]) {
+  console.log(timeline);
+  const data = timeline.map((item) => ({
     x: new Date(item.timestamp * 1000),
     y: new BigNumber(item.price).toPrecision(8),
   }));
-  return {
-    id: 'EEK Capital',
-    data: data,
-  };
+
+  return [
+    {
+      id: 'EEK Capital',
+      data: data,
+    },
+  ];
 }
 
-async function fetchPrices(key: string, from: number, to: number) {
-  if (from > to) {
-    // handle this
-    console.log('your dates are screwy');
-  }
-  const url = `https://metrics.avantgarde.finance/api/portfolio?address=0x69591bfb5667d2d938ad00ef5da8addbcf811bc9&from=${from.toString()}&to=${to.toString()}`;
-
+async function fetchPrices(key: string, from: number, address: string) {
+  const adjustedFrom = findCorrectFromTime(new Date(from * 1000));
+  const to = findCorrectToTime(new Date());
+  const url = `https://metrics.avantgarde.finance/api/portfolio?address=${address}&from=${adjustedFrom.toString()}&to=${to.toString()}`;
   const data = await fetch(url).then((res) => res.json());
-
   const parsedData = parsePrices(data.data);
-  return { earliestDate: from, data: parsedData };
+  return { earliestDate: from, data: parsedData } as LineChartData;
 }
 
 export const PriceService: React.FC = () => {
-  const from = findCorrectFromTime(subMonths(new Date(), 2));
-  const to = findCorrectToTime(new Date());
+  const address = '0x69591bfb5667d2d938ad00ef5da8addbcf811bc9';
+  const fundCreationTime = 1584202322;
 
-  function editParams(newParam: To | From) {
-    setParams({ ...params, ...newParam });
-  }
+  const [from, setFrom] = React.useState(fundCreationTime);
+  const { data, error, isFetching } = useQuery(['prices', from, address], fetchPrices, { refetchOnWindowFocus: false });
 
-  function clickHandler(param: number) {
-    if (param === 4) {
-      const newFrom = findCorrectFromTime(subWeeks(new Date(), param));
-      editParams({ from: newFrom });
-    } else {
-      const newTo = findCorrectToTime(subDays(new Date(), param));
-      editParams({ to: newTo });
-    }
-  }
-
-  const { data, error, isFetching } = useQuery(['prices', params.from, params.to], fetchPrices);
+  const trigger = (from: number) => setFrom(from);
 
   return (
     <div>
-      <div>
-        From
-        <Button onClick={() => clickHandler(4)}>6 weeks</Button>
-      </div>
-      <div>
-        To
-        <Button onClick={() => clickHandler(1)}>1week</Button>
-      </div>
-
-      <SimpleZoomControl loading={isFetching} chartData={data} stacked={true} />
+      {error ? (
+        <h3>There was an error fetching the data</h3>
+      ) : (
+        <SimpleZoomControl
+          triggerFunction={trigger}
+          chartData={data!}
+          startDate={fundCreationTime}
+          fundCreation={fundCreationTime}
+          loading={isFetching}
+        />
+      )}
     </div>
   );
 };

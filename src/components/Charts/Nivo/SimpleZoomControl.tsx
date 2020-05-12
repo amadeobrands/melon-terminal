@@ -2,7 +2,7 @@ import React from 'react';
 import { Serie } from '@nivo/line';
 import { subMonths, startOfDay, isAfter, startOfYear } from 'date-fns';
 import * as S from './PriceChart.styles';
-import { BasicPriceChart } from './SimplePriceChart';
+import { SimplePriceChart } from './SimplePriceChart';
 import { findCorrectFromTime } from '~/utils/priceServiceDates';
 
 /**
@@ -97,7 +97,7 @@ export const SimpleZoomControl: React.FC<LineChartProps> = (props) => {
           All Time
         </S.ChartButton>
       </S.ControlBox>
-      <BasicPriceChart area={false} loading={props.loading} chartData={props.chartData} stacked={false} />
+      <SimplePriceChart area={false} loading={props.loading} chartData={props.chartData} stacked={false} />
     </>
   );
 };
