@@ -32,18 +32,18 @@ function parsePrices(timeline: TimelineItem[]): Serie {
     id: 'Share Price',
     data: data,
   };
+
   return returnObject;
 }
 
 export async function fetchPricesFromService(key: string, from: number, fund: string) {
   const adjustedFrom = findCorrectFromTime(new Date(from * 1000));
-
-  const to = findCorrectToTime(new Date());
-
+  const today = new Date();
+  const to = findCorrectToTime(today);
   const url = `https://metrics.avantgarde.finance/api/portfolio?address=${fund}&from=${adjustedFrom.toString()}&to=${to.toString()}`;
 
   const data = await fetch(url).then((res) => res.json());
-
   const parsedData = parsePrices(data.data);
+
   return { earliestDate: from, data: [parsedData] } as LineChartData;
 }

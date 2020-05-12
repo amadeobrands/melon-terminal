@@ -6,7 +6,6 @@ import { Block } from '~/storybook/Block/Block';
 import { useFund } from '~/hooks/useFund';
 import { useFundSharePriceQuery, parseSharePriceQueryData } from './FundPerformanceChart.query';
 import { SectionTitle } from '~/storybook/Title/Title';
-import { ControlBox } from '~/components/Charts/Nivo/SimpleZoomControl';
 
 export const FundPerformanceChart: React.FC = () => {
   const fund = useFund();
