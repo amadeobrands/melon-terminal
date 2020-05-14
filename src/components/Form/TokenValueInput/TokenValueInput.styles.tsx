@@ -9,7 +9,7 @@ export const TokenWrapper = styled.div`
   border-color: ${(props) => props.theme.mainColors.secondaryDarkAlpha};
   border-color: ${(props) => props.theme.mainColors.secondaryDarkAlpha};
   border-style: solid;
-  border-width: 1px 0px 1px 1px;
+  border-width: 1px 1px 1px 0px;
   white-space: nowrap;
   display: flex;
   justify-content: center;

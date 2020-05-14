@@ -2,14 +2,13 @@ import React from 'react';
 import BigNumber from 'bignumber.js';
 import NumberFormat, { NumberFormatValues, NumberFormatProps } from 'react-number-format';
 import { InputWidget, InputField } from '~/components/Form/Input/Input';
-import { useField, GenericInputProps, Wrapper, Label, Error } from '~/components/Form/Form';
+import { useField, Wrapper, Label, Error } from '~/components/Form/Form';
 
-export type BigNumberInputProps = NumberFormatProps &
-  GenericInputProps & {
-    name: string;
-    value?: BigNumber.Value;
-    label?: string;
-  };
+export type BigNumberInputProps = Omit<NumberFormatProps, 'value'> & {
+  name: string;
+  value?: BigNumber.Value;
+  label?: string;
+};
 
 export const BigNumberInput: React.FC<BigNumberInputProps> = ({ label, ...props }) => {
   const [{ onChange, ...field }, meta, { setValue }] = useField<BigNumber.Value | undefined>({
@@ -28,7 +27,7 @@ export const BigNumberInput: React.FC<BigNumberInputProps> = ({ label, ...props 
   return (
     <Wrapper>
       {label && <Label>{label}</Label>}
-      <BigNumberInputField customInput={InputWidget} onValueChange={onValueChange} {...meta} {...field} {...props} />
+      <BigNumberInputField onValueChange={onValueChange} {...meta} {...field} {...props} />
       {meta.touched && meta.error && <Error>{meta.error}</Error>}
     </Wrapper>
   );

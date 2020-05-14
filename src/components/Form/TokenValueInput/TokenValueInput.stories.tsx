@@ -16,4 +16,4 @@ const token = {
   decimals: 18,
 } as TokenDefinition;
 
-export const Default = () => <TokenValueInput name="tokenInput" label={text('label', "I'm a label")} token={token} />;
+export const Default = () => <TokenValueInput name="tokenInput" label={text('label', "I'm a label")} />;

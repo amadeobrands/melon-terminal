@@ -199,7 +199,7 @@ export const dark = {
     primaryAlpha: '#3B4252',
     primaryDark: '#e5dfdf',
     secondary: '#313131',
-    secondaryDark: '#313131',
+    secondaryDark: '#aaaaaa',
     secondaryDarkAlpha: 'rgb(196, 196, 196)',
     border: 'rgb(29, 29, 29)',
     progressBar: '#e5dfdf',

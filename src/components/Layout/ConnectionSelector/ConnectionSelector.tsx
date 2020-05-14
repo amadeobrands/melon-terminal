@@ -1,10 +1,11 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useConnectionState } from '~/hooks/useConnectionState';
 import { Dropdown } from '~/storybook/Dropdown/Dropdown';
 import { Icons, IconName } from '~/storybook/Icons/Icons';
 import { ConnectionContext } from '~/components/Contexts/Connection/Connection';
 import * as S from './ConnectionSelector.styles';
 import { useLocation, useHistory } from 'react-router';
+import { useClickOutside } from '~/hooks/useClickOutside';
 
 export interface ConnectionButtonProps {
   name: string;
@@ -68,23 +69,8 @@ export const ConnectionSelector = () => {
   const connection = useConnectionState();
   const current = connection.methods.find((item) => item.name === connection.method);
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    const handler = (event: MouseEvent) => {
-      if (ref.current && !ref.current!.contains(event.target)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener('click', handler, false);
-
-    return () => {
-      document.removeEventListener('click', handler, false);
-    };
-  }, [open]);
+  const handleClickOutside = React.useCallback(() => open && setOpen(false), [open, setOpen]);
+  useClickOutside(ref, handleClickOutside);
 
   return (
     <S.ConnectionSelector ref={ref}>

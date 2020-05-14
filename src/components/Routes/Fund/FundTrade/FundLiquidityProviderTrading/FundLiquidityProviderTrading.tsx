@@ -1,20 +1,27 @@
-import React from 'react';
+import { AssetBlacklist, AssetWhitelist, Holding, MaxPositions, Policy, Token } from '@melonproject/melongql';
+import {
+  DeployedEnvironment,
+  ExchangeDefinition,
+  ExchangeIdentifier,
+  sameAddress,
+  TokenDefinition,
+} from '@melonproject/melonjs';
 import BigNumber from 'bignumber.js';
+import React, { useLayoutEffect, useMemo } from 'react';
 import * as Yup from 'yup';
-import { Holding, Policy, AssetWhitelist, AssetBlacklist, MaxPositions, Token } from '@melonproject/melongql';
-import { ExchangeDefinition, ExchangeIdentifier, sameAddress, DeployedEnvironment } from '@melonproject/melonjs';
+import { Form, useFormik, Wrapper } from '~/components/Form/Form';
+import { TokenSwap } from '~/components/Form/TokenSwap/TokenSwap';
 import { useEnvironment } from '~/hooks/useEnvironment';
-import { FundMelonEngineTrading } from '../FundMelonEngineTrading/FundMelonEngineTrading';
-import { FundKyberTrading } from '../FundKyberTrading/FundKyberTrading';
-import { FundUniswapTrading } from '../FundUniswapTrading/FundUniswapTrading';
 import { Block } from '~/storybook/Block/Block';
-import { Grid, GridRow, GridCol } from '~/storybook/Grid/Grid';
-import { SectionTitle } from '~/storybook/Title/Title';
-import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
+import { Grid, GridCol, GridRow } from '~/storybook/Grid/Grid';
 import { Link } from '~/storybook/Link/Link';
-import { Form, useFormik } from '~/components/Form/Form';
-import { Select } from '~/components/Form/Select/Select';
-import { BigNumberInput } from '~/components/Form/BigNumberInput/BigNumberInput';
+import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
+import { SectionTitle } from '~/storybook/Title/Title';
+import { TokenValue } from '~/TokenValue';
+import { tokenValueSchema } from '~/utils/formValidation';
+import { FundKyberTrading } from '../FundKyberTrading/FundKyberTrading';
+import { FundMelonEngineTrading } from '../FundMelonEngineTrading/FundMelonEngineTrading';
+import { FundUniswapTrading } from '../FundUniswapTrading/FundUniswapTrading';
 
 export interface FundLiquidityProviderTradingProps {
   trading: string;
@@ -39,12 +46,7 @@ export const FundLiquidityProviderTrading: React.FC<FundLiquidityProviderTrading
 
   const nonZeroHoldings = props.holdings.filter((holding) => !holding.amount?.isZero());
 
-  const takerOptions = environment.tokens
-    .filter((item) => !item.historic)
-    .map((token) => ({
-      value: token.address,
-      label: token.symbol,
-    }));
+  const takerOptions = environment.tokens.filter((item) => !item.historic).map((token) => token);
 
   const makerOptions = environment.tokens
     .filter((item) => !item.historic)
@@ -59,11 +61,7 @@ export const FundLiquidityProviderTrading: React.FC<FundLiquidityProviderTrading
         sameAddress(asset.address, props.denominationAsset?.address) ||
         !assetBlacklists?.length ||
         !assetBlacklists.some((list) => list.assetBlacklist?.some((item) => sameAddress(item, asset.address)))
-    )
-    .map((token) => ({
-      value: token.address,
-      label: token.symbol,
-    }));
+    );
 
   if (takerOptions?.length < 2) {
     return (
@@ -108,53 +106,16 @@ export const FundLiquidityProviderTrading: React.FC<FundLiquidityProviderTrading
 };
 
 const validationSchema = Yup.object().shape({
-  makerAsset: Yup.string()
+  maker: Yup.mixed<TokenDefinition>(),
+  taker: tokenValueSchema()
     .required()
-    .test('maxPositions', 'Investing with this asset would violate the maximum number of positions policy', function (
-      value: string
-    ) {
-      const maxPositionsPolicies = (this.options.context as any).maxPositionsPolicies as MaxPositions[] | undefined;
-      const denominationAsset = (this.options.context as any).denominationAsset;
-      const nonZeroHoldings = (this.options.context as any).nonZeroHoldings as Holding[];
-
-      return (
-        // no policies
-        !maxPositionsPolicies?.length ||
-        // new investment is in denomination asset
-        sameAddress(denominationAsset?.address, value) ||
-        // already existing token
-        !!nonZeroHoldings?.some((holding) => sameAddress(holding.token?.address, value)) ||
-        // max positions larger than holdings (so new token would still fit)
-        maxPositionsPolicies.every(
-          (policy) => policy.maxPositions && nonZeroHoldings && policy.maxPositions > nonZeroHoldings?.length
-        )
-      );
-    }),
-  takerAsset: Yup.string().required(),
-  takerQuantity: Yup.mixed()
-    .required('Missing sell quantity.')
-    // tslint:disable-next-line
-    .test('valid-number', 'The given value is not a valid number.', function (value) {
-      return !value.isNaN() && !value.isZero() && value.isPositive();
-    })
-    // tslint:disable-next-line
-    .test('balance-too-low', 'Your balance of the token is lower than the provided value.', function (value) {
-      const holdings = (this.options.context as any).holdings as Holding[];
-      const holding = holdings.find((item) => sameAddress(item.token!.address, this.parent.takerAsset))!;
-      const divisor = holding ? new BigNumber(10).exponentiatedBy(holding.token!.decimals!) : new BigNumber('NaN');
-      const balance = holding ? holding.amount!.dividedBy(divisor) : new BigNumber('NaN');
-      return new BigNumber(value).isLessThanOrEqualTo(balance);
-    }),
+    .lte(Yup.ref('takerBalance'), 'The balance of your fund is too low for this trade.'),
+  takerBalance: tokenValueSchema().required(),
 });
 
-interface Options {
-  value: string;
-  label: string;
-}
-
 interface FundLiquidityProviderTradingFormProps extends FundLiquidityProviderTradingProps {
-  takerOptions: Options[];
-  makerOptions: Options[];
+  takerOptions: TokenDefinition[];
+  makerOptions: TokenDefinition[];
   environment: DeployedEnvironment;
   maxPositionsPolicies: MaxPositions[] | undefined;
   nonZeroHoldings: Holding[];
@@ -170,15 +131,16 @@ const FundLiquidityProviderTradingForm: React.FC<FundLiquidityProviderTradingFor
   holdings,
   ...props
 }) => {
-  const validationContext = React.useMemo(
-    () => ({ maxPositionsPolicies, denominationAsset, nonZeroHoldings, holdings }),
-    [maxPositionsPolicies, denominationAsset, nonZeroHoldings, holdings]
-  );
+  const validationContext = React.useMemo(() => ({ maxPositionsPolicies, denominationAsset, nonZeroHoldings }), [
+    maxPositionsPolicies,
+    denominationAsset,
+    nonZeroHoldings,
+  ]);
 
   const initialValues = {
-    takerAsset: '',
-    makerAsset: '',
-    takerQuantity: new BigNumber(0),
+    taker: new TokenValue(takerOptions[0], 1),
+    maker: makerOptions[1],
+    takerBalance: new TokenValue(takerOptions[0]),
   };
 
   const formik = useFormik({
@@ -188,9 +150,21 @@ const FundLiquidityProviderTradingForm: React.FC<FundLiquidityProviderTradingFor
     onSubmit: () => {},
   });
 
+  const taker = formik.values.taker;
+  const maker = formik.values.maker;
+
+  const takerBalance = useMemo(() => {
+    const index = nonZeroHoldings.findIndex((holding) => sameAddress(holding.token?.address, taker.token.address));
+    const balance = index !== -1 ? (nonZeroHoldings[index].amount as BigNumber) : 0;
+    return TokenValue.fromToken(taker.token, balance);
+  }, [taker, nonZeroHoldings]);
+
+  useLayoutEffect(() => {
+    formik.setFieldValue('takerBalance', takerBalance);
+  }, [takerBalance]);
+
   const mln = environment.getToken('MLN');
   const weth = environment.getToken('WETH');
-
   const exchanges = props.exchanges
     .map((exchange) => {
       if (exchange.id === ExchangeIdentifier.KyberNetwork) {
@@ -202,7 +176,7 @@ const FundLiquidityProviderTradingForm: React.FC<FundLiquidityProviderTradingFor
       }
 
       if (exchange.id === ExchangeIdentifier.MelonEngine) {
-        if (formik.values.makerAsset === weth && formik.values.takerAsset === mln) {
+        if (maker === weth && taker.token === mln) {
           return [exchange, FundMelonEngineTrading];
         }
 
@@ -217,27 +191,24 @@ const FundLiquidityProviderTradingForm: React.FC<FundLiquidityProviderTradingFor
     <Form formik={formik}>
       <Grid>
         <GridRow>
-          <GridCol>
+          <GridCol md={6}>
             <SectionTitle>Choose the assets to swap</SectionTitle>
-            <Select name="takerAsset" label="Sell this asset" options={takerOptions} />
-            <Select name="makerAsset" label="To buy this asset" options={makerOptions} />
-          </GridCol>
-        </GridRow>
-
-        <GridRow>
-          <GridCol md={6}>
-            <SectionTitle>{`Specify an amount of ${formik.values.takerAsset} to sell `}</SectionTitle>
-            <BigNumberInput name="takerQuantity" label="Quantity" />
+            <TokenSwap
+              label="Sell"
+              baseName="taker"
+              baseTokens={takerOptions}
+              quoteName="maker"
+              quoteTokens={makerOptions}
+            ></TokenSwap>
           </GridCol>
 
-          <GridCol md={6}>
+          <GridCol md={6} xs={12}>
             <SectionTitle>Choose your pool and swap</SectionTitle>
-
-            <Grid noGap={true}>
-              {!!(exchanges && exchanges.length) &&
-                exchanges.map(([exchange, Component]) => (
-                  <GridRow key={exchange.id}>
-                    <GridCol>
+            {!!(exchanges && exchanges.length) &&
+              exchanges.map(([exchange, Component]) => (
+                <GridRow key={exchange.id}>
+                  <GridCol>
+                    <Wrapper>
                       <Component
                         active={formik.isValid}
                         trading={props.trading}
@@ -245,14 +216,14 @@ const FundLiquidityProviderTradingForm: React.FC<FundLiquidityProviderTradingFor
                         denominationAsset={denominationAsset}
                         policies={props.policies}
                         exchange={exchange}
-                        maker={formik.values.makerAsset}
-                        taker={formik.values.takerAsset}
-                        quantity={formik.values.takerQuantity}
+                        maker={maker}
+                        taker={taker.token}
+                        quantity={taker.value}
                       />
-                    </GridCol>
-                  </GridRow>
-                ))}
-            </Grid>
+                    </Wrapper>
+                  </GridCol>
+                </GridRow>
+              ))}
           </GridCol>
         </GridRow>
       </Grid>

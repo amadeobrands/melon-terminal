@@ -11,7 +11,7 @@ import { useFormik, Form } from './Form';
 import { Select } from './Select/Select';
 import { BigNumberInput } from './BigNumberInput/BigNumberInput';
 import { RadioButtons } from './RadioButtons/RadioButtons';
-import { TokenValue } from './TokenValueSelect/TokenValue';
+import { TokenValue } from '~/TokenValue';
 import { TokenValueSelect } from './TokenValueSelect/TokenValueSelect';
 import { TokenValueInput } from './TokenValueInput/TokenValueInput';
 
@@ -117,7 +117,7 @@ export const Basic = () => {
       <BigNumberInput name="bigNumber" label="BigNumber" />
       <RadioButtons label="Radio Button" name="radioGroup" options={options} />
       <TokenValueSelect label="Token value Select" name="tokenValue" tokens={tokens} />
-      <TokenValueInput label="Token value Input" name="tokenValueInput" token={tokens[0]} />
+      <TokenValueInput label="Token value Input" name="tokenValueInput" />
       <Button type="submit">Submit</Button>
     </Form>
   );

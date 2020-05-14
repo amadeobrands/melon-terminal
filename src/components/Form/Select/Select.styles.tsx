@@ -2,7 +2,6 @@ import styled from 'styled-components';
 
 export const SelectWrapper = styled.div`
   display: flex;
-  color: ${(props) => props.theme.mainColors.secondaryDark};
 `;
 
 export const SelecLabelWrapper = styled.span`

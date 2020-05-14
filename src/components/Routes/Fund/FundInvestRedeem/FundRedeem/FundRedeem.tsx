@@ -1,43 +1,46 @@
-import React, { useEffect } from 'react';
-import BigNumber from 'bignumber.js';
-import * as Yup from 'yup';
-import { Link } from 'react-router-dom';
+import { AccountShares } from '@melonproject/melongql';
 import { Participation } from '@melonproject/melonjs';
-import { Form, useFormik } from '~/components/Form/Form';
-import { useEnvironment } from '~/hooks/useEnvironment';
-import { useFundRedeemQuery } from './FundRedeem.query';
-import { useTransaction } from '~/hooks/useTransaction';
-import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
-import { Spinner } from '~/storybook/Spinner/Spinner';
-import { useAccount } from '~/hooks/useAccount';
-import { Block, BlockActions } from '~/storybook/Block/Block';
-import { SectionTitle } from '~/storybook/Title/Title';
-import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
+import BigNumber from 'bignumber.js';
+import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import * as Yup from 'yup';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
-import { useFund } from '~/hooks/useFund';
-import { RequiresFundManager } from '~/components/Gates/RequiresFundManager/RequiresFundManager';
-import { getNetworkName } from '~/config';
-import { Input } from '~/components/Form/Input/Input';
+import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
 import { Button } from '~/components/Form/Button/Button';
 import { Checkbox } from '~/components/Form/Checkbox/Checkbox';
-import { AccountShares } from '@melonproject/melongql';
+import { Form, useFormik } from '~/components/Form/Form';
+import { TokenValueInput } from '~/components/Form/TokenValueInput/TokenValueInput';
+import { RequiresFundManager } from '~/components/Gates/RequiresFundManager/RequiresFundManager';
+import { getNetworkName } from '~/config';
+import { useAccount } from '~/hooks/useAccount';
+import { useEnvironment } from '~/hooks/useEnvironment';
+import { useFund } from '~/hooks/useFund';
+import { useTransaction } from '~/hooks/useTransaction';
+import { Block, BlockActions } from '~/storybook/Block/Block';
+import { Spinner } from '~/storybook/Spinner/Spinner';
+import { SectionTitle } from '~/storybook/Title/Title';
+import { TokenValue } from '~/TokenValue';
+import { sharesToken } from '~/utils/sharesToken';
+import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
+import { useFundRedeemQuery } from './FundRedeem.query';
+import { tokenValueSchema } from '~/utils/formValidation';
+import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 
 export interface FundRedeemProps {
   address: string;
 }
 
 const validationSchema = Yup.object().shape({
-  shareQuantity: Yup.mixed<BigNumber>()
-    .transform((value, _) => new BigNumber(value))
-    .test('positive', 'Number of shares has to be positive', (value: BigNumber) => !!value?.isGreaterThan(0))
+  shareQuantity: tokenValueSchema()
+    .required()
+    .gt(0, 'Number of shares has to be positive.')
     .test('smallerThanBalance', 'Number of shares has to be equal or less than number of shares owned', function (
-      value: BigNumber
+      value
     ) {
       const shares = (this.options.context as any).shares as AccountShares;
-      return !!(shares?.balanceOf && value.isLessThanOrEqualTo(shares?.balanceOf));
+      return !!(shares?.balanceOf && value.value.isLessThanOrEqualTo(shares?.balanceOf));
     }),
-
   redeemAll: Yup.boolean(),
 });
 
@@ -54,8 +57,6 @@ export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
   const lockedAssets = result?.fund?.routes?.trading?.lockedAssets;
   const prefix = getNetworkName(environment.network)!;
 
-  const participationContract = new Participation(environment, participationAddress);
-
   const transaction = useTransaction(environment);
 
   const validationContext = React.useMemo(
@@ -66,7 +67,7 @@ export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
   );
 
   const initialValues = {
-    shareQuantity: new BigNumber(1),
+    shareQuantity: new TokenValue(sharesToken, 1),
     redeemAll: false,
   };
 
@@ -74,21 +75,23 @@ export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
     validationSchema,
     validationContext,
     initialValues,
-    onSubmit: async (data) => {
-      if (data.redeemAll) {
+    onSubmit: async (values) => {
+      const participationContract = new Participation(environment, participationAddress);
+      if (values.redeemAll) {
         const tx = participationContract.redeem(account.address!);
         transaction.start(tx, 'Redeem all shares');
         return;
       }
 
-      const shareQuantity = toTokenBaseUnit(data.shareQuantity, 18);
+      const shareQuantity = values.shareQuantity.integer!;
+
       const tx = participationContract.redeemQuantity(account.address!, shareQuantity);
       transaction.start(tx, 'Redeem shares');
     },
   });
 
   useEffect(() => {
-    formik.setFieldValue('shareQuantity', shares?.balanceOf || new BigNumber(0));
+    formik.setFieldValue('shareQuantity', new TokenValue(sharesToken, shares?.balanceOf || new BigNumber(0)));
   }, [formik.values.redeemAll]);
 
   if (query.loading) {
@@ -123,13 +126,11 @@ export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
             You own <FormattedNumber value={shares?.balanceOf} /> shares
           </p>
           <Form formik={formik}>
-            <Input
-              id="shareQuantity"
+            <TokenValueInput
               name="shareQuantity"
               label="Number of shares to redeem"
-              type="number"
-              step="any"
-              disabled={formik.values.redeemAll}
+              noIcon={true}
+              disabled={query.loading || formik.values.redeemAll}
             />
             <Checkbox name="redeemAll" label="Redeem all shares" />
             <BlockActions>
@@ -149,7 +150,7 @@ export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
             </>
           ) : (
             <>
-              <FormattedNumber value={formik.values.shareQuantity} /> shares (of your total of{' '}
+              <TokenValueDisplay value={formik.values.shareQuantity} /> shares (of your total of{' '}
               <FormattedNumber value={shares?.balanceOf} /> shares){' '}
             </>
           )}{' '}

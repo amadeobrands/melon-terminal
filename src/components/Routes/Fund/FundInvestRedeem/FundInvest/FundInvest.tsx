@@ -1,7 +1,6 @@
 import React, { useMemo, useRef } from 'react';
-import { format } from 'date-fns';
 import { useEnvironment } from '~/hooks/useEnvironment';
-import { Transaction, sameAddress } from '@melonproject/melonjs';
+import { Transaction } from '@melonproject/melonjs';
 import { useTransaction } from '~/hooks/useTransaction';
 import { useFundInvestQuery } from './FundInvest.query';
 import { Spinner } from '~/storybook/Spinner/Spinner';
@@ -16,8 +15,13 @@ import { usePriceFeedUpdateQuery } from '~/components/Layout/PriceFeedUpdate.que
 import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 import { RequiresFundNotShutDown } from '~/components/Gates/RequiresFundNotShutDown/RequiresFundNotShutDown';
-import { UserWhitelist, AssetWhitelist, AssetBlacklist } from '@melonproject/melongql';
+import { UserWhitelist, AssetWhitelist, AssetBlacklist, MaxPositions } from '@melonproject/melongql';
 import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
+import { TokenValue } from '~/TokenValue';
+import { sharesToken } from '~/utils/sharesToken';
+import { RequiresFundManager } from '~/components/Gates/RequiresFundManager/RequiresFundManager';
+import { Link } from '~/storybook/Link/Link';
+import { getNetworkName } from '~/config';
 
 export interface FundInvestProps {
   address: string;
@@ -29,28 +33,117 @@ export interface TransactionRef {
 
 export const FundInvest: React.FC<FundInvestProps> = ({ address }) => {
   const environment = useEnvironment()!;
-  const [result, query] = useFundInvestQuery(address);
-  const [priceUpdate] = usePriceFeedUpdateQuery();
+  const prefix = getNetworkName(environment.network)!;
+  const [fundInvestResult, fundInvestQuery] = useFundInvestQuery(address);
+  const [priceUpdateResult, priceUpdateQuery] = usePriceFeedUpdateQuery();
 
-  const denominationAsset = result?.fund?.routes?.accounting?.denominationAsset;
-  const holdings = result?.fund?.routes?.accounting?.holdings?.filter((holding) => !holding.amount?.isZero());
+  const currentShares = fundInvestResult?.fund?.routes?.shares?.totalSupply!;
+  const existingRequest = fundInvestResult?.account?.participation?.request;
+  const participationAddress = fundInvestResult?.account?.participation?.address!;
+  const denominationAsset = fundInvestResult?.fund?.routes?.accounting?.denominationAsset!;
+  const policies = fundInvestResult?.fund?.routes?.policyManager?.policies ?? [];
+  const holdings = fundInvestResult?.fund?.routes?.accounting?.holdings ?? [];
+  const assets = fundInvestResult?.fund?.routes?.participation?.allowedAssets ?? [];
 
-  const policies = result?.fund?.routes?.policyManager?.policies;
-  const assetWhitelists = policies?.filter((policy) => policy.identifier === 'AssetWhitelist') as
-    | AssetWhitelist[]
-    | undefined;
-  const assetBlacklists = policies?.filter((policy) => policy.identifier === 'AssetBlacklist') as
-    | AssetBlacklist[]
-    | undefined;
-  const userWhitelists = policies?.filter((policy) => policy.identifier === 'UserWhitelist') as
-    | UserWhitelist[]
-    | undefined;
+  const assetWhitelist = React.useMemo(() => {
+    const whitelists = policies.filter((policy) => policy.identifier === 'AssetWhitelist') as AssetWhitelist[];
+    if (!whitelists.length) {
+      return undefined;
+    }
 
-  const oneDay = 24 * 60 * 60 * 1000;
-  const nextUpdate = new Date((priceUpdate?.getTime() || 0) + oneDay);
+    const flat = whitelists.map((item) => item.assetWhitelist ?? []).flat();
+    const addresses = flat.filter((item, index, array) => array.indexOf(item) === index);
+    return addresses.map((item) => environment.getToken(item));
+  }, [environment, policies]);
+
+  const assetBlacklist = React.useMemo(() => {
+    const blacklists = policies.filter((policy) => policy.identifier === 'AssetBlacklist') as AssetBlacklist[];
+    if (!blacklists.length) {
+      return undefined;
+    }
+
+    const flat = blacklists.map((item) => item.assetBlacklist ?? []).flat();
+    const addresses = flat.filter((item, index, array) => array.indexOf(item) === index);
+    return addresses.map((item) => environment.getToken(item));
+  }, [environment, policies]);
+
+  const maxPositions = React.useMemo(() => {
+    const items = policies.filter((policy) => policy.identifier === 'MaxPositions') as MaxPositions[];
+    return items.length ? Math.min(...items.map((item) => item.maxPositions!)) : undefined;
+  }, [policies]);
+
+  const accountWhitelisted = React.useMemo(() => {
+    const whitelists = policies.filter((policy) => policy.identifier === 'UserWhitelist') as UserWhitelist[];
+    if (!whitelists.length) {
+      return true;
+    }
+
+    return whitelists.every((item) => !!item.isWhitelisted);
+  }, [policies]);
+
+  const allowedAssets = React.useMemo(() => {
+    return assets.map((item) => {
+      const token = environment.getToken(item.token!.address!);
+      return TokenValue.fromToken(token, item.shareCostInAsset!);
+    });
+  }, [environment, assets]);
+
+  const currentHoldings = React.useMemo(() => {
+    const filtered = holdings.filter((holding) => !holding.amount?.isZero());
+    return filtered.map((item) => {
+      const token = environment.getToken(item.token!.address!);
+      return TokenValue.fromToken(token, item.amount!);
+    });
+  }, [environment, holdings]);
+
+  // TODO: Also check the MaxPositions policy here. If the number of current positions
+  // is larger than the current fund's holdings, it only allows investment in the
+  // denomination asset.
+  const investableAssets = React.useMemo(() => {
+    let allowed = allowedAssets;
+    if (assetBlacklist != null) {
+      allowed = allowed.filter((item) => !assetBlacklist.includes(item.token));
+    }
+
+    if (assetWhitelist != null) {
+      allowed = allowed.filter((item) => assetWhitelist.includes(item.token));
+    }
+
+    // TODO: Use maxPositions, denominationAssets and currentHoldings values to limit
+    // this list further if necessary.
+
+    return allowed;
+  }, [environment, currentHoldings, denominationAsset, maxPositions, allowedAssets, assetWhitelist, assetBlacklist]);
+
+  const requestExecutionWindowStart = React.useMemo(() => {
+    const oneDay = 24 * 60 * 60 * 1000;
+    return new Date((priceUpdateResult?.getTime() || 0) + oneDay);
+  }, [priceUpdateResult]);
+
+  const requestExecutionWindowEnd = React.useMemo(() => {
+    const oneDay = 24 * 60 * 60 * 1000;
+    return new Date((existingRequest?.timestamp?.getTime() || 0) + oneDay);
+  }, [existingRequest]);
+
+  const investmentRequestTimestamp = existingRequest?.timestamp;
+  const investmentRequestAmount = React.useMemo(() => {
+    if (!existingRequest) {
+      return undefined;
+    }
+
+    const token = environment.getToken(existingRequest.investmentAsset!);
+    return TokenValue.fromToken(token, existingRequest.investmentAmount!);
+  }, [environment, existingRequest]);
+
+  const investmentRequestShares = React.useMemo(() => {
+    if (!existingRequest) {
+      return undefined;
+    }
+
+    return TokenValue.fromToken(sharesToken, existingRequest?.requestedShares!);
+  }, [existingRequest]);
 
   const transactionRef = useRef<TransactionRef>();
-
   const transaction = useTransaction(environment, {
     onAcknowledge: () => {
       if (transactionRef.current) {
@@ -64,30 +157,13 @@ export const FundInvest: React.FC<FundInvestProps> = ({ address }) => {
     },
   });
 
-  const request = result?.account?.participation?.request;
-  const twentyFourHoursAfterRequest = new Date((request?.timestamp?.getTime() || 0) + oneDay);
-  const symbol = environment.tokens.find((token) => sameAddress(token.address, request?.investmentAsset))?.symbol;
-
-  const account = result?.account;
-  const allowedAssets = result?.fund?.routes?.participation?.allowedAssets
-    ?.filter(
-      (asset) =>
-        !assetWhitelists?.length ||
-        assetWhitelists.every((list) => list.assetWhitelist?.some((item) => sameAddress(item, asset.token?.address)))
-    )
-    .filter(
-      (asset) =>
-        !assetBlacklists?.length ||
-        !assetBlacklists.some((list) => list.assetBlacklist?.some((item) => sameAddress(item, asset.token?.address)))
-    );
-
-  const action = useMemo(() => {
-    const canCancelRequest = result?.account?.participation?.canCancelRequest;
+  const investmentStep = useMemo(() => {
+    const canCancelRequest = fundInvestResult?.account?.participation?.canCancelRequest;
     if (canCancelRequest) {
       return 'cancel';
     }
 
-    const investmentRequestState = result?.account?.participation?.investmentRequestState;
+    const investmentRequestState = fundInvestResult?.account?.participation?.investmentRequestState;
     if (investmentRequestState === 'VALID') {
       return 'execute';
     }
@@ -99,9 +175,9 @@ export const FundInvest: React.FC<FundInvestProps> = ({ address }) => {
     if (investmentRequestState === 'NONE') {
       return 'invest';
     }
-  }, [result]);
+  }, [fundInvestResult]);
 
-  if (query.loading) {
+  if (fundInvestQuery.loading || priceUpdateQuery.loading) {
     return (
       <Block>
         <SectionTitle>Invest</SectionTitle>
@@ -110,7 +186,7 @@ export const FundInvest: React.FC<FundInvestProps> = ({ address }) => {
     );
   }
 
-  if (userWhitelists && !userWhitelists.every((list) => list.isWhitelisted)) {
+  if (!accountWhitelisted) {
     return (
       <Block>
         <SectionTitle>Invest</SectionTitle>
@@ -118,8 +194,6 @@ export const FundInvest: React.FC<FundInvestProps> = ({ address }) => {
       </Block>
     );
   }
-
-  const totalSupply = result?.fund?.routes?.shares?.totalSupply;
 
   return (
     <Block>
@@ -132,64 +206,73 @@ export const FundInvest: React.FC<FundInvestProps> = ({ address }) => {
             'The Melon Terminal does not support investments in funds which are running on deprecated versions of the Melon protocol.'
           }
         >
-          {action === 'cancel' && (
-            <CancelRequest
-              address={address}
-              account={account!}
-              loading={query.networkStatus < 7}
-              transaction={transaction}
-            />
+          {investmentStep === 'cancel' && (
+            <CancelRequest participationAddress={participationAddress} transaction={transaction} />
           )}
-          {action === 'invest' && (
-            <RequestInvestment
-              ref={transactionRef}
-              address={address}
-              allowedAssets={allowedAssets}
-              holdings={holdings}
-              denominationAsset={denominationAsset}
-              policies={policies}
-              totalSupply={totalSupply}
-              account={account!}
-              loading={query.networkStatus < 7}
-              transaction={transaction}
-            />
+
+          {investmentStep === 'invest' && (
+            <>
+              {investableAssets.length ? (
+                <RequestInvestment
+                  ref={transactionRef}
+                  fundAddress={address}
+                  participationAddress={participationAddress}
+                  investableAssets={investableAssets}
+                  currentShares={currentShares!}
+                  transaction={transaction}
+                />
+              ) : (
+                <>
+                  <p>
+                    You cannot invest into this fund because it has not defined any investable assets and/or the risk
+                    management restrictions prevent the investment in any asset.
+                  </p>
+
+                  <RequiresFundManager fallback={false}>
+                    As the fund manager, you can on{' '}
+                    <Link to={`/${prefix}/fund/${address}/manage`}>adapt the list of investable assets</Link>.
+                  </RequiresFundManager>
+                </>
+              )}
+            </>
           )}
-          {action === 'execute' && (
+
+          {investmentStep === 'execute' && (
             <ExecuteRequest
               ref={transactionRef}
-              address={address}
-              account={account!}
-              loading={query.networkStatus < 7}
-              totalSupply={totalSupply}
+              participationAddress={participationAddress}
+              currentShares={currentShares!}
               transaction={transaction}
             />
           )}
-          {action === 'waiting' && (
+
+          {investmentStep === 'waiting' && (
             <>
               <p>You have a pending investment request:</p>
 
               <p>
-                Requested shares: <TokenValueDisplay value={request?.requestedShares} />
+                Requested shares: <TokenValueDisplay value={investmentRequestShares} />
                 <br />
-                Investment amount: <TokenValueDisplay value={request?.investmentAmount} /> {symbol}
+                Investment amount: <TokenValueDisplay value={investmentRequestAmount} />
                 <br />
-                Request date: <FormattedDate timestamp={request?.timestamp} />
+                Request date: <FormattedDate timestamp={investmentRequestTimestamp} />
               </p>
 
               <p>
                 Your investment request will be automatically executed after the next price update, which will be at
-                approximately <FormattedDate timestamp={nextUpdate} />.
+                approximately <FormattedDate timestamp={requestExecutionWindowStart} />.
               </p>
 
               <p>
                 If you come back during the execution window (which starts at around{' '}
-                <FormattedDate timestamp={nextUpdate} /> and ends at{' '}
-                <FormattedDate timestamp={twentyFourHoursAfterRequest} />
+                <FormattedDate timestamp={requestExecutionWindowStart} /> and ends at{' '}
+                <FormattedDate timestamp={requestExecutionWindowEnd} />
                 ), and your invesment request hasn't been automatically executed, you will see here the option to
                 execute it yourself.
               </p>
             </>
           )}
+
           <TransactionModal transaction={transaction}>
             {transaction.state.name === 'Approve' && (
               <TransactionDescription title="Approve">

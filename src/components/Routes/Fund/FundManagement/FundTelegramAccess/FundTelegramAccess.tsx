@@ -29,7 +29,7 @@ export const FundTelegramAccess: React.FC = () => {
             : await environment?.client.personal.sign(user.username, account.address!, 'password');
 
         const result = await (
-          await fetch(`${process.env.MELON_TELEGRAM_API}/login`, {
+          await fetch(`${process.env.MELON_TELEGRAM_API}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...user, signature, address: account.address! }),

@@ -2,9 +2,11 @@ import React from 'react';
 import { useField, Wrapper, Label, Error, GenericInputProps } from '~/components/Form/Form';
 import * as S from './Input.styles';
 
-export interface InputProps extends GenericInputProps {
+export interface InputProps extends GenericInputProps<string> {
   name: string;
   label?: string;
+  touched?: boolean;
+  error?: string;
 }
 
 export const Input: React.FC<InputProps> = (props) => {

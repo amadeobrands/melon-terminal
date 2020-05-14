@@ -1,21 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import { assetDataUtils, SignedOrder } from '@0x/order-utils-v2';
+import { ExchangeDefinition, TokenDefinition, Trading, ZeroExV2TradingAdapter } from '@melonproject/melonjs';
 import BigNumber from 'bignumber.js';
+import React, { useEffect, useState } from 'react';
 import * as Rx from 'rxjs';
-import { ExchangeDefinition, Trading, ZeroExV2TradingAdapter, TokenDefinition } from '@melonproject/melonjs';
-import { useEnvironment } from '~/hooks/useEnvironment';
-import { useAccount } from '~/hooks/useAccount';
-import { useTransaction } from '~/hooks/useTransaction';
-import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
-import { Button } from '~/storybook/Button/Button';
 import { catchError, switchMap } from 'rxjs/operators';
-import { SignedOrder, assetDataUtils } from '@0x/order-utils-v2';
-import { Subtitle } from '~/storybook/Title/Title';
 import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
-import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
+import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
+import { Label } from '~/components/Form/Form';
+import { useAccount } from '~/hooks/useAccount';
+import { useEnvironment } from '~/hooks/useEnvironment';
+import { useTransaction } from '~/hooks/useTransaction';
+import { Button } from '~/storybook/Button/Button';
+import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
+import { validatePolicies } from '../validatePolicies';
+import { FundRequestForQuoteTradingProps } from './FundRequestForQuoteTrading';
 
-export interface FundRequestForQuoteOfferProps {
+export interface FundRequestForQuoteOfferProps extends FundRequestForQuoteTradingProps {
   active: boolean;
   trading: string;
   exchange: ExchangeDefinition;
@@ -38,6 +40,8 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
     price: new BigNumber(0),
     loading: false,
   }));
+
+  const [policyValidation, setPolicyValidation] = useState({ valid: true, message: '' });
 
   const environment = useEnvironment()!;
   const account = useAccount()!;
@@ -122,6 +126,22 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
         const taker = assetDataUtils.decodeERC20AssetData(offer.takerAssetData).tokenAddress;
         const maker = assetDataUtils.decodeERC20AssetData(offer.makerAssetData).tokenAddress;
 
+        await validatePolicies({
+          environment,
+          setPolicyValidation,
+          policies: props.policies,
+          taker: environment.getToken(taker)!,
+          maker: environment.getToken(maker)!,
+          takerAmount: new BigNumber(offer.takerAssetAmount),
+          makerAmount: new BigNumber(offer.makerAssetAmount),
+          holdings: props.holdings,
+          denominationAsset: props.denominationAsset,
+          tradingAddress: props.trading,
+        });
+        if (!policyValidation.valid) {
+          return;
+        }
+
         setQuote({
           price: new BigNumber(result?.price ?? 'NaN'),
           amount: new BigNumber(result?.amount ?? 'NaN'),
@@ -150,9 +170,13 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
       return;
     }
 
+    if (!policyValidation.valid) {
+      return;
+    }
+
     (async () => {
       const trading = new Trading(environment, props.trading);
-      const adapter = await ZeroExV2TradingAdapter.create(environment, props.exchange.exchange, trading);
+      const adapter = await ZeroExV2TradingAdapter.create(environment, props.exchange.adapter, trading);
       const tx = adapter.takeOrder(account.address!, quote.offer, quantity);
 
       transaction.start(tx, 'Take order');
@@ -167,9 +191,7 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
 
   return (
     <>
-      <Subtitle>
-        {props.market && ready ? `Rate: (1 ${maker} = ${state.price.toFixed(4)} ${taker})` : `No Rate`}
-      </Subtitle>
+      <Label>{props.market && ready ? `Rate: (1 ${maker} = ${state.price.toFixed(4)} ${taker})` : `No Rate`}</Label>
       <Button type="button" disabled={!(ready && props.active)} loading={loading} onClick={submit}>
         {loading
           ? ''
@@ -177,6 +199,11 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
           ? `Buy ${state.price.multipliedBy(props.amount!).toFixed(4)} ${props.symbol}`
           : 'No Offer'}
       </Button>
+      {!policyValidation.valid && (
+        <NotificationBar kind="error">
+          <NotificationContent>{policyValidation.message}</NotificationContent>
+        </NotificationBar>
+      )}
 
       <TransactionModal transaction={transaction}>
         <NotificationBar kind="neutral">

@@ -1,9 +1,8 @@
-import gql from 'graphql-tag';
 import BigNumber from 'bignumber.js';
+import gql from 'graphql-tag';
+import { useTokenRates } from '~/components/Contexts/Rates/Rates';
 import { useTheGraphQuery } from '~/hooks/useQuery';
 import { calculateChangeFromSharePrice } from '~/utils/calculateChangeFromSharePrice';
-import { useCoinAPI } from '~/hooks/useCoinAPI';
-import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 
 export interface SharePrice {
   sharePrice: string;
@@ -104,9 +103,9 @@ const FundOverviewQuery = gql`
 
 export const useFundOverviewQuery = () => {
   const result = useTheGraphQuery<FundOverviewQueryResult, FundOverviewQueryVariables>(FundOverviewQuery);
-  const coinApi = useCoinAPI();
+  const rates = useTokenRates('ETH');
 
-  const rate = coinApi.data.rate ?? 0;
+  const rate = rates.USD;
 
   const funds = (result && result.data && result.data.funds) || [];
   const processed = funds.map((item) => ({

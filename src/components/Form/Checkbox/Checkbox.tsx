@@ -5,6 +5,8 @@ import { CheckboxIcon, CheckboxContainer, CheckboxInput, CheckboxMask, CheckboxL
 export interface CheckboxProps extends GenericInputProps {
   name: string;
   label?: string;
+  touched?: boolean;
+  error?: string;
 }
 
 export const CheckboxItem: React.FC<CheckboxProps> = ({ label, ...rest }) => {

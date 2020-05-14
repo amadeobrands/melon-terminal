@@ -2234,9 +2234,9 @@
     any-observable "^0.3.0"
 
 "@scarf/scarf@^1.0.0":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@scarf/scarf/-/scarf-1.0.4.tgz#d7c09e7d38428123df18a8d83a4bb5d09517d952"
-  integrity sha512-lkhjzeYyYAG4VvdrjvbZCOYzXH5vCwfzYj9xJ4zHDgyYIOzObZwcsbW6W1q5Z4tywrb14oG/tfsFAMMQPCTFqw==
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@scarf/scarf/-/scarf-1.0.5.tgz#accee0bce88a9047672f7c8faf3cada59c996b81"
+  integrity sha512-9WKaGVpQH905Aqkk+BczFEeLQxS07rl04afFRPUG9IcSlOwmo5EVVuuNu0d4M9LMYucObvK0LoAe+5HfMW2QhQ==
 
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
@@ -16262,10 +16262,10 @@ react-popper@^2.2.2:
     react-fast-compare "^3.0.1"
     warning "^4.0.2"
 
-react-query@^1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/react-query/-/react-query-1.3.0.tgz#4ee11ed0abe3e21b79210d8e83e06083fd0c0f25"
-  integrity sha512-itSMBvP7s2D713ujt6tVIZjsk3mmKp9lvOFrfcyTdmlytCdlnNyWl/vNOHJAbMrkr+vT0lwj7vaTUGkGVaJ8Pg==
+react-query@^1.3.3:
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/react-query/-/react-query-1.3.3.tgz#41d349e4ab951251dcbaacacf1fd2d9f7bbeed1d"
+  integrity sha512-hamNWxLHycMv0hYIlUK/GSQUkXiQML4sUjeqxYJ3W4FO6TLXxqTgtj/r0W7CYQ0VYGvmU3CmbaP6gESxRdkbuw==
   dependencies:
     "@scarf/scarf" "^1.0.0"
     ts-toolbelt "^6.4.2"
@@ -18923,9 +18923,9 @@ ts-toolbelt@^6.3.3:
   integrity sha512-zjnZ/vy1eUA0li3H0JXecl0R3jiP42snpLimsrppt9V3LLbM4NM4jMgjXQ4S67hvehq+r9CxpX4Wj6RnFRzReA==
 
 ts-toolbelt@^6.4.2:
-  version "6.6.2"
-  resolved "https://registry.yarnpkg.com/ts-toolbelt/-/ts-toolbelt-6.6.2.tgz#2e1681ff654bf0ab24636d2ff1cbc802316b391f"
-  integrity sha512-P0fN4yv9rkTmKsu/Xew8heopmQ3fDnCF5tY4CV1ZMAUeBHJA6QsJhMEdxtWNdgV7dnKKAAw+A12azm2cONQ6NQ==
+  version "6.7.2"
+  resolved "https://registry.yarnpkg.com/ts-toolbelt/-/ts-toolbelt-6.7.2.tgz#7ebf53ed19eb068647cf777bf2028df9362a93ac"
+  integrity sha512-JMZv+tepq6tZ5HFCanwI+9VYdXB0dVACFKeImeyFsLqxBFlGeC8AljSJvh1Z45ETRKmSP25Q+aEYInFKN2NOeg==
 
 tslib@^1.10.0, tslib@^1.11.1, tslib@^1.8.1, tslib@^1.9.0, tslib@^1.9.3:
   version "1.11.1"

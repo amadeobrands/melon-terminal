@@ -1,11 +1,8 @@
 import React from 'react';
 import { ExchangeIdentifier } from '@melonproject/melonjs';
-import { RequiresFundManager } from '~/components/Gates/RequiresFundManager/RequiresFundManager';
 import { Grid, GridRow, GridCol } from '~/storybook/Grid/Grid';
 import { FundHoldings } from '~/components/Routes/Fund/FundTrade/FundHoldings/FundHoldings';
-import { RequiresFundNotShutDown } from '~/components/Gates/RequiresFundNotShutDown/RequiresFundNotShutDown';
-import { RequiresFundDeployedWithCurrentVersion } from '~/components/Gates/RequiresFundDeployedWithCurrentVersion/RequiresFundDeployedWithCurrentVersion';
-import { FundRequestForQuoteTrading } from './FundRequestForQuoteTrading.tsx/FundRequestForQuoteTrading';
+import { FundRequestForQuoteTrading } from './FundRequestForQuoteTrading/FundRequestForQuoteTrading';
 import { FundLiquidityProviderTrading } from '~/components/Routes/Fund/FundTrade/FundLiquidityProviderTrading/FundLiquidityProviderTrading';
 import { FundOrderbookTrading } from '~/components/Routes/Fund/FundTrade/FundOrderbookTrading/FundOrderbookTrading';
 import { useFundHoldingsQuery } from './FundHoldings/FundHoldings.query';
@@ -13,6 +10,9 @@ import { useFundTrading } from './FundTrade.query';
 import { FundTradeHistory } from './FundTradeHistory/FundTradeHistory';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { NetworkEnum } from '~/types';
+import { RequiresFundManager } from '~/components/Gates/RequiresFundManager/RequiresFundManager';
+import { RequiresFundDeployedWithCurrentVersion } from '~/components/Gates/RequiresFundDeployedWithCurrentVersion/RequiresFundDeployedWithCurrentVersion';
+import { RequiresFundNotShutDown } from '~/components/Gates/RequiresFundNotShutDown/RequiresFundNotShutDown';
 
 export interface FundTradeProps {
   address: string;
@@ -51,19 +51,6 @@ export const FundTrade: React.FC<FundTradeProps> = ({ address }) => {
                   <FundHoldings address={address} />
                 </GridCol>
               </GridRow>
-              {!!markets.length && !!trading && (
-                <GridRow>
-                  <GridCol>
-                    <FundOrderbookTrading
-                      trading={trading}
-                      denominationAsset={denominationAsset}
-                      exchanges={markets}
-                      policies={policies}
-                      holdings={holdings}
-                    />
-                  </GridCol>
-                </GridRow>
-              )}
               {!!providers.length && !!trading && (
                 <GridRow>
                   <GridCol>
@@ -84,6 +71,19 @@ export const FundTrade: React.FC<FundTradeProps> = ({ address }) => {
                       trading={trading}
                       denominationAsset={denominationAsset}
                       exchange={rfq}
+                      policies={policies}
+                      holdings={holdings}
+                    />
+                  </GridCol>
+                </GridRow>
+              )}
+              {!!markets.length && !!trading && (
+                <GridRow>
+                  <GridCol>
+                    <FundOrderbookTrading
+                      trading={trading}
+                      denominationAsset={denominationAsset}
+                      exchanges={markets}
                       policies={policies}
                       holdings={holdings}
                     />

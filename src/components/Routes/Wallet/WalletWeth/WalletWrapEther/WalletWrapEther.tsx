@@ -16,7 +16,7 @@ import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNu
 import { useFormik, Form } from '~/components/Form/Form';
 import { Button } from '~/components/Form/Button/Button';
 import { TokenValueInput } from '~/components/Form/TokenValueInput/TokenValueInput';
-import { TokenValue } from '~/components/Form/TokenValueSelect/TokenValue';
+import { TokenValue } from '~/TokenValue';
 import { AccountContextValue } from '~/components/Contexts/Account/Account';
 import * as S from './WalletWrapEther.styles';
 
@@ -99,7 +99,7 @@ const WalletWrapEtherForm: React.FC<WalletWrapEtherFormProps> = ({ transaction, 
             <TokenValueDisplay value={account.weth!} symbol="WETH" />
           </S.WalletWrapEtherBalance>
         </S.WalletWrapEtherBalances>
-        <TokenValueInput name="quantityEth" label="Quantity" token={token} />
+        <TokenValueInput name="quantityEth" label="Quantity" />
 
         {showNotification && (
           <NotificationBar kind="warning">

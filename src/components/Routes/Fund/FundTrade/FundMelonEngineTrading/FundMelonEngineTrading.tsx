@@ -13,7 +13,7 @@ import { Subtitle } from '~/storybook/Title/Title';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 import { InputError } from '~/storybook/Input/Input.styles';
-import { validatePolicies } from '../FundLiquidityProviderTrading/validatePolicies';
+import { validatePolicies } from '../validatePolicies';
 
 export interface FundMelonEngineTradingProps {
   trading: string;
@@ -49,14 +49,14 @@ export const FundMelonEngineTrading: React.FC<FundMelonEngineTradingProps> = (pr
       await validatePolicies({
         environment,
         setPolicyValidation,
-        value,
+        makerAmount: value,
         policies: props.policies,
         taker: props.taker,
         maker: props.maker,
         holdings: props.holdings,
         denominationAsset: props.denominationAsset,
-        quantity: props.quantity,
-        trading: props.trading,
+        takerAmount: props.quantity,
+        tradingAddress: props.trading,
       }))();
   }, [props.quantity]);
 
@@ -64,14 +64,14 @@ export const FundMelonEngineTrading: React.FC<FundMelonEngineTradingProps> = (pr
     await validatePolicies({
       environment,
       setPolicyValidation,
-      value,
+      makerAmount: value,
       policies: props.policies,
       taker: props.taker,
       maker: props.maker,
       holdings: props.holdings,
       denominationAsset: props.denominationAsset,
-      quantity: props.quantity,
-      trading: props.trading,
+      takerAmount: props.quantity,
+      tradingAddress: props.trading,
     });
     if (!policyValidation.valid) {
       return;
