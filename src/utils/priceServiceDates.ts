@@ -9,7 +9,7 @@ export function findCorrectFromTime(date: Date) {
 export function findCorrectToTime(date: Date) {
   const toYear = date.getUTCFullYear();
   const toMonth = date.getUTCMonth();
-  const toDay = date.getUTCDay();
+  const toDay = date.getUTCDate();
   const endOfDay = Date.UTC(toYear, toMonth, toDay, 23, 59, 59, 0) / 1000;
   return endOfDay;
 }
