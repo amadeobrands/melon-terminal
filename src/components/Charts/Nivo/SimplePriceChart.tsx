@@ -26,14 +26,9 @@ import { Spinner } from '~/storybook/Spinner/Spinner';
  *  button, this value is 0.
  */
 
-export interface LineChartData {
-  earliestDate: number;
-  data: Serie[];
-}
-
 export interface BasicLineChartProps {
-  chartData?: LineChartData;
-  loading: boolean;
+  data: Serie[];
+  loading?: boolean;
   stacked: boolean;
   area: boolean;
 }
@@ -45,7 +40,6 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
   const yScale = props.stacked ? stackedProps : nonStackedProps;
   const areaProp = false;
   const theme = useTheme();
-
   const chartColor = theme.mode === 'light' ? 'set2' : 'accent'; // https://nivo.rocks/guides/colors/
 
   return (
@@ -55,7 +49,7 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
           <Spinner />
         ) : (
           <ResponsiveLine
-            data={props.chartData?.data ?? []}
+            data={props.data}
             theme={theme.chartColors}
             colors={{ scheme: chartColor }} // data colors
             animate={false}

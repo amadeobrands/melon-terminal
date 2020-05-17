@@ -17,7 +17,7 @@ import { SectionTitle } from '~/storybook/Title/Title';
 import { useFundPerformanceQuery } from './FundPerformance.query';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { SelectWidget } from '~/components/Form/Select/Select';
-import { Button } from '~/components/Form/Button/Button.styles';
+import { Button } from '~/components/Form/Button/Button';
 
 export interface FundPerformanceTableProps {
   address: string;
