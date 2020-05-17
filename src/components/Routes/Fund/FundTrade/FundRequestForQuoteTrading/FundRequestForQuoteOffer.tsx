@@ -7,15 +7,15 @@ import { catchError, switchMap } from 'rxjs/operators';
 import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
-import { Label } from '~/components/Form/Form';
 import { useAccount } from '~/hooks/useAccount';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { useTransaction } from '~/hooks/useTransaction';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 import { validatePolicies } from '../validatePolicies';
 import { FundRequestForQuoteTradingProps } from './FundRequestForQuoteTrading';
+import { Subtitle } from '~/storybook/Title/Title';
 
 export interface FundRequestForQuoteOfferProps extends FundRequestForQuoteTradingProps {
   active: boolean;
@@ -191,7 +191,9 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
 
   return (
     <>
-      <Label>{props.market && ready ? `Rate: (1 ${maker} = ${state.price.toFixed(4)} ${taker})` : `No Rate`}</Label>
+      <Subtitle>
+        {props.market && ready ? `Rate: (1 ${maker} = ${state.price.toFixed(4)} ${taker})` : `No Rate`}
+      </Subtitle>
       <Button type="button" disabled={!(ready && props.active)} loading={loading} onClick={submit}>
         {loading
           ? ''

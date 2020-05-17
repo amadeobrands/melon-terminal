@@ -43,10 +43,10 @@ export const WalletWrapEther: React.FC = () => {
 
 const validationSchema = Yup.object().shape({
   quantityEth: Yup.mixed()
-    .test('positive', 'Amount of ETH has to be positive', (data) => data.value?.isGreaterThan(0))
-    .test('balance', 'Not enough ETH in wallet', function ({ value }) {
+    .test('positive', 'Amount of ETH has to be positive', (value) => value.value?.isGreaterThan(0))
+    .test('balance', 'Not enough ETH in wallet', function (value) {
       const account = (this.options.context as any).account as AccountContextValue;
-      return !!account.eth?.isGreaterThanOrEqualTo(toTokenBaseUnit(value, 18));
+      return !!account.eth?.isGreaterThanOrEqualTo(toTokenBaseUnit(value.value, 18));
     }),
 });
 
@@ -58,7 +58,7 @@ interface WalletWrapEtherFormProps {
 
 const WalletWrapEtherForm: React.FC<WalletWrapEtherFormProps> = ({ transaction, account, environment }) => {
   const initialValues = {
-    quantityEth: TokenValue.fromToken(token, account.eth!),
+    quantityEth: new TokenValue(token, 1),
   };
 
   const validationContext = React.useMemo(
@@ -93,10 +93,7 @@ const WalletWrapEtherForm: React.FC<WalletWrapEtherFormProps> = ({ transaction, 
       <Form formik={formik}>
         <S.WalletWrapEtherBalances>
           <S.WalletWrapEtherBalance>
-            <TokenValueDisplay value={account.eth!} symbol="ETH" />
-          </S.WalletWrapEtherBalance>
-          <S.WalletWrapEtherBalance>
-            <TokenValueDisplay value={account.weth!} symbol="WETH" />
+            Your ETH balance: <TokenValueDisplay value={account.eth!} symbol="ETH" />
           </S.WalletWrapEtherBalance>
         </S.WalletWrapEtherBalances>
         <TokenValueInput name="quantityEth" label="Quantity" />

@@ -11,7 +11,7 @@ import {
   connectionLost,
 } from '~/components/Contexts/Connection/Connection';
 import { SectionTitle } from '~/storybook/Title/Title';
-import { Button } from '~/storybook/Button/Button.styles';
+import { Button } from '~/components/Form/Button/Button.styles';
 import { networkFromId } from '~/utils/networkFromId';
 
 interface Resource extends Rx.Unsubscribable {

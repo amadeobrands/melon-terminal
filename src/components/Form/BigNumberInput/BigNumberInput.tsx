@@ -7,7 +7,7 @@ import { useField, Wrapper, Label, Error } from '~/components/Form/Form';
 export type BigNumberInputProps = Omit<NumberFormatProps, 'value'> & {
   name: string;
   value?: BigNumber.Value;
-  label?: string;
+  label?: string | JSX.Element;
 };
 
 export const BigNumberInput: React.FC<BigNumberInputProps> = ({ label, ...props }) => {

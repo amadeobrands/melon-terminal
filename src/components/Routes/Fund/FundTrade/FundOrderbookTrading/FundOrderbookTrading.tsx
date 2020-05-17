@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { ExchangeDefinition } from '@melonproject/melonjs';
+import { ExchangeDefinition, sameAddress } from '@melonproject/melonjs';
 import { Holding, Policy, Token } from '@melonproject/melongql';
 import { FundOrderbook } from '../FundOrderbook/FundOrderbook';
 import { OrderbookItem } from '../FundOrderbook/utils/aggregatedOrderbook';
 import { useEnvironment } from '~/hooks/useEnvironment';
-import { Dropdown } from '~/storybook/Dropdown/Dropdown';
 import { FundOrderbookMarketForm } from '../FundOrderbookMarketForm/FundOrderbookMarketForm';
 import { Block } from '~/storybook/Block/Block';
 import { SectionTitle } from '~/storybook/Title/Title';
 import * as S from './FundOrderbookTrading.styles';
+import { SelectWidget } from '~/components/Form/Select/Select';
 
 export interface FundOrderbookTradingProps {
   trading: string;
@@ -30,12 +30,18 @@ export const FundOrderbookTrading: React.FC<FundOrderbookTradingProps> = (props)
     setOrder(undefined);
   }, [asset]);
 
-  const tokenOptions = environment.tokens
-    .filter((token) => token !== weth && !token.historic)
-    .map((token) => ({
-      value: token.address,
-      name: `${token.symbol} / ${weth.symbol}`,
-    }));
+  const assetPairOptions = React.useMemo(() => {
+    return environment.tokens
+      .filter((token) => token !== weth && !token.historic)
+      .map((token) => ({
+        value: token.address,
+        label: `${token.symbol} / ${weth.symbol}`,
+      }));
+  }, [environment.tokens, weth]);
+
+  const selectedAssetPair = React.useMemo(() => {
+    return assetPairOptions.find((item) => sameAddress(item.value, asset.address));
+  }, [assetPairOptions, asset.address]);
 
   return (
     <Block>
@@ -43,12 +49,12 @@ export const FundOrderbookTrading: React.FC<FundOrderbookTradingProps> = (props)
 
       <S.FundOrderbookTrading>
         <S.FundOrderbookForm>
-          <Dropdown
+          <SelectWidget
             name="asset"
             label="Asset pair"
-            options={tokenOptions}
-            value={asset.address}
-            onChange={(event) => setAsset(environment.getToken(event.target.value)!)}
+            options={assetPairOptions}
+            value={selectedAssetPair}
+            onChange={(value) => value && setAsset(environment.getToken((value as any).value)!)}
           />
 
           {asset && (

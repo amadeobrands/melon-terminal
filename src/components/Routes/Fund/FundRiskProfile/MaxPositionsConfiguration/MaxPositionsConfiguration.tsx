@@ -12,7 +12,7 @@ import { BlockActions } from '~/storybook/Block/Block';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 
 const validationSchema = Yup.object().shape({
-  maxPositions: Yup.number().required().min(0).integer(),
+  maxPositions: Yup.number().label('Maximum positions').required().min(0).integer(),
 });
 
 const initialValues = {

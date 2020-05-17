@@ -15,14 +15,14 @@ import { catchError, expand, map, switchMapTo } from 'rxjs/operators';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
-import { Label } from '~/components/Form/Form';
 import { useAccount } from '~/hooks/useAccount';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { useTransaction } from '~/hooks/useTransaction';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 import { validatePolicies } from '../validatePolicies';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
+import { Subtitle } from '~/storybook/Title/Title';
 
 export interface FundUniswapTradingProps {
   trading: string;
@@ -155,10 +155,10 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = (props) => 
 
   return (
     <>
-      <Label>
+      <Subtitle>
         Uniswap (<FormattedNumber value={1} suffix={state.taker.symbol} decimals={0} /> ={' '}
         <FormattedNumber value={rate} suffix={state.maker.symbol} />)
-      </Label>
+      </Subtitle>
       <Button type="button" disabled={!ready || !props.active} loading={loading} onClick={submit}>
         {loading ? (
           ''

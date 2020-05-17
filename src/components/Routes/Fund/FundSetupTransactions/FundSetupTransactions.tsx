@@ -1,7 +1,7 @@
 import React, { FormEvent, useEffect, useMemo, useState } from 'react';
 import * as R from 'ramda';
 import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 import { useTransaction } from '~/hooks/useTransaction';
 import { TransactionReceipt } from 'web3-core';
 import { useEnvironment } from '~/hooks/useEnvironment';
@@ -15,15 +15,9 @@ import { useAccount } from '~/hooks/useAccount';
 import { Block, BlockActions } from '~/storybook/Block/Block';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { GridCol, GridRow, Grid } from '~/storybook/Grid/Grid';
-import {
-  CheckboxContainer,
-  CheckboxInput,
-  CheckboxMask,
-  CheckboxIcon,
-  CheckboxLabel,
-} from '~/storybook/Checkbox/Checkbox';
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 import { getNetworkName } from '~/config';
+import { CheckboxItem } from '~/components/Form/Checkbox/Checkbox';
 
 interface TransactionPipelineItem {
   previous: string;
@@ -178,20 +172,12 @@ export const FundSetupTransactions: React.FC = () => {
                   {pipelineOrder.map((item, index) => {
                     return (
                       <li key={item}>
-                        <CheckboxContainer>
-                          <CheckboxInput
-                            type="checkbox"
-                            name={item}
-                            value={item}
-                            key={item}
-                            defaultChecked={checked?.[index]}
-                            disabled={true}
-                          />
-                          <CheckboxMask>
-                            <CheckboxIcon />
-                          </CheckboxMask>
-                          <CheckboxLabel htmlFor="1">{pipeline[item].previous}</CheckboxLabel>
-                        </CheckboxContainer>
+                        <CheckboxItem
+                          checked={checked?.[index]}
+                          label={pipeline[item].previous}
+                          name={item}
+                          disabled={true}
+                        />
                       </li>
                     );
                   })}

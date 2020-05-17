@@ -1,4 +1,4 @@
-import { Participation, StandardToken, Transaction } from '@melonproject/melonjs';
+import { Participation, StandardToken, Transaction, sameAddress } from '@melonproject/melonjs';
 import BigNumber from 'bignumber.js';
 import React from 'react';
 import { ValueType } from 'react-select';
@@ -13,7 +13,7 @@ import { useAccount } from '~/hooks/useAccount';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { TransactionHookValues } from '~/hooks/useTransaction';
 import { BlockActions } from '~/storybook/Block/Block';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 import { TokenValue } from '~/TokenValue';
 import { bigNumberSchema, tokenValueSchema } from '~/utils/formValidation';
 import { sharesToken } from '~/utils/sharesToken';
@@ -23,6 +23,7 @@ import { useTokenRates } from '~/components/Contexts/Rates/Rates';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { Link } from '~/storybook/Link/Link';
+import { Token } from '@melonproject/melongql';
 
 export interface RequestInvestmentProps {
   fundAddress: string;
@@ -30,6 +31,7 @@ export interface RequestInvestmentProps {
   investableAssets: TokenValue[];
   currentShares: BigNumber;
   transaction: TransactionHookValues;
+  denominationAsset: Token;
 }
 
 const validationSchema = Yup.object({
@@ -211,8 +213,6 @@ export const RequestInvestment = React.forwardRef(
       },
     }));
 
-    const valid = Object.keys(formik.errors).length === 0;
-
     const loading = currentExposureQuery.loading || currentAllowanceQuery.loading;
     const shareCostInAsset = props.investableAssets.find(
       (asset) => asset.token.address === formik.values.investmentAmount.token.address
@@ -221,6 +221,8 @@ export const RequestInvestment = React.forwardRef(
       shareCostInAsset!.token,
       investmentAmount.value?.dividedBy(requestedShares.value!)
     );
+
+    const test = <>asdfa</>;
 
     return (
       <Form formik={formik}>
@@ -234,25 +236,15 @@ export const RequestInvestment = React.forwardRef(
 
         <TokenValueSelect
           name="investmentAmount"
-          label="Amount and asset"
+          label={
+            <>
+              Amount and asset (your wallet's balance: <TokenValueDisplay value={tokenBalance} />)
+            </>
+          }
           tokens={props.investableAssets.map((item) => item.token)}
           disabled={loading}
           onChange={handleInvestmentChange}
         />
-
-        <NotificationBar kind="neutral">
-          <NotificationContent>
-            Your balance: <TokenValueDisplay value={tokenBalance} />
-          </NotificationContent>
-        </NotificationBar>
-
-        {investmentAmount.token.symbol === 'WETH' && (
-          <NotificationBar kind="neutral">
-            <NotificationContent>
-              Get WETH by wrapping your ether in the <Link to="/wallet/requestedSharePriceweth">wallet section</Link>.
-            </NotificationContent>
-          </NotificationBar>
-        )}
 
         <Select
           name="premiumPercentage"
@@ -265,7 +257,7 @@ export const RequestInvestment = React.forwardRef(
         {formik.values.acknowledgeLimitRequired && (
           <>
             <NotificationBar kind="error">
-              <NotificationContent>
+              <NotificationContent style={{ textAlign: 'left' }}>
                 After this investment, your maximum exposure to Melon funds will exceed the current limit set by the
                 Melon Council (DAI 50k).
               </NotificationContent>
@@ -276,6 +268,28 @@ export const RequestInvestment = React.forwardRef(
               name="acknowledgeLimit"
               label="I acknowledge that I am aware of the risks associated with having a large exposure to Melon funds."
             />
+          </>
+        )}
+
+        {initialPremium > formik.values.premiumPercentage && (
+          <>
+            <NotificationBar kind="warning">
+              <NotificationContent style={{ textAlign: 'left' }}>
+                You have set the "Maximum premium to the current share price" to {formik.values.premiumPercentage * 100}
+                %, which is lower than the recommended premium of {initialPremium * 100}%. If the share price increases
+                by more than {formik.values.premiumPercentage * 100}% by the next price update, then your investment
+                request cannot be executed.
+              </NotificationContent>
+              {!sameAddress(investmentAmount.token.address, props.denominationAsset?.address) && (
+                <NotificationContent style={{ textAlign: 'left' }}>
+                  <br />
+                  In addition, you are investing in {investmentAmount.token.symbol} and the denomination asset of the
+                  fund is {props.denominationAsset?.symbol}. If the price of {investmentAmount.token.symbol} falls more
+                  than {formik.values.premiumPercentage * 100}% by the next price update, your investment request cannot
+                  be executed.
+                </NotificationContent>
+              )}
+            </NotificationBar>
           </>
         )}
 

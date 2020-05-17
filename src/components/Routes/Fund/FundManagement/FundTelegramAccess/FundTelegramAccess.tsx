@@ -8,7 +8,7 @@ import { Spinner } from '~/storybook/Spinner/Spinner';
 import { useConnectionState } from '~/hooks/useConnectionState';
 import { TelegramLogin } from '~/components/Common/TelegramLogin/TelegramLogin';
 import { useIsMounted } from '~/hooks/useIsMounted';
-import { LinkButton } from '~/storybook/Button/Button.styles';
+import { LinkButton } from '~/components/Form/Button/Button.styles';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 
 export const FundTelegramAccess: React.FC = () => {

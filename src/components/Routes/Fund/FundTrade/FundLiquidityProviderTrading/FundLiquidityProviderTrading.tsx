@@ -191,7 +191,7 @@ const FundLiquidityProviderTradingForm: React.FC<FundLiquidityProviderTradingFor
     <Form formik={formik}>
       <Grid>
         <GridRow>
-          <GridCol md={6}>
+          <GridCol md={6} xs={12}>
             <SectionTitle>Choose the assets to swap</SectionTitle>
             <TokenSwap
               label="Sell"
@@ -204,26 +204,28 @@ const FundLiquidityProviderTradingForm: React.FC<FundLiquidityProviderTradingFor
 
           <GridCol md={6} xs={12}>
             <SectionTitle>Choose your pool and swap</SectionTitle>
-            {!!(exchanges && exchanges.length) &&
-              exchanges.map(([exchange, Component]) => (
-                <GridRow key={exchange.id}>
-                  <GridCol>
-                    <Wrapper>
-                      <Component
-                        active={formik.isValid}
-                        trading={props.trading}
-                        holdings={holdings}
-                        denominationAsset={denominationAsset}
-                        policies={props.policies}
-                        exchange={exchange}
-                        maker={maker}
-                        taker={taker.token}
-                        quantity={taker.value}
-                      />
-                    </Wrapper>
-                  </GridCol>
-                </GridRow>
-              ))}
+            <Grid noGap={true}>
+              <GridRow>
+                {!!(exchanges && exchanges.length) &&
+                  exchanges.map(([exchange, Component]) => (
+                    <GridCol key={exchange.id}>
+                      <Wrapper>
+                        <Component
+                          active={formik.isValid}
+                          trading={props.trading}
+                          holdings={holdings}
+                          denominationAsset={denominationAsset}
+                          policies={props.policies}
+                          exchange={exchange}
+                          maker={maker}
+                          taker={taker.token}
+                          quantity={taker.value}
+                        />
+                      </Wrapper>
+                    </GridCol>
+                  ))}
+              </GridRow>
+            </Grid>
           </GridCol>
         </GridRow>
       </Grid>

@@ -85,7 +85,6 @@ const validationSchema = Yup.object().shape({
   name: Yup.string()
     .required('This is a required field.')
     .min(1, 'The fund name must be at least one character.')
-    // tslint:disable-next-line
     .test('nameTest', 'The fund name contains invalid characters.', async function (value) {
       if (!value) {
         return true;
@@ -95,7 +94,6 @@ const validationSchema = Yup.object().shape({
       const registry = new Registry(environment, environment.deployment.melon.addr.Registry);
       return await registry.isValidFundName(value);
     })
-    // tslint:disable-next-line
     .test('nameTest', 'The fund name is reserved by another manager.', async function (value) {
       if (!value) {
         return true;
@@ -115,10 +113,11 @@ const validationSchema = Yup.object().shape({
     .required('This is a required field.')
     .min(1, 'Select at least one investment asset.'),
   managementFee: Yup.number()
-    .required('This is a required field.')
+    .label('Management Fee')
+    .required()
     .min(0, 'Management Fee must be greater or equal to zero.')
     .max(100),
-  performanceFee: Yup.number().required('This is a required field.').min(0).max(100),
+  performanceFee: Yup.number().label('Performance Fee').required().min(0).max(100),
   performanceFeePeriod: Yup.number().min(0),
   termsAndConditions: Yup.boolean().oneOf(
     [true],
