@@ -78,7 +78,7 @@ export const FundMelonEngineTrading: React.FC<FundMelonEngineTradingProps> = pro
     }
 
     const trading = new Trading(environment, props.trading);
-    const adapter = await MelonEngineTradingAdapter.create(environment, props.exchange.exchange, trading);
+    const adapter = await MelonEngineTradingAdapter.create(environment, props.exchange.adapter, trading);
     const tx = adapter.takeOrder(account.address!, {
       makerAsset: props.maker.address,
       takerAsset: props.taker.address,

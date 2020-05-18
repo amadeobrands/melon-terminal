@@ -152,7 +152,7 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
 
     (async () => {
       const trading = new Trading(environment, props.trading);
-      const adapter = await ZeroExV2TradingAdapter.create(environment, props.exchange.exchange, trading);
+      const adapter = await ZeroExV2TradingAdapter.create(environment, props.exchange.adapter, trading);
       const tx = adapter.takeOrder(account.address!, quote.offer, quantity);
 
       transaction.start(tx, 'Take order');
