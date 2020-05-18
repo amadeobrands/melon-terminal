@@ -50,7 +50,9 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
   const active = !!(props.market && props.side && props.amount && !props.amount.isNaN() && !props.amount.isZero());
   const ready = active && !state.loading && !state.price.isZero() && !state.price.isNaN();
 
-  const transaction = useTransaction(environment);
+  const transaction = useTransaction(environment, {
+    handleError: () => 'The quote may have expired before the order was confirmed. Please try again.',
+  });
 
   useEffect(() => {
     setState(() => ({

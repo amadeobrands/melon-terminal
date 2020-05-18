@@ -50,7 +50,9 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = (props) => 
   const environment = useEnvironment()!;
   const account = useAccount()!;
 
-  const transaction = useTransaction(environment);
+  const transaction = useTransaction(environment, {
+    handleError: () => 'The price may have moved before the order was confirmed. Please try again.',
+  });
 
   useEffect(() => {
     setState((previous) => ({
