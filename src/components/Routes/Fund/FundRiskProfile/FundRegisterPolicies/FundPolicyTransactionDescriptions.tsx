@@ -1,9 +1,9 @@
 import React from 'react';
-import { TransactionHookValues, TransactionFormValues } from '~/hooks/useTransaction';
+import { TransactionHookValues } from '~/hooks/useTransaction';
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 
 export interface FundPolicyTransactionDescriptionProps {
-  transaction: TransactionHookValues<TransactionFormValues>;
+  transaction: TransactionHookValues;
 }
 
 export const FundPolicyTransactionDescriptions: React.FC<FundPolicyTransactionDescriptionProps> = ({ transaction }) => {

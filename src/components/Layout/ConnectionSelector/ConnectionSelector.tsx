@@ -1,17 +1,19 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useConnectionState } from '~/hooks/useConnectionState';
-import { Dropdown } from '~/storybook/Dropdown/Dropdown';
 import { Icons, IconName } from '~/storybook/Icons/Icons';
 import { ConnectionContext } from '~/components/Contexts/Connection/Connection';
 import * as S from './ConnectionSelector.styles';
 import { useLocation, useHistory } from 'react-router';
+import { useClickOutside } from '~/hooks/useClickOutside';
+import { SelectWidget } from '~/components/Form/Select/Select';
+import { sameAddress } from '@melonproject/melonjs';
 
 export interface ConnectionButtonProps {
   name: string;
   label: string;
   icon?: IconName;
   connection: ConnectionContext;
-  accounts: { name: string; value: string }[];
+  accounts: { label: string; value: string }[];
   active: boolean;
 }
 
@@ -37,6 +39,10 @@ export const ConnectionButton: React.FC<ConnectionButtonProps> = ({
     }
   };
 
+  const selected = React.useMemo(() => {
+    return accounts.find((item) => sameAddress(item.value, connection.account));
+  }, [accounts, connection.account]);
+
   return (
     <S.ConnectionButtonWrapper>
       <S.ConnectionButton onClick={click}>
@@ -51,10 +57,11 @@ export const ConnectionButton: React.FC<ConnectionButtonProps> = ({
       </S.ConnectionButton>
 
       {(accounts && accounts.length > 1 && (
-        <Dropdown
+        <SelectWidget
+          name="account"
           options={accounts}
-          value={connection.account}
-          onChange={(event) => connection.switch(event.target.value)}
+          value={selected}
+          onChange={(value) => value && connection.switch((value as any).value)}
         />
       )) ||
         null}
@@ -68,23 +75,8 @@ export const ConnectionSelector = () => {
   const connection = useConnectionState();
   const current = connection.methods.find((item) => item.name === connection.method);
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    const handler = (event: MouseEvent) => {
-      if (ref.current && !ref.current!.contains(event.target)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener('click', handler, false);
-
-    return () => {
-      document.removeEventListener('click', handler, false);
-    };
-  }, [open]);
+  const handleClickOutside = React.useCallback(() => open && setOpen(false), [open, setOpen]);
+  useClickOutside(ref, handleClickOutside);
 
   return (
     <S.ConnectionSelector ref={ref}>
@@ -104,7 +96,7 @@ export const ConnectionSelector = () => {
             const active = method.name === connection.method;
             const accounts = active
               ? (connection.accounts || []).map((address, index) => ({
-                  name: `${index}: ${address}`,
+                  label: `${index}: ${address}`,
                   value: address,
                 }))
               : [];

@@ -12,7 +12,7 @@ import { BlockActions } from '~/storybook/Block/Block';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 
 const validationSchema = Yup.object().shape({
-  priceTolerance: Yup.number().required().min(0).max(100),
+  priceTolerance: Yup.number().label('Price Tolerance').required().min(0).max(100),
 });
 
 const initialValues = {

@@ -5,6 +5,8 @@ import { TextareaInput } from './Textarea.styles';
 export interface TextareaProps extends GenericTextareaProps {
   name: string;
   label?: string;
+  touched?: boolean;
+  error?: string;
 }
 
 export const Textarea: React.FC<TextareaProps> = ({ label, ...props }) => {

@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 
 export const ToolTipContainer = styled.div`
   border: 1px solid black;

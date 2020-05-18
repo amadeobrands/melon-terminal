@@ -1,27 +1,58 @@
 import React from 'react';
+import BigNumber from 'bignumber.js';
 import { useQuery } from 'react-query';
 import { Block } from '~/storybook/Block/Block';
-import { useFund } from '~/hooks/useFund';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { SimpleZoomControl } from '~/components/Charts/Nivo/SimpleZoomControl';
-import { fetchPricesFromService } from './NewSerivceQuery';
 import { Spinner } from '~/storybook/Spinner/Spinner';
+import { Datum, Serie } from '@nivo/line';
 
-export const NewFundPerformanceChart: React.FC = () => {
-  const fund = useFund();
+export interface NewFundPerformanceChartProps {
+  address: string;
+}
 
-  // TODO: find services's january date to use as the second term in the ternary for fundCreationTime
-  const fundCreationTime = fund.creationTime ? fund.creationTime.getTime() / 1000 : 1589241599;
+interface TimelineItem {
+  timestamp: number;
+  rates: {
+    [symbol: string]: number;
+  };
+  holdings: {
+    [symbol: string]: number;
+  };
+  shares: number;
+  sharePrice?: number;
+  price?: number;
+  gav: number;
+  nav: number;
+}
 
-  // TODO: find suitable fallback for second term in ternary
-  const address = fund.address ? fund.address.toLowerCase() : 'sdfjklsd';
+export type Depth = '1y' | '6m' | '3m' | '1m' | '1w' | '1d';
 
-  const [from, setFrom] = React.useState(fundCreationTime);
-  const { data, error, isFetching } = useQuery(['prices', from, address], fetchPricesFromService, {
+async function fetchFundHistory(key: string, fund: string, depth: Depth) {
+  const api = process.env.MELON_METRICS_API;
+  const url = `${api}/api/portfolio?address=${fund}&depth=${depth}`;
+  const response = await fetch(url).then((res) => res.json());
+  const data = (response.data as TimelineItem[]).map<Datum>((item) => ({
+    x: new Date(item.timestamp * 1000),
+    y: new BigNumber(item.price!).toPrecision(8),
+  }));
+
+  return data;
+}
+
+export function useFundHistory(fund: string, depth: Depth) {
+  const address = React.useMemo(() => fund.toLowerCase(), [fund]);
+  return useQuery(['prices', address, depth], fetchFundHistory, {
     refetchOnWindowFocus: false,
   });
+}
 
-  const trigger = (from: number) => setFrom(from);
+export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (props) => {
+  const [depth, setDepth] = React.useState<Depth>('1m');
+  const { data, error, isFetching } = useFundHistory(props.address, depth);
+  const series = React.useMemo(() => {
+    return [{ id: props.address, data }] as Serie[];
+  }, [data]);
 
   return (
     <Block>
@@ -29,13 +60,7 @@ export const NewFundPerformanceChart: React.FC = () => {
       {error ? (
         <SectionTitle>Test</SectionTitle>
       ) : data ? (
-        <SimpleZoomControl
-          fundCreation={fundCreationTime}
-          triggerFunction={trigger}
-          chartData={data}
-          startDate={from}
-          loading={isFetching}
-        />
+        <SimpleZoomControl setDepth={setDepth} depth={depth} data={series} loading={isFetching} />
       ) : (
         <Spinner />
       )}

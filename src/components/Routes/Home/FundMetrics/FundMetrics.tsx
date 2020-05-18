@@ -1,16 +1,16 @@
 import React from 'react';
+import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
+import { useTokenRates } from '~/components/Contexts/Rates/Rates';
 import { useFundMetricsQuery } from '~/components/Routes/Home/FundMetrics/FundMetrics.query';
-import { useCoinAPI } from '~/hooks/useCoinAPI';
-import { Dictionary, DictionaryEntry, DictionaryLabel, DictionaryData } from '~/storybook/Dictionary/Dictionary';
+import { Dictionary, DictionaryData, DictionaryEntry, DictionaryLabel } from '~/storybook/Dictionary/Dictionary';
+import { Grid, GridCol, GridRow } from '~/storybook/Grid/Grid';
+import { Spinner } from '~/storybook/Spinner/Spinner';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
-import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
-import { Spinner } from '~/storybook/Spinner/Spinner';
-import { Grid, GridCol, GridRow } from '~/storybook/Grid/Grid';
 
 export const FundMetrics: React.FC = () => {
   const [metrics, metricsQuery] = useFundMetricsQuery();
-  const coinApi = useCoinAPI();
+  const rates = useTokenRates('ETH');
 
   if (metricsQuery.loading || !metrics) {
     return (
@@ -28,7 +28,7 @@ export const FundMetrics: React.FC = () => {
   const nonActiveFunds = metrics.state?.nonActiveFunds;
   const allInvestments = metrics.state?.allInvestments;
 
-  const mlnPrice = networkGav.multipliedBy(coinApi.data.rate);
+  const mlnPrice = networkGav.multipliedBy(rates.USD);
 
   return (
     <Dictionary>

@@ -36,6 +36,8 @@ declare global {
       MELON_API_GATEWAY: string;
       MELON_MAX_EXPOSURE: string;
       MELON_TELEGRAM_API: string;
+      MELON_RATES_API: string;
+      MELON_METRICS_API: string;
     }
   }
 }

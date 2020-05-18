@@ -2,7 +2,7 @@ import React from 'react';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { useTransaction } from '~/hooks/useTransaction';
 import { Accounting, FeeManager } from '@melonproject/melonjs';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
 import { useFundDetailsQuery } from './FundDetails.query';
 import { Spinner } from '~/storybook/Spinner/Spinner';

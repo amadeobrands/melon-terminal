@@ -1,7 +1,7 @@
 import styled, { css } from 'styled-components';
-import { GenericInputProps } from '~/components/Form/Form';
+import { InputProps } from './Input';
 
-export const Input = styled.input<GenericInputProps>`
+export const Input = styled.input<InputProps>`
   position: relative;
   width: 100%;
   padding: 0px ${(props) => props.theme.spaceUnits.m};

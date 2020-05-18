@@ -3,6 +3,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { ThemeProvider } from './Theme';
 import { ApolloProvider } from './Contexts/Apollo/Apollo';
 import { ConnectionProvider } from './Contexts/Connection/Connection';
+import { RatesProvider } from './Contexts/Rates/Rates';
 import { AccountProvider } from './Contexts/Account/Account';
 
 // NOTE: Imported using root relative import to allow overrides with webpack.
@@ -33,9 +34,11 @@ const AppComponent = () => (
     <ConnectionProvider methods={methods} default={start} disconnect={anonymous}>
       <ApolloProvider>
         <AccountProvider>
-          <Router>
-            <AppRouter connectionSwitch={switchable} />
-          </Router>
+          <RatesProvider>
+            <Router>
+              <AppRouter connectionSwitch={switchable} />
+            </Router>
+          </RatesProvider>
         </AccountProvider>
       </ApolloProvider>
     </ConnectionProvider>

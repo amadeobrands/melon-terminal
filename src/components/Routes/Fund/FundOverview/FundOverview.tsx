@@ -3,10 +3,9 @@ import { FundHoldings } from '../FundHoldings/FundHoldings';
 import { FundPolicies } from '../FundPolicies/FundPolicies';
 import { FundContracts } from './FundContracts/FundContracts';
 import { FundFactSheet } from './FundFactSheet/FundFactSheet';
+import { NewFundPerformanceChart } from '../FundPerformanceChart/NewServiceChart';
 import { Grid, GridRow, GridCol } from '~/storybook/Grid/Grid';
 import { FundPerformanceTable } from '~/components/Routes/Fund/FundPerfomanceTable/FundPerformanceTable';
-import { FundPerformanceChart } from '../FundPerformanceChart/FundPerformanceChart';
-import { NewFundPerformanceChart } from '../FundPerformanceChart/NewServiceChart';
 
 export interface FundOverviewProps {
   address: string;
@@ -25,8 +24,7 @@ export const FundOverview: React.FC<FundOverviewProps> = ({ address }) => (
     <GridRow>
       <GridCol>
         <FundPerformanceTable address={address} />
-        <FundPerformanceChart />
-        <NewFundPerformanceChart />
+        <NewFundPerformanceChart address={address} />
       </GridCol>
     </GridRow>
     <GridRow>

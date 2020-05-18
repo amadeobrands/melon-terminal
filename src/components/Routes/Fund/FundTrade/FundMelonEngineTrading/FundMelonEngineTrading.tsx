@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 import BigNumber from 'bignumber.js';
 import { ExchangeDefinition, MelonEngineTradingAdapter, TokenDefinition, Trading } from '@melonproject/melonjs';
 import { useEnvironment } from '~/hooks/useEnvironment';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 import { useTransaction } from '~/hooks/useTransaction';
 import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
 import { useMelonEngineTradingQuery } from './FundMelonEngineTrading.query';
-import { Holding, Token, Policy, MaxConcentration, PriceTolerance } from '@melonproject/melongql';
+import { Holding, Token, Policy } from '@melonproject/melongql';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 import { useAccount } from '~/hooks/useAccount';
 import { Subtitle } from '~/storybook/Title/Title';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
-import { InputError } from '~/storybook/Input/Input.styles';
-import { validatePolicies } from '../FundLiquidityProviderTrading/validatePolicies';
+import { validatePolicies } from '../validatePolicies';
+import { Error } from '~/components/Form/Form';
 
 export interface FundMelonEngineTradingProps {
   trading: string;
@@ -49,14 +49,14 @@ export const FundMelonEngineTrading: React.FC<FundMelonEngineTradingProps> = (pr
       await validatePolicies({
         environment,
         setPolicyValidation,
-        value,
+        makerAmount: value,
         policies: props.policies,
         taker: props.taker,
         maker: props.maker,
         holdings: props.holdings,
         denominationAsset: props.denominationAsset,
-        quantity: props.quantity,
-        trading: props.trading,
+        takerAmount: props.quantity,
+        tradingAddress: props.trading,
       }))();
   }, [props.quantity]);
 
@@ -64,14 +64,14 @@ export const FundMelonEngineTrading: React.FC<FundMelonEngineTradingProps> = (pr
     await validatePolicies({
       environment,
       setPolicyValidation,
-      value,
+      makerAmount: value,
       policies: props.policies,
       taker: props.taker,
       maker: props.maker,
       holdings: props.holdings,
       denominationAsset: props.denominationAsset,
-      quantity: props.quantity,
-      trading: props.trading,
+      takerAmount: props.quantity,
+      tradingAddress: props.trading,
     });
     if (!policyValidation.valid) {
       return;
@@ -95,6 +95,7 @@ export const FundMelonEngineTrading: React.FC<FundMelonEngineTradingProps> = (pr
         Melon Engine (<FormattedNumber value={1} suffix={props.taker.symbol} decimals={0} /> ={' '}
         <FormattedNumber value={rate} suffix={props.maker.symbol} />)
       </Subtitle>
+
       <Button type="button" disabled={!ready || !props.active} loading={loading} onClick={submit}>
         {loading ? (
           ''
@@ -107,7 +108,7 @@ export const FundMelonEngineTrading: React.FC<FundMelonEngineTradingProps> = (pr
         )}
       </Button>
 
-      {policyValidation.valid || <InputError>{policyValidation.message}</InputError>}
+      {policyValidation.valid || <Error>{policyValidation.message}</Error>}
 
       <TransactionModal transaction={transaction}>
         <TransactionDescription title="Take order on the Melon engine">

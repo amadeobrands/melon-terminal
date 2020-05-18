@@ -11,7 +11,7 @@ import {
 import { map, retryWhen, delay, take, share } from 'rxjs/operators';
 import { networkFromId } from '~/utils/networkFromId';
 import { SectionTitle } from '~/storybook/Title/Title';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 import { NetworkEnum } from '~/types';
 import { getConfig } from '~/config';
 

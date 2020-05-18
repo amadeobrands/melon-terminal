@@ -8,13 +8,13 @@ import { useAccount } from '~/hooks/useAccount';
 import { Block, BlockActions } from '~/storybook/Block/Block';
 import { Title } from '~/storybook/Title/Title';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 import { Form, useFormik } from '~/components/Form/Form';
 import { TokenValueInput } from '~/components/Form/TokenValueInput/TokenValueInput';
-import { TokenValue } from '~/components/Form/TokenValueSelect/TokenValue';
+import { TokenValue } from '~/TokenValue';
 import { AccountContextValue } from '~/components/Contexts/Account/Account';
 import * as S from './WalletUnwrapEther.styles';
 
@@ -35,10 +35,10 @@ export const WalletUnwrapEther: React.FC = () => {
 
 const validationSchema = Yup.object().shape({
   quantityWeth: Yup.mixed()
-    .test('positive', 'Amount of WETH has to be positive', (data) => data.value?.isGreaterThan(0))
-    .test('balance', 'Not enough WETH in wallet', function ({ value }) {
+    .test('positive', 'Amount of WETH has to be positive', (value) => value.value?.isGreaterThan(0))
+    .test('balance', 'Not enough WETH in wallet', function (value) {
       const account = (this.options.context as any).account as AccountContextValue;
-      return !!account.weth?.isGreaterThanOrEqualTo(toTokenBaseUnit(value, 18));
+      return !!account.weth?.isGreaterThanOrEqualTo(toTokenBaseUnit(value.value, 18));
     }),
 });
 
@@ -51,7 +51,7 @@ interface WalletUnwrapEtherFormProps {
 
 const WalletUnwrapEtherForm: React.FC<WalletUnwrapEtherFormProps> = ({ transaction, account, environment, token }) => {
   const initialValues = {
-    quantityWeth: TokenValue.fromToken(token, account.weth!),
+    quantityWeth: new TokenValue(token, 1),
   };
 
   const validationContext = React.useMemo(
@@ -82,13 +82,10 @@ const WalletUnwrapEtherForm: React.FC<WalletUnwrapEtherFormProps> = ({ transacti
       <Form formik={formik}>
         <S.WalletUnwrapEtherBalances>
           <S.WalletUnwrapEtherBalance>
-            <TokenValueDisplay value={account.eth!} symbol="ETH" />
-          </S.WalletUnwrapEtherBalance>
-          <S.WalletUnwrapEtherBalance>
-            <TokenValueDisplay value={account.weth!} symbol="WETH" />
+            Your WETH Balance: <TokenValueDisplay value={account.weth!} symbol="WETH" />
           </S.WalletUnwrapEtherBalance>
         </S.WalletUnwrapEtherBalances>
-        <TokenValueInput name="quantityWeth" label="Quantity" token={token} />
+        <TokenValueInput name="quantityWeth" label="Quantity" />
         <BlockActions>
           <Button type="submit">Unwrap Ether</Button>
         </BlockActions>

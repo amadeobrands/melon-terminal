@@ -54,11 +54,6 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = (props) => {
                 ? getIn(array.form.touched[array.name], `${mapping[index]}`)
                 : undefined;
 
-            const initialTouched =
-              Array.isArray(array.form.initialTouched[array.name]) && mapping[index] != null
-                ? getIn(array.form.initialTouched[array.name], `${mapping[index]}`)
-                : undefined;
-
             return (
               <CheckboxItem
                 key={key}
@@ -70,7 +65,6 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = (props) => {
                 checked={checked}
                 error={error}
                 touched={touched}
-                initialTouched={initialTouched}
                 onChange={handle}
               />
             );

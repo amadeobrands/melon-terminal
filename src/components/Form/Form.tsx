@@ -1,33 +1,36 @@
-import React from 'react';
-import { Schema, ValidationError } from 'yup';
-import { useUpdateEffect } from 'react-use';
 import {
-  useFormik as useFormikBase,
-  FormikValues,
-  FormikConfig as FormikConfigBase,
-  FormikProvider,
-  FormikContextType,
-  Form as FormBase,
-  FieldMetaProps,
   FieldInputProps,
-  yupToFormErrors,
+  FieldMetaProps,
+  Form as FormBase,
+  FormikConfig as FormikConfigBase,
+  FormikContextType,
+  FormikProvider,
+  FormikValues,
+  useFormik as useFormikBase,
+  FieldHelperProps,
 } from 'formik';
+import React from 'react';
+import { useUpdateEffect } from 'react-use';
+import { Schema } from 'yup';
 
 export * from 'formik';
-
 export * from './Form.styles';
 
-export type GenericInputProps<TValue = any> = React.InputHTMLAttributes<HTMLInputElement> &
-  Partial<FieldMetaProps<TValue>> &
-  Partial<FieldInputProps<TValue>>;
+export type FormikFieldProps<TValue = any> = FieldMetaProps<TValue> &
+  FieldInputProps<TValue> &
+  FieldHelperProps<TValue>;
 
-export type GenericSelectProps<TValue = any> = React.InputHTMLAttributes<HTMLSelectElement> &
-  Partial<FieldMetaProps<TValue>> &
-  Partial<FieldInputProps<TValue>>;
+export type GenericInputProps<TValue = string> = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value'> & {
+  value?: TValue;
+};
 
-export type GenericTextareaProps<TValue = any> = React.InputHTMLAttributes<HTMLTextAreaElement> &
-  Partial<FieldMetaProps<TValue>> &
-  Partial<FieldInputProps<TValue>>;
+export type GenericSelectProps<TValue = string> = Omit<React.InputHTMLAttributes<HTMLSelectElement>, 'value'> & {
+  value?: TValue;
+};
+
+export type GenericTextareaProps<TValue = string> = Omit<React.InputHTMLAttributes<HTMLTextAreaElement>, 'value'> & {
+  value?: TValue;
+};
 
 export interface FormikConfig<TValues extends FormikValues = FormikValues, TContext extends {} = any>
   extends Omit<FormikConfigBase<TValues>, 'initialValues'> {
@@ -84,7 +87,7 @@ export function useFormik<TValues extends FormikValues = FormikValues, TContext 
     }) as Schema<any>;
   }, [validationContext, $$validationSchema]);
 
-  const formik = useFormikBase({ ...rest, validate, validationSchema } as any);
+  const formik = useFormikBase({ ...rest, validate, validationSchema } as FormikConfigBase<TValues>);
   useUpdateEffect(() => {
     if (!!validateOnValidationChange) {
       formik.validateForm();

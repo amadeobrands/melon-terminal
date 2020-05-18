@@ -8,7 +8,7 @@ import { Spinner } from '~/storybook/Spinner/Spinner';
 import { useConnectionState } from '~/hooks/useConnectionState';
 import { TelegramLogin } from '~/components/Common/TelegramLogin/TelegramLogin';
 import { useIsMounted } from '~/hooks/useIsMounted';
-import { LinkButton } from '~/storybook/Button/Button.styles';
+import { LinkButton } from '~/components/Form/Button/Button.styles';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 
 export const FundTelegramAccess: React.FC = () => {
@@ -29,7 +29,7 @@ export const FundTelegramAccess: React.FC = () => {
             : await environment?.client.personal.sign(user.username, account.address!, 'password');
 
         const result = await (
-          await fetch(`${process.env.MELON_TELEGRAM_API}/login`, {
+          await fetch(`${process.env.MELON_TELEGRAM_API}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...user, signature, address: account.address! }),
