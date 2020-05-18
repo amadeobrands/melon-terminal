@@ -74,7 +74,7 @@ export const SimpleZoomControl: React.FC<LineChartProps> = (props) => {
         ))}
       </S.ControlBox>
 
-      <SimplePriceChart area={false} loading={props.loading} data={props.data} stacked={false} />
+      <SimplePriceChart area={false} loading={props.loading} data={props.data} depth={props.depth} />
     </>
   );
 };

@@ -174,9 +174,10 @@ export const light = {
     },
     grid: {
       line: {
-        stroke: '', // primaryDark
+        stroke: 'rgb(29,29,29)', // primaryDark
         strokeWidth: 1, // stroke width of grid lines
-        strokeDasharray: '', // makes dashed lines, pass in '4 4' (pixel of dash width and gap width) ------
+        strokeOpacity: 0.1,
+        // strokeDasharray: '4 4', // makes dashed lines, pass in '4 4' (pixel of dash width and gap width) ------
       },
     },
     crosshair: {
@@ -258,9 +259,10 @@ export const dark = {
     },
     grid: {
       line: {
-        stroke: '', // primaryDark
+        stroke: '#e5dfdf', // primaryDark
         strokeWidth: 1, // stroke width of grid lines
-        strokeDasharray: '', // makes dashed lines, pass in '4 4' (pixel of dash width and gap width) ------
+        strokeOpacity: 0.1,
+        // strokeDasharray: '', // makes dashed lines, pass in '4 4' (pixel of dash width and gap width) ------
       },
     },
     crosshair: {
