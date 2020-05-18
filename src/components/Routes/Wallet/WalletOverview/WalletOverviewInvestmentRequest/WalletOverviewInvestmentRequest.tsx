@@ -4,17 +4,17 @@ import { InvestmentRequest } from '~/components/Routes/Wallet/WalletOverview/Fun
 import { BodyCell, BodyRow, BodyCellRightAlign } from '~/storybook/Table/Table';
 import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 import { useInvestmentRequestStatusQuery } from '~/components/Routes/Wallet/WalletOverview/WalletOverviewInvestmentRequest/InvestmentRequestStatus.query';
-import { Button } from '~/storybook/Button/Button.styles';
+import { Button } from '~/components/Form/Button/Button.styles';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { useAccount } from '~/hooks/useAccount';
 import { useTransaction } from '~/hooks/useTransaction';
 import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
-import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 
-export const WalletOverviewInvestmentRequest: React.FC<InvestmentRequest> = props => {
+export const WalletOverviewInvestmentRequest: React.FC<InvestmentRequest> = (props) => {
   const environment = useEnvironment()!;
   const account = useAccount();
   const [status, query] = useInvestmentRequestStatusQuery(props.account!, props.address);
@@ -75,10 +75,10 @@ export const WalletOverviewInvestmentRequest: React.FC<InvestmentRequest> = prop
         </BodyCell>
         <BodyCell>{props.requestAsset}</BodyCell>
         <BodyCellRightAlign>
-          <TokenValue value={props.requestAmount}></TokenValue>
+          <TokenValueDisplay value={props.requestAmount} />
         </BodyCellRightAlign>
         <BodyCellRightAlign>
-          <TokenValue value={props.requestShares}></TokenValue>
+          <TokenValueDisplay value={props.requestShares} />
         </BodyCellRightAlign>
         <BodyCell>{!query.loading && buttonAction()}</BodyCell>
       </BodyRow>

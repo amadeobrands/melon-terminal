@@ -5,6 +5,8 @@ import { TextareaInput } from './Textarea.styles';
 export interface TextareaProps extends GenericTextareaProps {
   name: string;
   label?: string;
+  touched?: boolean;
+  error?: string;
 }
 
 export const Textarea: React.FC<TextareaProps> = ({ label, ...props }) => {
@@ -14,7 +16,7 @@ export const Textarea: React.FC<TextareaProps> = ({ label, ...props }) => {
     <Wrapper>
       {label && <Label>{label}</Label>}
       <TextareaInput cols={30} rows={5} {...meta} {...field} {...props} />
-      {meta.error && <Error>{meta.error}</Error>}
+      {meta.touched && meta.error && <Error>{meta.error}</Error>}
     </Wrapper>
   );
 };

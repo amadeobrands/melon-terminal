@@ -1,27 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import BigNumber from 'bignumber.js';
-import * as Rx from 'rxjs';
+import { Holding, Policy, Token } from '@melonproject/melongql';
 import {
+  ExchangeDefinition,
+  sameAddress,
   TokenDefinition,
   Trading,
-  ExchangeDefinition,
-  UniswapTradingAdapter,
   UniswapExchange,
   UniswapFactory,
-  sameAddress,
+  UniswapTradingAdapter,
 } from '@melonproject/melonjs';
-import { useEnvironment } from '~/hooks/useEnvironment';
-import { useAccount } from '~/hooks/useAccount';
-import { useTransaction } from '~/hooks/useTransaction';
-import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
-import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
-import { Holding, Token, Policy } from '@melonproject/melongql';
-import { Subtitle } from '~/storybook/Title/Title';
-import { Button } from '~/storybook/Button/Button';
-import { catchError, map, switchMapTo, expand } from 'rxjs/operators';
+import BigNumber from 'bignumber.js';
+import React, { useEffect, useState } from 'react';
+import * as Rx from 'rxjs';
+import { catchError, expand, map, switchMapTo } from 'rxjs/operators';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
-import { validatePolicies } from '../FundLiquidityProviderTrading/validatePolicies';
+import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
+import { useAccount } from '~/hooks/useAccount';
+import { useEnvironment } from '~/hooks/useEnvironment';
+import { useTransaction } from '~/hooks/useTransaction';
+import { Button } from '~/components/Form/Button/Button';
+import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
+import { validatePolicies } from '../validatePolicies';
+import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
+import { Subtitle } from '~/storybook/Title/Title';
 
 export interface FundUniswapTradingProps {
   trading: string;
@@ -35,7 +36,7 @@ export interface FundUniswapTradingProps {
   active: boolean;
 }
 
-export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
+export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = (props) => {
   const [state, setState] = useState(() => ({
     rate: new BigNumber('NaN'),
     maker: props.maker,
@@ -52,7 +53,7 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
   const transaction = useTransaction(environment);
 
   useEffect(() => {
-    setState(previous => ({
+    setState((previous) => ({
       ...previous,
       maker: props.maker,
       taker: props.taker,
@@ -99,12 +100,14 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
     // Refetch every 5 seconds.
     const polling$ = fetch$.pipe(expand(() => Rx.timer(5000).pipe(switchMapTo(fetch$))));
     const observable$ = polling$.pipe(
-      map(value => value.multipliedBy(new BigNumber(10).exponentiatedBy(props.taker.decimals - props.maker.decimals))),
+      map((value) =>
+        value.multipliedBy(new BigNumber(10).exponentiatedBy(props.taker.decimals - props.maker.decimals))
+      ),
       catchError(() => Rx.of(new BigNumber('NaN')))
     );
 
-    const subscription = observable$.subscribe(rate => {
-      setState(previous => ({
+    const subscription = observable$.subscribe((rate) => {
+      setState((previous) => ({
         ...previous,
         rate,
         state: 'idle',
@@ -120,34 +123,18 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
   const loading = state.state === 'loading';
   const ready = !loading && valid;
 
-  useEffect(() => {
-    (async () =>
-      await validatePolicies({
-        environment,
-        policies: props.policies,
-        taker: props.taker,
-        maker: props.maker,
-        holdings: props.holdings,
-        denominationAsset: props.denominationAsset,
-        setPolicyValidation,
-        value,
-        quantity: props.quantity,
-        trading: props.trading,
-      }))();
-  }, [state]);
-
   const submit = async () => {
     await validatePolicies({
       environment,
+      setPolicyValidation,
+      makerAmount: value,
       policies: props.policies,
       taker: props.taker,
       maker: props.maker,
       holdings: props.holdings,
       denominationAsset: props.denominationAsset,
-      setPolicyValidation,
-      value,
-      quantity: props.quantity,
-      trading: props.trading,
+      takerAmount: props.quantity,
+      tradingAddress: props.trading,
     });
     if (!policyValidation.valid) {
       return;
@@ -183,6 +170,11 @@ export const FundUniswapTrading: React.FC<FundUniswapTradingProps> = props => {
           'No Offer'
         )}
       </Button>
+      {!policyValidation.valid && (
+        <NotificationBar kind="error">
+          <NotificationContent>{policyValidation.message}</NotificationContent>
+        </NotificationBar>
+      )}
       <TransactionModal transaction={transaction}>
         <TransactionDescription title="Take order on Uniswap">
           You are selling{' '}

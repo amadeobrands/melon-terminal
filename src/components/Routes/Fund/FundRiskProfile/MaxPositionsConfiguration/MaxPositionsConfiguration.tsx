@@ -1,19 +1,23 @@
 import React from 'react';
 import * as Yup from 'yup';
-import { useForm, FormContext } from 'react-hook-form';
-import { useEnvironment } from '~/hooks/useEnvironment';
 import { MaxPositions, Deployment, PolicyDefinition } from '@melonproject/melonjs';
 import { MaxPositionsBytecode } from '@melonproject/melonjs/abis/MaxPositions.bin';
+import { Form, useFormik } from '~/components/Form/Form';
+import { useEnvironment } from '~/hooks/useEnvironment';
 import { useAccount } from '~/hooks/useAccount';
-import { Button } from '~/storybook/Button/Button';
-import { Input } from '~/storybook/Input/Input';
+import { Button } from '~/components/Form/Button/Button';
+import { Input } from '~/components/Form/Input/Input';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { BlockActions } from '~/storybook/Block/Block';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 
-interface MaxPositionsConfigurationForm {
-  maxPositions: number;
-}
+const validationSchema = Yup.object().shape({
+  maxPositions: Yup.number().label('Maximum positions').required().min(0).integer(),
+});
+
+const initialValues = {
+  maxPositions: 10,
+};
 
 export interface MaxPositionsConfigurationProps {
   policyManager: string;
@@ -21,32 +25,17 @@ export interface MaxPositionsConfigurationProps {
   startTransaction: (tx: Deployment<MaxPositions>, name: string) => void;
 }
 
-export const MaxPositionsConfiguration: React.FC<MaxPositionsConfigurationProps> = props => {
+export const MaxPositionsConfiguration: React.FC<MaxPositionsConfigurationProps> = (props) => {
   const environment = useEnvironment()!;
   const account = useAccount();
 
-  const validationSchema = Yup.object().shape({
-    maxPositions: Yup.number()
-      .label('Maximum number of positions')
-      .required()
-      .min(0)
-      .integer(),
-  });
-
-  const defaultValues = {
-    maxPositions: 10,
-  };
-
-  const form = useForm<MaxPositionsConfigurationForm>({
-    defaultValues,
+  const formik = useFormik({
     validationSchema,
-    mode: 'onSubmit',
-    reValidateMode: 'onBlur',
-  });
-
-  const submit = form.handleSubmit(async data => {
-    const tx = MaxPositions.deploy(environment, MaxPositionsBytecode, account.address!, data.maxPositions!);
-    props.startTransaction(tx, 'Deploy MaxPositions Contract');
+    initialValues,
+    onSubmit: async (data) => {
+      const tx = MaxPositions.deploy(environment, MaxPositionsBytecode, account.address!, data.maxPositions!);
+      props.startTransaction(tx, 'Deploy MaxPositions Contract');
+    },
   });
 
   return (
@@ -54,18 +43,15 @@ export const MaxPositionsConfiguration: React.FC<MaxPositionsConfigurationProps>
       <SectionTitle>Configure Max Positions Policy</SectionTitle>
       <NotificationBar kind="neutral">
         <NotificationContent>
-          The maximum number of positions policy imposes a maximum on the number of assets that a fund can hold. E.g. a
-          maximum of 10 positions means that the fund can hold up to 10 different assets in its portfolio.
+          The maximum number of positions policy imposes a maximum on the number of assets that a fund can hold.
         </NotificationContent>
       </NotificationBar>
-      <FormContext {...form}>
-        <form onSubmit={submit}>
-          <Input name="maxPositions" label="Maximum number of positions" type="number" step={1} id="maxPositions" />
-          <BlockActions>
-            <Button type="submit">Add Max Positions Policy</Button>
-          </BlockActions>
-        </form>
-      </FormContext>
+      <Form formik={formik}>
+        <Input name="maxPositions" label="Maximum number of positions" type="number" step={1} />
+        <BlockActions>
+          <Button type="submit">Add Max Positions Policy</Button>
+        </BlockActions>
+      </Form>
     </>
   );
 };

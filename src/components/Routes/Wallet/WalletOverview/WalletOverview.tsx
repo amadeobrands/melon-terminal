@@ -57,13 +57,12 @@ export const WalletOverview: React.FC = () => {
   const managedHeader = fundHeadings.map((heading, index) => {
     if (heading.align === 'left') {
       return <HeaderCell key={index}>{heading.name}</HeaderCell>;
-    } else {
-      return <HeaderCellRightAlign key={index}>{heading.name}</HeaderCellRightAlign>;
     }
+    return <HeaderCellRightAlign key={index}>{heading.name}</HeaderCellRightAlign>;
   });
   const managedEmpty = !(managed && managed.length);
   const managedRows = !managedEmpty ? (
-    managed.map(fund => <WalletOverviewManagedFund fund={fund} key={fund.address} version={version} />)
+    managed.map((fund) => <WalletOverviewManagedFund fund={fund} key={fund.address} version={version} />)
   ) : (
     <BodyRow>
       <BodyCell colSpan={12}>You do not manage any funds.</BodyCell>
@@ -73,13 +72,12 @@ export const WalletOverview: React.FC = () => {
   const investedHeader = redeemHeadings.map((heading, index) => {
     if (heading.align === 'left') {
       return <HeaderCell key={index}>{heading.name}</HeaderCell>;
-    } else {
-      return <HeaderCellRightAlign key={index}>{heading.name}</HeaderCellRightAlign>;
     }
+    return <HeaderCellRightAlign key={index}>{heading.name}</HeaderCellRightAlign>;
   });
   const investedEmpty = !(invested && invested.length);
   const investedRows = !investedEmpty ? (
-    invested.map(fund => <WalletOverviewInvestedFund fund={fund} key={fund.address} version={version} />)
+    invested.map((fund) => <WalletOverviewInvestedFund fund={fund} key={fund.address} version={version} />)
   ) : (
     <BodyRow>
       <BodyCell colSpan={12}>You don't own any shares in any funds.</BodyCell>
@@ -89,13 +87,12 @@ export const WalletOverview: React.FC = () => {
   const requestsHeader = requestHeadings.map((heading, index) => {
     if (heading.align === 'left') {
       return <HeaderCell key={index}>{heading.name}</HeaderCell>;
-    } else {
-      return <HeaderCellRightAlign key={index}>{heading.name}</HeaderCellRightAlign>;
     }
+    return <HeaderCellRightAlign key={index}>{heading.name}</HeaderCellRightAlign>;
   });
   const requestsEmpty = !(requests && requests.length);
   const requestsRows = !requestsEmpty ? (
-    requests.map(request => (
+    requests.map((request) => (
       <WalletOverviewInvestmentRequest account={account.address} {...request} key={request.address} />
     ))
   ) : (

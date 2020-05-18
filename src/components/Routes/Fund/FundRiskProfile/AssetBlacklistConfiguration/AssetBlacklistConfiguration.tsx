@@ -1,21 +1,40 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import * as Yup from 'yup';
-import { useForm, FormContext } from 'react-hook-form';
-import { Button } from '~/storybook/Button/Button';
-import { useEnvironment } from '~/hooks/useEnvironment';
+import { TransactionReceipt } from 'web3-core';
 import { Deployment, AssetBlacklist, PolicyDefinition, availableTokens, Transaction } from '@melonproject/melonjs';
 import { AssetBlacklistBytecode } from '@melonproject/melonjs/abis/AssetBlacklist.bin';
+import { Form, useFormik } from '~/components/Form/Form';
+import { useEnvironment } from '~/hooks/useEnvironment';
 import { useAccount } from '~/hooks/useAccount';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { BlockActions } from '~/storybook/Block/Block';
-import { Checkboxes } from '~/storybook/Checkbox/Checkbox';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 import { FundPolicy, AssetBlacklistPolicy } from '../../FundPolicies/FundPolicies.query';
-import { TransactionReceipt } from 'web3-core';
+import { Button } from '~/components/Form/Button/Button';
+import { CheckboxGroup } from '~/components/Form/CheckboxGroup/CheckboxGroup';
 
-interface AssetBlacklistConfigurationForm {
-  assetBlacklist: string[];
-}
+const validationSchema = Yup.object().shape({
+  assetBlacklist: Yup.array<string>()
+    .label('Asset blacklist')
+    .compact()
+    .min(1, 'Select at least one asset')
+    .test('maxOne', 'You can only add one new asset at a time.', function (assetBlacklist: string[]) {
+      const preExistingPolicy = (this.options.context as any).preExistingPolicy as AssetBlacklistPolicy | undefined;
+
+      if (!preExistingPolicy) {
+        return true;
+      }
+      const assetsToAdd = assetBlacklist
+        .map((asset) => !preExistingPolicy?.assetBlacklist.some((list) => list === asset) && asset)
+        .filter((asset) => asset);
+
+      if (assetsToAdd && assetsToAdd.length > 1) {
+        return false;
+      }
+
+      return true;
+    }),
+});
 
 export interface AssetBlacklistConfigurationProps {
   policyManager: string;
@@ -24,68 +43,51 @@ export interface AssetBlacklistConfigurationProps {
   startTransaction: (tx: Deployment<AssetBlacklist> | Transaction<TransactionReceipt>, name: string) => void;
 }
 
-export const AssetBlacklistConfiguration: React.FC<AssetBlacklistConfigurationProps> = props => {
+export const AssetBlacklistConfiguration: React.FC<AssetBlacklistConfigurationProps> = (props) => {
   const environment = useEnvironment()!;
   const account = useAccount();
-  const tokens = availableTokens(environment.deployment).filter(token => !token.historic);
+  const tokens = availableTokens(environment.deployment).filter((token) => !token.historic);
 
-  const preExistingPolicy = props.allPolicies?.find(policy => policy.identifier === 'AssetBlacklist') as
+  const preExistingPolicy = props.allPolicies?.find((policy) => policy.identifier === 'AssetBlacklist') as
     | AssetBlacklistPolicy
     | undefined;
 
-  const validationSchema = Yup.object().shape({
-    assetBlacklist: Yup.array<string>()
-      .label('Asset blacklist')
-      .compact()
-      .min(1, 'Select at least one asset'),
-  });
+  const validationContext = useMemo(
+    () => ({
+      preExistingPolicy,
+    }),
+    [preExistingPolicy]
+  );
 
-  const form = useForm<AssetBlacklistConfigurationForm>({
-    validationSchema,
-    mode: 'onSubmit',
-    reValidateMode: 'onChange',
-  });
-
-  const selectedAssets = form.watch('assetBlacklist') as string[];
-
-  const assetsToAdd = useMemo(() => {
-    if (preExistingPolicy && selectedAssets) {
-      return selectedAssets
-        .map(asset => !preExistingPolicy?.assetBlacklist.some(list => list === asset) && asset)
-        .filter(asset => asset);
-    }
-  }, [selectedAssets]);
-
-  useEffect(() => {
-    if (!preExistingPolicy) {
-      return;
-    }
-
-    if (assetsToAdd && assetsToAdd.length > 1) {
-      form.setError('assetBlacklist', 'maxOne', 'You can add maximum one new asset at a time.');
-    } else {
-      form.clearError('assetBlacklist');
-    }
-  }, [assetsToAdd?.length]);
-
-  const submit = form.handleSubmit(async data => {
-    if (preExistingPolicy && assetsToAdd && assetsToAdd[0]) {
-      const assetBlackList = new AssetBlacklist(environment, preExistingPolicy.address);
-      const list = await assetBlackList.getMembers();
-      const tx = assetBlackList.addToBlacklist(account.address!, assetsToAdd[0]);
-      props.startTransaction(tx, 'Update Asset Blacklist');
-    } else if (!preExistingPolicy) {
-      const tx = AssetBlacklist.deploy(environment, AssetBlacklistBytecode, account.address!, data.assetBlacklist);
-      props.startTransaction(tx, 'Deploy AssetBlacklist Contract');
-    }
-  });
-
-  const options = tokens.map(item => ({
+  const options = tokens.map((item) => ({
     label: `${item.symbol} (${item.name})`,
     value: item.address,
-    checked: preExistingPolicy?.assetBlacklist.some(address => address === item.address),
-    disabled: preExistingPolicy && preExistingPolicy?.assetBlacklist.some(address => address === item.address),
+    disabled: preExistingPolicy && preExistingPolicy?.assetBlacklist.some((address) => address === item.address),
   }));
+
+  const initialValues = {
+    assetBlacklist: preExistingPolicy?.assetBlacklist || [],
+  };
+
+  const formik = useFormik({
+    validationSchema,
+    validationContext,
+    initialValues,
+    onSubmit: (data) => {
+      const assetsToAdd = data.assetBlacklist
+        .map((asset) => !preExistingPolicy?.assetBlacklist.some((list) => list === asset) && asset)
+        .filter((asset) => asset);
+
+      if (preExistingPolicy && assetsToAdd && assetsToAdd[0]) {
+        const assetBlackList = new AssetBlacklist(environment, preExistingPolicy.address);
+        const tx = assetBlackList.addToBlacklist(account.address!, assetsToAdd[0]);
+        props.startTransaction(tx, 'Update Asset Blacklist');
+      } else if (!preExistingPolicy) {
+        const tx = AssetBlacklist.deploy(environment, AssetBlacklistBytecode, account.address!, data.assetBlacklist);
+        props.startTransaction(tx, 'Deploy AssetBlacklist Contract');
+      }
+    },
+  });
 
   return (
     <>
@@ -99,21 +101,17 @@ export const AssetBlacklistConfiguration: React.FC<AssetBlacklistConfigurationPr
           blacklist.
         </NotificationContent>
       </NotificationBar>
-      <FormContext {...form}>
-        <form onSubmit={submit}>
-          <Checkboxes options={options} name="assetBlacklist" />
+      <Form formik={formik}>
+        <CheckboxGroup options={options} name="assetBlacklist" />
 
-          <BlockActions>
-            {preExistingPolicy ? (
-              <Button type="submit" disabled={!!form.errors.assetBlacklist}>
-                Update Asset Blacklist Policy
-              </Button>
-            ) : (
-              <Button type="submit">Add Asset Blacklist Policy</Button>
-            )}
-          </BlockActions>
-        </form>
-      </FormContext>
+        <BlockActions>
+          {preExistingPolicy ? (
+            <Button type="submit">Update Asset Blacklist Policy</Button>
+          ) : (
+            <Button type="submit">Add Asset Blacklist Policy</Button>
+          )}
+        </BlockActions>
+      </Form>
     </>
   );
 };

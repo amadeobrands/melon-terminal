@@ -10,7 +10,7 @@ interface AssetWhitelistProps {
 
 export const AssetWhitelist: React.FC<AssetWhitelistProps> = ({ policy, environment }) => {
   const addresses = policy.assetWhitelist
-    .map(asset => environment.getToken(asset)?.symbol ?? asset)
+    .map((asset) => environment.getToken(asset)?.symbol ?? asset)
     .sort()
     .join(', ');
 

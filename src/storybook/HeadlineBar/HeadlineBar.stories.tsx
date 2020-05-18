@@ -1,8 +1,8 @@
 import React from 'react';
 import { Bar, BarContent } from '../Bar/Bar';
 import { Headline } from '../Headline/Headline';
-import { Button } from '../Button/Button';
 import { DataBlock, DataBlockSection } from '../DataBlock/DataBlock';
+import { Button } from '~/components/Form/Button/Button';
 
 export default { title: 'Bar|HeadlineBar' };
 

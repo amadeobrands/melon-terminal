@@ -4,7 +4,7 @@ import { CheckboxItem, CheckboxProps } from '~/components/Form/Checkbox/Checkbox
 
 export interface CheckboxGroupOption {
   value: string;
-  label: string;
+  label?: string;
   disabled?: boolean;
 }
 
@@ -12,12 +12,12 @@ export interface CheckboxGroupProps extends CheckboxProps {
   options: CheckboxGroupOption[];
 }
 
-export const CheckboxGroup: React.FC<CheckboxGroupProps> = props => {
+export const CheckboxGroup: React.FC<CheckboxGroupProps> = (props) => {
   const [field, meta] = useField({ type: 'checkbox', ...props });
   const mapping = React.useMemo(() => {
     if (Array.isArray(field.value)) {
       return field.value.reduce<{ [key: number]: number }>((carry, current, index) => {
-        const key = props.options.findIndex(inner => inner.value === current);
+        const key = props.options.findIndex((inner) => inner.value === current);
         return key !== -1 ? { ...carry, [key]: index } : carry;
       }, {});
     }
@@ -30,7 +30,7 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = props => {
       {props.label && <Label>{props.label}</Label>}
 
       <FieldArray name={field.name}>
-        {array => {
+        {(array) => {
           const handle = (event: ChangeEvent<HTMLInputElement>) => {
             if (field.value.includes(event.target.value)) {
               array.remove(field.value.indexOf(event.target.value));
@@ -54,11 +54,6 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = props => {
                 ? getIn(array.form.touched[array.name], `${mapping[index]}`)
                 : undefined;
 
-            const initialTouched =
-              Array.isArray(array.form.initialTouched[array.name]) && mapping[index] != null
-                ? getIn(array.form.initialTouched[array.name], `${mapping[index]}`)
-                : undefined;
-
             return (
               <CheckboxItem
                 key={key}
@@ -70,7 +65,6 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = props => {
                 checked={checked}
                 error={error}
                 touched={touched}
-                initialTouched={initialTouched}
                 onChange={handle}
               />
             );
@@ -78,7 +72,7 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = props => {
         }}
       </FieldArray>
 
-      {typeof meta.error === 'string' && <Error>{meta.error}</Error>}
+      {typeof meta.error === 'string' && meta.touched && <Error>{meta.error}</Error>}
     </Wrapper>
   );
 };

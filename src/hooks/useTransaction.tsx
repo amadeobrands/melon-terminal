@@ -1,6 +1,4 @@
 import React, { useEffect, useReducer } from 'react';
-import * as Yup from 'yup';
-import { useForm } from 'react-hook-form';
 import { TransactionReceipt } from 'web3-core';
 import {
   Transaction,
@@ -10,15 +8,9 @@ import {
   DeployedEnvironment,
   ValidationError as TransactionValidationError,
 } from '@melonproject/melonjs';
-import { FormContextValues } from 'react-hook-form/dist/contextTypes';
-import { FieldValues } from 'react-hook-form/dist/types';
 import { NetworkEnum } from '~/types';
 import BigNumber from 'bignumber.js';
 import { useOnChainQueryRefetcher } from './useOnChainQueryRefetcher';
-
-export interface TransactionFormValues extends FieldValues {
-  gasPrice: number;
-}
 
 export interface TransactionError extends Error {
   customMessage?: string;
@@ -343,10 +335,9 @@ export interface TransactionOptions {
   handleError?: (error?: Error, validationError?: TransactionValidationError) => string | void;
 }
 
-export interface TransactionHookValues<FormValues extends TransactionFormValues = TransactionFormValues> {
+export interface TransactionHookValues {
   state: TransactionState;
-  form: FormContextValues<FormValues>;
-  submit: (event: React.BaseSyntheticEvent) => Promise<void>;
+  submit: (gasPrice: BigNumber.Value) => Promise<void>;
   start: <T extends Contract = Contract>(transaction: Transaction | Deployment<T>, name: string) => void;
   cancel: () => void;
   acknowledge: () => void;
@@ -386,23 +377,6 @@ export function useTransaction(environment: DeployedEnvironment, options?: Trans
 
   const refetch = useOnChainQueryRefetcher();
 
-  const form = useForm<TransactionFormValues>({
-    mode: 'onSubmit',
-    reValidateMode: 'onBlur',
-    validationSchema: Yup.object().shape({
-      gasPrice: Yup.number()
-        .required()
-        .max(8000000),
-    }),
-  });
-
-  useEffect(() => {
-    const values = form.getValues();
-    if (state.defaultGasPrice && !values.gasPrice) {
-      form.setValue('gasPrice', state.defaultGasPrice);
-    }
-  }, [state.defaultGasPrice]);
-
   const start = (transaction: Transaction, name: string) => {
     dispatch({ transaction, name, type: TransactionProgress.TRANSACTION_STARTED });
   };
@@ -415,15 +389,23 @@ export function useTransaction(environment: DeployedEnvironment, options?: Trans
     dispatch({ type: TransactionProgress.TRANSACTION_ACKNOWLEDGED });
   };
 
-  const submit = form.handleSubmit(async data => {
+  const submit = async (gasPrice: BigNumber.Value) => {
     if (!(state.transaction && state.sendOptions)) {
       return;
     }
 
+    const transaction = state.transaction!;
+    const opts: SendOptions = {
+      gasPrice: new BigNumber(gasPrice).multipliedBy('1e9').decimalPlaces(0).toFixed(),
+      ...(state.sendOptions && state.sendOptions.gas && { gas: state.sendOptions.gas }),
+      ...(state.sendOptions && state.sendOptions.amgu && { amgu: state.sendOptions.amgu }),
+      ...(state.sendOptions && state.sendOptions.incentive && { incentive: state.sendOptions.incentive }),
+    };
+
     // on-submit validation
     try {
       const transaction = state.transaction!;
-      await transaction.validate();
+      await Promise.all([transaction.validate(), transaction.checkEthBalance({ from: transaction.from, ...opts })]);
     } catch (error) {
       const handled = await (options?.handleError && options.handleError(error));
       validationError(dispatch, error, handled || undefined);
@@ -432,20 +414,12 @@ export function useTransaction(environment: DeployedEnvironment, options?: Trans
 
     // actual submit
     try {
-      const transaction = state.transaction!;
-      const opts: SendOptions = {
-        gasPrice: new BigNumber(data.gasPrice).multipliedBy('1e9').toFixed(0),
-        ...(state.sendOptions && state.sendOptions.gas && { gas: state.sendOptions.gas }),
-        ...(state.sendOptions && state.sendOptions.amgu && { amgu: state.sendOptions.amgu }),
-        ...(state.sendOptions && state.sendOptions.incentive && { incentive: state.sendOptions.incentive }),
-      };
-
       executionPending(dispatch, opts);
       const tx = transaction.send(opts);
       const receipt = await new Promise<TransactionReceipt>((resolve, reject) => {
-        tx.once('transactionHash', hash => executionReceived(dispatch, hash));
-        tx.once('receipt', receipt => resolve(receipt));
-        tx.once('error', error => reject((error as any).error ? (error as any).error : error));
+        tx.once('transactionHash', (hash) => executionReceived(dispatch, hash));
+        tx.once('receipt', (receipt) => resolve(receipt));
+        tx.once('error', (error) => reject((error as any).error ? (error as any).error : error));
       });
 
       await refetch(receipt.blockNumber);
@@ -466,7 +440,7 @@ export function useTransaction(environment: DeployedEnvironment, options?: Trans
         return;
       }
     }
-  });
+  };
 
   useEffect(() => {
     switch (state.progress) {
@@ -526,7 +500,6 @@ export function useTransaction(environment: DeployedEnvironment, options?: Trans
 
   return {
     state,
-    form,
     submit,
     start,
     cancel,

@@ -116,7 +116,7 @@ export const light = {
     primaryDark: 'rgb(29,29,29)',
     secondary: 'rgb(242, 242, 242)',
     secondaryDark: 'rgb(120, 120, 120)',
-    secondaryDarkAlpha: 'rgb(120, 120, 120)',
+    secondaryDarkAlpha: 'rgb(120, 120, 120, 0.6)',
     border: 'rgb(29, 29, 29)',
     progressBar: 'rgb(29, 29, 29)',
     textColor: 'rgb(0, 0, 0)',
@@ -162,9 +162,9 @@ export const dark = {
     primary: '#313131',
     primaryAlpha: '#3B4252',
     primaryDark: '#e5dfdf',
-    secondary: '#313131',
-    secondaryDark: '#313131',
-    secondaryDarkAlpha: 'rgb(196, 196, 196)',
+    secondary: '#414141',
+    secondaryDark: '#aaaaaa',
+    secondaryDarkAlpha: 'rgb(196, 196, 196, 0.6)',
     border: 'rgb(29, 29, 29)',
     progressBar: '#e5dfdf',
     textColor: '#e5dfdf',
@@ -229,27 +229,27 @@ export const Global = createGlobalStyle`
   body {
     margin: 0;
     min-height: 100%;
-    background-color: ${props => props.theme.mainColors.secondary};
-    color: ${props => props.theme.mainColors.textColor}
+    background-color: ${(props) => props.theme.mainColors.secondary};
+    color: ${(props) => props.theme.mainColors.textColor}
   }
 
   h1, h2, h3 {
-    margin-bottom: ${props => props.theme.spaceUnits.m};
-    font-size: ${props => props.theme.fontSizes.xxl};
+    margin-bottom: ${(props) => props.theme.spaceUnits.m};
+    font-size: ${(props) => props.theme.fontSizes.xxl};
     font-weight: bold;
     position: relative;
   }
 
 
   h2, h3 {
-    padding-bottom: ${props => props.theme.spaceUnits.xs};
-    border-bottom : ${props => props.theme.border.borderSecondary};
-    margin-bottom: ${props => props.theme.spaceUnits.xs};
+    padding-bottom: ${(props) => props.theme.spaceUnits.xs};
+    border-bottom : ${(props) => props.theme.border.borderSecondary};
+    margin-bottom: ${(props) => props.theme.spaceUnits.xs};
   }
 
   h4 {
-    font-size: ${props => props.theme.fontSizes.xl};
-    margin-bottom: ${props => props.theme.spaceUnits.xs};
+    font-size: ${(props) => props.theme.fontSizes.xl};
+    margin-bottom: ${(props) => props.theme.spaceUnits.xs};
   }
 
   a {
@@ -257,8 +257,8 @@ export const Global = createGlobalStyle`
     align-items: center;
     text-decoration: underline;
     cursor: pointer;
-    color: ${props => props.theme.mainColors.textColor};
-    transition: ${props => props.theme.transition.defaultAll};
+    color: ${(props) => props.theme.mainColors.textColor};
+    transition: ${(props) => props.theme.transition.defaultAll};
     :hover{
       opacity: 0.6;
     }
@@ -267,12 +267,12 @@ export const Global = createGlobalStyle`
   hr {
     border: 0;
     height: 0;
-    border-top: 1px solid ${props => props.theme.mainColors.border};
-    margin: ${props => props.theme.spaceUnits.s} 0;
+    border-top: 1px solid ${(props) => props.theme.mainColors.border};
+    margin: ${(props) => props.theme.spaceUnits.s} 0;
   }
 
   p {
-    margin-bottom: ${props => props.theme.spaceUnits.m};
+    margin-bottom: ${(props) => props.theme.spaceUnits.m};
   }
 `;
 

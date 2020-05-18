@@ -10,7 +10,7 @@ interface AssetBlacklistProps {
 
 export const AssetBlacklist: React.FC<AssetBlacklistProps> = ({ policy, environment }) => {
   const addresses = policy.assetBlacklist
-    .map(asset => environment.getToken(asset)?.symbol ?? asset)
+    .map((asset) => environment.getToken(asset)?.symbol ?? asset)
     .sort()
     .join(', ');
 

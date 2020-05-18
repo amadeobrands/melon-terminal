@@ -14,7 +14,7 @@ export interface FundOrderbookProps {
   asset?: TokenDefinition;
 }
 
-export const FundOrderbook: React.FC<FundOrderbookProps> = props => {
+export const FundOrderbook: React.FC<FundOrderbookProps> = (props) => {
   const environment = useEnvironment()!;
   const [orders, setOrders] = useState<Orderbook>();
 
@@ -23,7 +23,7 @@ export const FundOrderbook: React.FC<FundOrderbookProps> = props => {
 
   useEffect(() => {
     const subscription = orderbook.subscribe({
-      next: orders => setOrders(orders),
+      next: (orders) => setOrders(orders),
     });
 
     return () => {
@@ -68,7 +68,7 @@ export const FundOrderbook: React.FC<FundOrderbookProps> = props => {
         </S.OrderbookHeader>
 
         <S.OrderbookBody>
-          {(orders?.asks ?? []).map(item => (
+          {(orders?.asks ?? []).map((item) => (
             <S.OrderbookItem key={item.id} selected={item.id === props.selected?.id} onClick={() => toggle(item)}>
               <S.OrderbookData width={'20%'}>
                 <FundOrderbookPrice price={item.price} decimals={orders?.decimals} change={item.change} />
@@ -92,7 +92,7 @@ export const FundOrderbook: React.FC<FundOrderbookProps> = props => {
 
       <S.OrderbookSide side="bids">
         <S.OrderbookBody>
-          {(orders?.bids ?? []).map(item => (
+          {(orders?.bids ?? []).map((item) => (
             <S.OrderbookItem key={item.id} selected={item.id === props.selected?.id} onClick={() => toggle(item)}>
               <S.OrderbookData width={'20%'}>
                 <FundOrderbookPrice price={item.price} decimals={orders?.decimals} change={item.change} />

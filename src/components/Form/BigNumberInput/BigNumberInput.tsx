@@ -2,17 +2,16 @@ import React from 'react';
 import BigNumber from 'bignumber.js';
 import NumberFormat, { NumberFormatValues, NumberFormatProps } from 'react-number-format';
 import { InputWidget, InputField } from '~/components/Form/Input/Input';
-import { useField, GenericInputProps } from '~/components/Form/Form';
+import { useField, Wrapper, Label, Error } from '~/components/Form/Form';
 
-export type BigNumberInputProps = NumberFormatProps &
-  GenericInputProps & {
-    name: string;
-    value?: BigNumber.Value;
-    label?: string;
-  };
+export type BigNumberInputProps = Omit<NumberFormatProps, 'value'> & {
+  name: string;
+  value?: BigNumber.Value;
+  label?: string | JSX.Element;
+};
 
-export const BigNumberInput: React.FC<BigNumberInputProps> = props => {
-  const [{ onChange, ...field }, meta, helpers] = useField<BigNumber.Value | undefined>({
+export const BigNumberInput: React.FC<BigNumberInputProps> = ({ label, ...props }) => {
+  const [{ onChange, ...field }, meta, { setValue }] = useField<BigNumber.Value | undefined>({
     type: 'text',
     ...props,
   } as any);
@@ -20,17 +19,21 @@ export const BigNumberInput: React.FC<BigNumberInputProps> = props => {
   const onValueChange = React.useCallback(
     (values: NumberFormatValues) => {
       const value = new BigNumber(values.value);
-      helpers.setValue(!value.isNaN() ? value : undefined);
+      setValue(!value.isNaN() ? value : undefined);
     },
-    [helpers.setValue]
+    [setValue]
   );
 
   return (
-    <BigNumberInputField customInput={InputWidget} onValueChange={onValueChange} {...meta} {...field} {...props} />
+    <Wrapper>
+      {label && <Label>{label}</Label>}
+      <BigNumberInputField onValueChange={onValueChange} {...meta} {...field} {...props} />
+      {meta.touched && meta.error && <Error>{meta.error}</Error>}
+    </Wrapper>
   );
 };
 
-export const BigNumberInputField: React.FC<BigNumberInputProps> = props => {
+export const BigNumberInputField: React.FC<BigNumberInputProps> = (props) => {
   const value = (BigNumber.isBigNumber(props.value) ? props.value.toFixed() : props.value) as string;
 
   return (

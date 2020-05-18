@@ -1,5 +1,3 @@
-require('dotenv-extended').load();
-
 const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
@@ -64,6 +62,7 @@ module.exports = override(
       'process.env.MELON_API_GATEWAY': JSON.stringify(process.env.MELON_API_GATEWAY),
       'process.env.MELON_FORTMATIC_KEY': JSON.stringify(process.env.MELON_FORTMATIC_KEY),
       'process.env.MELON_TELEGRAM_API': JSON.stringify(process.env.MELON_TELEGRAM_API),
+      'process.env.MELON_RATES_API': JSON.stringify(process.env.MELON_RATES_API),
       'process.env.MELON_WALLETCONNECT_INFURA_ID': JSON.stringify(process.env.MELON_WALLETCONNECT_INFURA_ID),
       'process.env.MELON_INCLUDE_GRAPHIQL': JSON.stringify(process.env.MELON_INCLUDE_GRAPHIQL),
       'process.env.MELON_MAINNET': JSON.stringify(mainnet),

@@ -12,7 +12,7 @@ export const HoldingText = styled.div`
 `;
 
 export const HoldingSymbol = styled.span`
-  color: ${props => props.theme.mainColors.primaryDark};
+  color: ${(props) => props.theme.mainColors.primaryDark};
 `;
 
 export const HoldingName = styled.span`
@@ -20,5 +20,5 @@ export const HoldingName = styled.span`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: ${props => props.theme.otherColors.grey};
+  color: ${(props) => props.theme.otherColors.grey};
 `;

@@ -26,7 +26,7 @@ export const FundTradeHistory: React.FC<FundTradeHistoryProps> = ({ address }) =
 
   return (
     <Block>
-      <SectionTitle>Order History</SectionTitle>
+      <SectionTitle>Trade History</SectionTitle>
 
       {query.loading && <Spinner />}
       {!query.loading && !trades.length && <NoEntries>No entries.</NoEntries>}
@@ -46,7 +46,7 @@ export const FundTradeHistory: React.FC<FundTradeHistoryProps> = ({ address }) =
               </HeaderRow>
             </thead>
             <tbody>
-              {trades.map(trade => (
+              {trades.map((trade) => (
                 <BodyRow key={trade.id}>
                   <BodyCell>
                     <FormattedDate timestamp={trade.timestamp} />

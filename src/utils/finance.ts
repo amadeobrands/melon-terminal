@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 export function standardDeviation(values: number[]) {
   const avg = average(values);
 
-  const squareDiffs = values.map(value => {
+  const squareDiffs = values.map((value) => {
     const diff = value - avg;
     const sqrDiff = diff * diff;
     return sqrDiff;
@@ -30,12 +30,5 @@ function average(data: number[]) {
  * @param historicalPx a BigNumber representing the historical price against which you're measuring
  */
 export function calculateReturn(currentPx: BigNumber, historicalPx: BigNumber) {
-  return (
-    historicalPx &&
-    currentPx &&
-    currentPx
-      .dividedBy(historicalPx)
-      .minus(1)
-      .multipliedBy(100)
-  );
+  return historicalPx && currentPx && currentPx.dividedBy(historicalPx).minus(1).multipliedBy(100);
 }

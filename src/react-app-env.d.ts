@@ -33,10 +33,10 @@ declare global {
       MELON_TESTNET_PROVIDER: string;
       MELON_INCLUDE_GRAPHIQL: string;
       MELON_FORTMATIC_KEY: string;
-      MELON_WALLETCONNECT_INFURA_ID: string;
       MELON_API_GATEWAY: string;
       MELON_MAX_EXPOSURE: string;
       MELON_TELEGRAM_API: string;
+      MELON_RATES_API: string;
     }
   }
 }

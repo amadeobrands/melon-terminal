@@ -7,10 +7,8 @@ import { useFundOverviewQuery, FundProcessed } from '~/components/Routes/Home/Fu
 import { usePagination } from '~/hooks/usePagination';
 import { useAccount } from '~/hooks/useAccount';
 import { Grid, GridRow, GridCol } from '~/storybook/Grid/Grid';
-import { Block } from '~/storybook/Block/Block';
-import { Input } from '~/storybook/Input/Input';
 import { SectionTitle } from '~/storybook/Title/Title';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import {
@@ -24,20 +22,15 @@ import {
   BodyCell,
   BodyRowHover,
 } from '~/storybook/Table/Table';
-import {
-  CheckboxMask,
-  CheckboxLabel,
-  CheckboxContainer,
-  CheckboxPositioning,
-  CheckboxInput,
-  CheckboxIcon,
-} from '~/storybook/Checkbox/Checkbox';
 import styled from 'styled-components';
-import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { getNetworkName } from '~/config';
 import { useConnectionState } from '~/hooks/useConnectionState';
 import { BigNumber } from 'bignumber.js';
 import { useVersionQuery } from '~/components/Layout/Version.query';
+import { InputWidget } from '~/components/Form/Input/Input';
+import { CheckboxItem } from '~/components/Form/Checkbox/Checkbox';
+import { Block } from '~/storybook/Block/Block';
 
 interface SortChoice {
   key: keyof typeof sortChoice;
@@ -89,7 +82,7 @@ const useFilteredFunds = (funds: FundProcessed[], search: string, filter: Filter
     }
 
     const searchString = search.toLowerCase();
-    return funds.filter(fund => {
+    return funds.filter((fund) => {
       const matches = !search || fund.name.toLowerCase().includes(searchString);
       return (
         matches &&
@@ -182,14 +175,10 @@ const tableHeadings = [
   },
 ];
 
-const ToggleCheckboxContainer = styled(CheckboxContainer)`
+const ToggleCheckbox = styled(CheckboxItem)`
   margin-top: 0;
   margin-bottom: 0;
   text-align: left;
-`;
-
-const ToggleCheckboxLabel = styled(CheckboxLabel)`
-  padding-left: ${props => props.theme.spaceUnits.xs};
 `;
 
 export const FundOverview: React.FC = () => {
@@ -246,62 +235,34 @@ export const FundOverview: React.FC = () => {
       <Grid>
         <GridRow>
           <GridCol>
-            <Input
-              id="search"
+            <InputWidget
               name="search"
               type="text"
               placeholder="Search"
               value={search}
-              onChange={event => setSearch(event.target.value)}
+              onChange={(event) => setSearch(event.target.value)}
             />
           </GridCol>
 
           <GridCol>
-            <ToggleCheckboxContainer>
-              <CheckboxPositioning>
-                <CheckboxInput
-                  type="checkbox"
-                  id="filter"
-                  name="filter"
-                  checked={filter.active}
-                  onChange={() => setFilter({ ...filter, active: !filter.active })}
-                />
-                <CheckboxMask>
-                  <CheckboxIcon />
-                </CheckboxMask>
-              </CheckboxPositioning>
-              <ToggleCheckboxLabel htmlFor="filter">Active</ToggleCheckboxLabel>
-            </ToggleCheckboxContainer>
-            <ToggleCheckboxContainer>
-              <CheckboxPositioning>
-                <CheckboxInput
-                  type="checkbox"
-                  id="filter"
-                  name="filter"
-                  checked={filter.funded}
-                  onChange={() => setFilter({ ...filter, funded: !filter.funded })}
-                />
-                <CheckboxMask>
-                  <CheckboxIcon />
-                </CheckboxMask>
-              </CheckboxPositioning>
-              <ToggleCheckboxLabel htmlFor="filter">Funded</ToggleCheckboxLabel>
-            </ToggleCheckboxContainer>
-            <ToggleCheckboxContainer>
-              <CheckboxPositioning>
-                <CheckboxInput
-                  type="checkbox"
-                  id="filter"
-                  name="filter"
-                  checked={filter.version}
-                  onChange={() => setFilter({ ...filter, version: !filter.version })}
-                />
-                <CheckboxMask>
-                  <CheckboxIcon />
-                </CheckboxMask>
-              </CheckboxPositioning>
-              <ToggleCheckboxLabel htmlFor="filter">Current protocol version</ToggleCheckboxLabel>
-            </ToggleCheckboxContainer>
+            <ToggleCheckbox
+              name="filter"
+              label="Active"
+              checked={filter.active}
+              onChange={() => setFilter({ ...filter, active: !filter.active })}
+            />
+            <ToggleCheckbox
+              name="funded"
+              label="Funded"
+              checked={filter.funded}
+              onChange={() => setFilter({ ...filter, funded: !filter.funded })}
+            />
+            <ToggleCheckbox
+              name="version"
+              label="Current protocol version"
+              checked={filter.version}
+              onChange={() => setFilter({ ...filter, version: !filter.version })}
+            />
           </GridCol>
         </GridRow>
       </Grid>
@@ -347,19 +308,19 @@ export const FundOverview: React.FC = () => {
                     <FormattedDate timestamp={fund.inception} format="yyyy/MM/dd" />
                   </BodyCell>
                   <BodyCellRightAlign>
-                    <TokenValue value={fund.sharePrice} />
+                    <TokenValueDisplay value={fund.sharePrice} />
                   </BodyCellRightAlign>
                   <BodyCellRightAlign>
                     <FormattedNumber value={fund.change} colorize={true} decimals={2} suffix="%" />
                   </BodyCellRightAlign>
                   <BodyCellRightAlign>
-                    <TokenValue decimals={18} value={fund.aumEth} />
+                    <TokenValueDisplay decimals={18} value={fund.aumEth} />
                   </BodyCellRightAlign>
                   <BodyCellRightAlign>
-                    <TokenValue decimals={18} digits={2} value={fund.aumUsd} tooltipDigits={2} />
+                    <TokenValueDisplay decimals={18} digits={2} value={fund.aumUsd} tooltipDigits={2} />
                   </BodyCellRightAlign>
                   <BodyCellRightAlign>
-                    <TokenValue decimals={18} value={fund.shares} />
+                    <TokenValueDisplay decimals={18} value={fund.shares} />
                   </BodyCellRightAlign>
                   <BodyCell>{fund.version}</BodyCell>
                   <BodyCell>{fund.status}</BodyCell>

@@ -6,7 +6,7 @@ import { DataBlock, DataBlockSection } from '~/storybook/DataBlock/DataBlock';
 import { Bar, BarContent } from '~/storybook/Bar/Bar';
 import { Headline } from '~/storybook/Headline/Headline';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
-import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { useFundSlug } from './FundSlug.query';
 import { NetworkEnum } from '~/types';
 import { useEnvironment } from '~/hooks/useEnvironment';
@@ -31,7 +31,7 @@ export const FundHeader: React.FC<FundHeaderProps> = ({ address }) => {
 
   const slugUrl =
     slug &&
-    slug + (environment.network > 1 ? `.${NetworkEnum[environment.network].toLowerCase()}` : '') + '.melon.fund';
+    slug + (environment.network > 1 ? `.${NetworkEnum[environment.network].toLowerCase()}.melon.fund` : '.melon.fund');
 
   const SlugComponent = <CopyToClipboard text={slugUrl} value={`https://${slugUrl}`} />;
 
@@ -42,11 +42,11 @@ export const FundHeader: React.FC<FundHeaderProps> = ({ address }) => {
         <RequiresFundSetupComplete fallback={false}>
           <DataBlockSection>
             <DataBlock label="Share price">
-              <TokenValue value={accounting?.sharePrice} decimals={0} symbol="WETH" />
+              <TokenValueDisplay value={accounting?.sharePrice} decimals={0} symbol="WETH" />
             </DataBlock>
 
             <DataBlock label="Assets under management">
-              <TokenValue value={accounting?.grossAssetValue} decimals={0} symbol="WETH" />
+              <TokenValueDisplay value={accounting?.grossAssetValue} decimals={0} symbol="WETH" />
             </DataBlock>
 
             <DataBlock label="Daily change">

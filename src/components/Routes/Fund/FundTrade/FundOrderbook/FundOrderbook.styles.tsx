@@ -2,7 +2,7 @@ import styled, { css } from 'styled-components';
 
 export const Wrapper = styled.div`
   position: relative;
-  margin-bottom: ${props => props.theme.spaceUnits.xxl};
+  margin-bottom: ${(props) => props.theme.spaceUnits.xxl};
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -25,8 +25,8 @@ export interface OrderbookLabelProps {
 }
 
 export const OrderbookLabel = styled.span<OrderbookLabelProps>`
-  text-align: ${props => (props.left ? 'left' : 'right')};
-  width: ${props => (props.width ? props.width : '40%')};
+  text-align: ${(props) => (props.left ? 'left' : 'right')};
+  width: ${(props) => (props.width ? props.width : '40%')};
 `;
 
 export interface OrderbookDataProps {
@@ -35,9 +35,9 @@ export interface OrderbookDataProps {
 }
 
 export const OrderbookData = styled.span<OrderbookDataProps>`
-  font-size: ${props => props.theme.fontSizes.s};
-  text-align: ${props => (props.left ? 'left' : 'right')};
-  width: ${props => (props.width ? props.width : '40%')};
+  font-size: ${(props) => props.theme.fontSizes.s};
+  text-align: ${(props) => (props.left ? 'left' : 'right')};
+  width: ${(props) => (props.width ? props.width : '40%')};
 `;
 
 export const OrderbookPrice = styled.span``;
@@ -57,10 +57,10 @@ export const OrderbookItem = styled.div<OrderbookItemProps>`
   line-height: 1.25rem;
 
   &:hover {
-    background-color: ${props => props.theme.orderbookColors.hover};
+    background-color: ${(props) => props.theme.orderbookColors.hover};
   }
 
-  ${props =>
+  ${(props) =>
     props.selected &&
     css`
       background-color: ${props.theme.orderbookColors.hover};
@@ -70,9 +70,9 @@ export const OrderbookItem = styled.div<OrderbookItemProps>`
 export const OrderbookMidprice = styled.div`
   width: 100%;
   text-align: center;
-  background-color: ${props => props.theme.otherColors.white};
+  background-color: ${(props) => props.theme.otherColors.white};
   padding: 4px 0;
-  color: ${props => props.theme.otherColors.black};
+  color: ${(props) => props.theme.otherColors.black};
 `;
 
 export interface OrderbookSideProps {
@@ -82,7 +82,7 @@ export interface OrderbookSideProps {
 export const OrderbookSide = styled.div<OrderbookSideProps>`
   flex: 1 1;
 
-  ${props =>
+  ${(props) =>
     props.side === 'asks' &&
     css`
       ${OrderbookPrice} {
@@ -94,7 +94,7 @@ export const OrderbookSide = styled.div<OrderbookSideProps>`
       }
     `}
 
-  ${props =>
+  ${(props) =>
     props.side === 'bids' &&
     css`
       ${OrderbookPrice} {

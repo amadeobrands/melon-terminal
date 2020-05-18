@@ -1,20 +1,27 @@
-import React, { useEffect, useRef } from 'react';
+import { AssetBlacklist, AssetWhitelist, Holding, MaxPositions, Policy, Token } from '@melonproject/melongql';
+import {
+  DeployedEnvironment,
+  ExchangeDefinition,
+  ExchangeIdentifier,
+  sameAddress,
+  TokenDefinition,
+} from '@melonproject/melonjs';
 import BigNumber from 'bignumber.js';
+import React, { useLayoutEffect, useMemo } from 'react';
 import * as Yup from 'yup';
-import { useForm, FormContext } from 'react-hook-form';
-import { Holding, Policy, AssetWhitelist, AssetBlacklist, MaxPositions, Token } from '@melonproject/melongql';
-import { ExchangeDefinition, ExchangeIdentifier, sameAddress } from '@melonproject/melonjs';
+import { Form, useFormik, Wrapper } from '~/components/Form/Form';
+import { TokenSwap } from '~/components/Form/TokenSwap/TokenSwap';
 import { useEnvironment } from '~/hooks/useEnvironment';
-import { Dropdown } from '~/storybook/Dropdown/Dropdown';
-import { Input } from '~/storybook/Input/Input';
-import { FundMelonEngineTrading } from '../FundMelonEngineTrading/FundMelonEngineTrading';
-import { FundKyberTrading } from '../FundKyberTrading/FundKyberTrading';
-import { FundUniswapTrading } from '../FundUniswapTrading/FundUniswapTrading';
 import { Block } from '~/storybook/Block/Block';
-import { Grid, GridRow, GridCol } from '~/storybook/Grid/Grid';
-import { SectionTitle } from '~/storybook/Title/Title';
-import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
+import { Grid, GridCol, GridRow } from '~/storybook/Grid/Grid';
 import { Link } from '~/storybook/Link/Link';
+import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
+import { SectionTitle } from '~/storybook/Title/Title';
+import { TokenValue } from '~/TokenValue';
+import { tokenValueSchema } from '~/utils/formValidation';
+import { FundKyberTrading } from '../FundKyberTrading/FundKyberTrading';
+import { FundMelonEngineTrading } from '../FundMelonEngineTrading/FundMelonEngineTrading';
+import { FundUniswapTrading } from '../FundUniswapTrading/FundUniswapTrading';
 
 export interface FundLiquidityProviderTradingProps {
   trading: string;
@@ -24,134 +31,37 @@ export interface FundLiquidityProviderTradingProps {
   policies?: Policy[];
 }
 
-interface FundLiquidityProviderTradingFormValues {
-  makerAsset: string;
-  takerAsset: string;
-  takerQuantity: string;
-}
-
-export const FundLiquidityProviderTrading: React.FC<FundLiquidityProviderTradingProps> = props => {
+export const FundLiquidityProviderTrading: React.FC<FundLiquidityProviderTradingProps> = (props) => {
   const environment = useEnvironment()!;
 
-  const assetWhitelists = props.policies?.filter(policy => policy.identifier === 'AssetWhitelist') as
+  const assetWhitelists = props.policies?.filter((policy) => policy.identifier === 'AssetWhitelist') as
     | AssetWhitelist[]
     | undefined;
-  const assetBlacklists = props.policies?.filter(policy => policy.identifier === 'AssetBlacklist') as
+  const assetBlacklists = props.policies?.filter((policy) => policy.identifier === 'AssetBlacklist') as
     | AssetBlacklist[]
     | undefined;
-  const maxPositionsPolicies = props.policies?.filter(policy => policy.identifier === 'MaxPositions') as
+  const maxPositionsPolicies = props.policies?.filter((policy) => policy.identifier === 'MaxPositions') as
     | MaxPositions[]
     | undefined;
 
-  const nonZeroHoldings = props.holdings.filter(holding => !holding.amount?.isZero());
+  const nonZeroHoldings = props.holdings.filter((holding) => !holding.amount?.isZero());
 
-  const takerOptions = environment.tokens
-    .filter(item => !item.historic)
-    .map(token => ({
-      value: token.address,
-      name: token.symbol,
-    }));
+  const takerOptions = environment.tokens.filter((item) => !item.historic).map((token) => token);
 
   const makerOptions = environment.tokens
-    .filter(item => !item.historic)
+    .filter((item) => !item.historic)
     .filter(
-      asset =>
+      (asset) =>
         sameAddress(asset.address, props.denominationAsset?.address) ||
         !assetWhitelists?.length ||
-        assetWhitelists.every(list => list.assetWhitelist?.some(item => sameAddress(item, asset.address)))
+        assetWhitelists.every((list) => list.assetWhitelist?.some((item) => sameAddress(item, asset.address)))
     )
     .filter(
-      asset =>
+      (asset) =>
         sameAddress(asset.address, props.denominationAsset?.address) ||
         !assetBlacklists?.length ||
-        !assetBlacklists.some(list => list.assetBlacklist?.some(item => sameAddress(item, asset.address)))
-    )
-    .map(token => ({
-      value: token.address,
-      name: token.symbol,
-    }));
-
-  const mln = environment.getToken('MLN');
-  const weth = environment.getToken('WETH');
-
-  // TODO: These refs are used for validation. Fix this after https://github.com/react-hook-form/react-hook-form/pull/817
-  const holdingsRef = useRef(props.holdings);
-
-  const form = useForm<FundLiquidityProviderTradingFormValues>({
-    mode: 'onChange',
-    reValidateMode: 'onChange',
-    defaultValues: {
-      makerAsset: makerOptions?.[0]?.value,
-      takerAsset: takerOptions?.[1]?.value,
-      takerQuantity: '1',
-    },
-    validationSchema: Yup.object().shape({
-      makerAsset: Yup.string()
-        .required()
-        .test(
-          'maxPositions',
-          'Investing with this asset would violate the maximum number of positions policy',
-          (value: string) =>
-            // no policies
-            !maxPositionsPolicies?.length ||
-            // new investment is in denomination asset
-            sameAddress(props.denominationAsset?.address, value) ||
-            // already existing token
-            !!nonZeroHoldings?.some(holding => sameAddress(holding.token?.address, value)) ||
-            // max positions larger than holdings (so new token would still fit)
-            maxPositionsPolicies.every(
-              policy => policy.maxPositions && nonZeroHoldings && policy.maxPositions > nonZeroHoldings?.length
-            )
-        ),
-      takerAsset: Yup.string().required(),
-      takerQuantity: Yup.string()
-        .required('Missing sell quantity.')
-        // tslint:disable-next-line
-        .test('valid-number', 'The given value is not a valid number.', function(value) {
-          const bn = new BigNumber(value);
-          return !bn.isNaN() && !bn.isZero() && bn.isPositive();
-        })
-        // tslint:disable-next-line
-        .test('balance-too-low', 'Your balance of the token is lower than the provided value.', function(value) {
-          const holding = holdingsRef.current.find(item => sameAddress(item.token!.address, this.parent.takerAsset))!;
-          const divisor = holding ? new BigNumber(10).exponentiatedBy(holding.token!.decimals!) : new BigNumber('NaN');
-          const balance = holding ? holding.amount!.dividedBy(divisor) : new BigNumber('NaN');
-          return new BigNumber(value).isLessThanOrEqualTo(balance);
-        }),
-    }),
-  });
-
-  useEffect(() => {
-    holdingsRef.current = props.holdings;
-    form.triggerValidation().catch(() => {});
-  }, [props.holdings, form.formState.touched]);
-
-  const makerAsset = environment.getToken(form.watch('makerAsset')!);
-  const takerAsset = environment.getToken(form.watch('takerAsset')!);
-  const takerQuantity = new BigNumber(form.watch('takerQuantity'));
-  const ready = form.formState.isValid;
-
-  const exchanges = props.exchanges
-    .map(exchange => {
-      if (exchange.id === ExchangeIdentifier.KyberNetwork) {
-        return [exchange, FundKyberTrading];
-      }
-
-      if (exchange.id === ExchangeIdentifier.Uniswap) {
-        return [exchange, FundUniswapTrading];
-      }
-
-      if (exchange.id === ExchangeIdentifier.MelonEngine) {
-        if (makerAsset === weth && takerAsset === mln) {
-          return [exchange, FundMelonEngineTrading];
-        }
-
-        return null;
-      }
-
-      return null;
-    })
-    .filter(value => !!value) as [ExchangeDefinition, React.ElementType][];
+        !assetBlacklists.some((list) => list.assetBlacklist?.some((item) => sameAddress(item, asset.address)))
+    );
 
   if (takerOptions?.length < 2) {
     return (
@@ -183,59 +93,142 @@ export const FundLiquidityProviderTrading: React.FC<FundLiquidityProviderTrading
         </NotificationBar>
       )}
 
-      <FormContext {...form}>
-        <Grid>
-          <GridRow>
-            <GridCol>
-              <SectionTitle>Choose the assets to swap</SectionTitle>
-              <Dropdown
-                name="takerAsset"
-                label="Sell this asset"
-                options={takerOptions}
-                onChange={() => form.triggerValidation().catch(() => {})}
-              />
-              <Dropdown
-                name="makerAsset"
-                label="To buy this asset"
-                options={makerOptions}
-                onChange={() => form.triggerValidation().catch(() => {})}
-              />
-            </GridCol>
-          </GridRow>
+      <FundLiquidityProviderTradingForm
+        takerOptions={takerOptions}
+        makerOptions={makerOptions}
+        environment={environment}
+        maxPositionsPolicies={maxPositionsPolicies}
+        nonZeroHoldings={nonZeroHoldings}
+        {...props}
+      />
+    </Block>
+  );
+};
 
-          <GridRow>
-            <GridCol md={6}>
-              <SectionTitle>{`Specify an amount of ${takerAsset.symbol} to sell `}</SectionTitle>
-              <Input type="number" step="any" name="takerQuantity" label="Quantity" />
-            </GridCol>
+const validationSchema = Yup.object().shape({
+  maker: Yup.mixed<TokenDefinition>(),
+  taker: tokenValueSchema()
+    .required()
+    .lte(Yup.ref('takerBalance'), 'The balance of your fund is too low for this trade.'),
+  takerBalance: tokenValueSchema().required(),
+});
 
-            <GridCol md={6}>
-              <SectionTitle>Choose your pool and swap</SectionTitle>
+interface FundLiquidityProviderTradingFormProps extends FundLiquidityProviderTradingProps {
+  takerOptions: TokenDefinition[];
+  makerOptions: TokenDefinition[];
+  environment: DeployedEnvironment;
+  maxPositionsPolicies: MaxPositions[] | undefined;
+  nonZeroHoldings: Holding[];
+}
 
-              <Grid noGap={true}>
+const FundLiquidityProviderTradingForm: React.FC<FundLiquidityProviderTradingFormProps> = ({
+  takerOptions,
+  makerOptions,
+  environment,
+  maxPositionsPolicies,
+  denominationAsset,
+  nonZeroHoldings,
+  holdings,
+  ...props
+}) => {
+  const validationContext = React.useMemo(() => ({ maxPositionsPolicies, denominationAsset, nonZeroHoldings }), [
+    maxPositionsPolicies,
+    denominationAsset,
+    nonZeroHoldings,
+  ]);
+
+  const initialValues = {
+    taker: new TokenValue(takerOptions[0], 1),
+    maker: makerOptions[1],
+    takerBalance: new TokenValue(takerOptions[0]),
+  };
+
+  const formik = useFormik({
+    validationSchema,
+    validationContext,
+    initialValues,
+    onSubmit: () => {},
+  });
+
+  const taker = formik.values.taker;
+  const maker = formik.values.maker;
+
+  const takerBalance = useMemo(() => {
+    const index = nonZeroHoldings.findIndex((holding) => sameAddress(holding.token?.address, taker.token.address));
+    const balance = index !== -1 ? (nonZeroHoldings[index].amount as BigNumber) : 0;
+    return TokenValue.fromToken(taker.token, balance);
+  }, [taker, nonZeroHoldings]);
+
+  useLayoutEffect(() => {
+    formik.setFieldValue('takerBalance', takerBalance);
+  }, [takerBalance]);
+
+  const mln = environment.getToken('MLN');
+  const weth = environment.getToken('WETH');
+  const exchanges = props.exchanges
+    .map((exchange) => {
+      if (exchange.id === ExchangeIdentifier.KyberNetwork) {
+        return [exchange, FundKyberTrading];
+      }
+
+      if (exchange.id === ExchangeIdentifier.Uniswap) {
+        return [exchange, FundUniswapTrading];
+      }
+
+      if (exchange.id === ExchangeIdentifier.MelonEngine) {
+        if (maker === weth && taker.token === mln) {
+          return [exchange, FundMelonEngineTrading];
+        }
+
+        return null;
+      }
+
+      return null;
+    })
+    .filter((value) => !!value) as [ExchangeDefinition, React.ElementType][];
+
+  return (
+    <Form formik={formik}>
+      <Grid>
+        <GridRow>
+          <GridCol md={6} xs={12}>
+            <SectionTitle>Choose the assets to swap</SectionTitle>
+            <TokenSwap
+              label="Sell"
+              baseName="taker"
+              baseTokens={takerOptions}
+              quoteName="maker"
+              quoteTokens={makerOptions}
+            ></TokenSwap>
+          </GridCol>
+
+          <GridCol md={6} xs={12}>
+            <SectionTitle>Choose your pool and swap</SectionTitle>
+            <Grid noGap={true}>
+              <GridRow>
                 {!!(exchanges && exchanges.length) &&
                   exchanges.map(([exchange, Component]) => (
-                    <GridRow key={exchange.id}>
-                      <GridCol>
+                    <GridCol key={exchange.id}>
+                      <Wrapper>
                         <Component
-                          active={ready}
+                          active={formik.isValid}
                           trading={props.trading}
-                          holdings={props.holdings}
-                          denominationAsset={props.denominationAsset}
+                          holdings={holdings}
+                          denominationAsset={denominationAsset}
                           policies={props.policies}
                           exchange={exchange}
-                          maker={makerAsset}
-                          taker={takerAsset}
-                          quantity={takerQuantity}
+                          maker={maker}
+                          taker={taker.token}
+                          quantity={taker.value}
                         />
-                      </GridCol>
-                    </GridRow>
+                      </Wrapper>
+                    </GridCol>
                   ))}
-              </Grid>
-            </GridCol>
-          </GridRow>
-        </Grid>
-      </FormContext>
-    </Block>
+              </GridRow>
+            </Grid>
+          </GridCol>
+        </GridRow>
+      </Grid>
+    </Form>
   );
 };

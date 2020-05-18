@@ -11,7 +11,7 @@ import {
   connectionLost,
 } from '~/components/Contexts/Connection/Connection';
 import { SectionTitle } from '~/storybook/Title/Title';
-import { Button } from '~/storybook/Button/Button.styles';
+import { Button } from '~/components/Form/Button/Button.styles';
 import { networkFromId } from '~/utils/networkFromId';
 
 interface Resource extends Rx.Unsubscribable {
@@ -28,31 +28,31 @@ const connect = () => {
 
     const fm = new Fortmatic(process.env.MELON_FORTMATIC_KEY, customNodeOptions);
     const provider = fm.getProvider();
-    const eth = new Eth(provider, undefined, {
+    const eth = new Eth(provider as any, undefined, {
       transactionConfirmationBlocks: 1,
     });
 
     return { eth, provider, unsubscribe: () => fm.user.logout() };
   };
 
-  return Rx.using(create, resource => {
+  return Rx.using(create, (resource) => {
     const eth = (resource as Resource).eth;
     const provider = (resource as Resource).provider;
 
     const enable$ = Rx.defer(() => provider.enable() as Promise<string[]>).pipe(startWith([]));
     const initial$ = enable$.pipe(
-      switchMap(async accounts => {
+      switchMap(async (accounts) => {
         const network = networkFromId(await eth.net.getId());
         return connectionEstablished(eth, network, accounts);
       }),
-      catchError(error => {
+      catchError((error) => {
         if (error?.code === 4001) {
           return Rx.of(connectionLost());
         }
 
         return Rx.throwError(error);
       }),
-      retryWhen(error => error.pipe(delay(1000)))
+      retryWhen((error) => error.pipe(delay(1000)))
     );
 
     return Rx.concat(initial$, Rx.NEVER);

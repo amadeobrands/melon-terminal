@@ -26,13 +26,13 @@ export const FundContracts: React.FC<FundContractsProps> = ({ address }) => {
 
   const routes = fund?.routes;
   const addresses = contracts
-    .map(contract => {
+    .map((contract) => {
       const current = routes && ((routes as any)[contract.field] as any);
       return { ...contract, address: current && current.address };
     })
-    .filter(item => !!item.address);
+    .filter((item) => !!item.address);
 
-  addresses.unshift({ name: 'Fund', address, field: 'fund' });
+  addresses.unshift({ address, name: 'Fund', field: 'fund' });
 
   return (
     <Dictionary>
@@ -40,7 +40,7 @@ export const FundContracts: React.FC<FundContractsProps> = ({ address }) => {
       {query.loading && <Spinner />}
 
       {!query.loading &&
-        addresses.map(a => (
+        addresses.map((a) => (
           <Fragment key={a.address}>
             <DictionaryEntry>
               <DictionaryLabel>{a.name}</DictionaryLabel>

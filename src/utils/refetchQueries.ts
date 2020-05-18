@@ -4,7 +4,7 @@ import { NormalizedCacheObject } from 'apollo-cache-inmemory';
 export function refetchQueries(client: ApolloClient<NormalizedCacheObject>, block?: number, names?: string[]) {
   const refetch: ObservableQuery[] = [];
   const manager = client.queryManager as any;
-  (manager.queries as Map<any, any>).forEach(query => {
+  (manager.queries as Map<any, any>).forEach((query) => {
     const observable = query.observableQuery as ObservableQuery;
     if (!names || (observable && observable.queryName && names.includes(observable.queryName))) {
       refetch.push(observable);
@@ -12,7 +12,7 @@ export function refetchQueries(client: ApolloClient<NormalizedCacheObject>, bloc
   });
 
   return Promise.all(
-    refetch.map(query => {
+    refetch.map((query) => {
       return query.refetch({
         ...query.variables,
         ...(block && { block }),

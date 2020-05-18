@@ -5,9 +5,9 @@ export const Dictionary = styled(Block)``;
 
 export const DictionaryDivider = styled.div`
   width: 100%;
-  height: ${props => props.theme.spaceUnits.m};
-  @media (${props => props.theme.mediaQueries.s}) {
-    height: ${props => props.theme.spaceUnits.l};
+  height: ${(props) => props.theme.spaceUnits.m};
+  @media (${(props) => props.theme.mediaQueries.s}) {
+    height: ${(props) => props.theme.spaceUnits.l};
   }
 `;
 
@@ -16,16 +16,16 @@ export const DictionaryEntry = styled.div`
   display: flex;
   justify-content: flex-start;
   flex-wrap: wrap;
-  margin-bottom: ${props => props.theme.spaceUnits.xs};
-  @media (${props => props.theme.mediaQueries.s}) {
+  margin-bottom: ${(props) => props.theme.spaceUnits.xs};
+  @media (${(props) => props.theme.mediaQueries.s}) {
     flex-wrap: nowrap;
-    margin-bottom: ${props => props.theme.spaceUnits.xxs};
+    margin-bottom: ${(props) => props.theme.spaceUnits.xxs};
   }
 `;
 
 export const DictionaryLabel = styled.div`
-  color: ${props => props.theme.mainColors.secondaryDarkAlpha};
-  @media (${props => props.theme.mediaQueries.s}) {
+  color: ${(props) => props.theme.mainColors.secondaryDarkAlpha};
+  @media (${(props) => props.theme.mediaQueries.s}) {
     width: 50%;
   }
 `;
@@ -36,9 +36,9 @@ interface DictionaryDataProps {
 
 export const DictionaryData = styled.div<DictionaryDataProps>`
   width: 100%;
-  text-align: ${props => props.textAlign || 'left'};
-  @media (${props => props.theme.mediaQueries.s}) {
+  text-align: ${(props) => props.textAlign || 'left'};
+  @media (${(props) => props.theme.mediaQueries.s}) {
     width: 50%;
-    padding-left: ${props => props.theme.spaceUnits.s};
+    padding-left: ${(props) => props.theme.spaceUnits.s};
   }
 `;

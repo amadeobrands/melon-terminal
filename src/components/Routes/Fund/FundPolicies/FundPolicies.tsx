@@ -17,7 +17,6 @@ import { MaxPositions } from './MaxPositions/MaxPositions';
 import { PriceTolerance } from './PriceTolerance/PriceTolerance';
 import { AssetWhitelist } from './AssetWhitelist/AssetWhitelist';
 import { AssetBlacklist } from './AssetBlacklist/AssetBlacklist';
-import { UserWhitelist } from './UserWhitelist/UserWhitelist';
 import { DeployedEnvironment } from '@melonproject/melonjs';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { Block } from '~/storybook/Block/Block';
@@ -27,7 +26,7 @@ export interface FundPoliciesParametersProps {
   environment: DeployedEnvironment;
 }
 
-export const FundPoliciesParameters: React.FC<FundPoliciesParametersProps> = props => {
+export const FundPoliciesParameters: React.FC<FundPoliciesParametersProps> = (props) => {
   switch (props.policy.type) {
     case 'MaxConcentration': {
       return <MaxConcentration policy={props.policy as MaxConcentrationPolicy} />;
@@ -50,7 +49,7 @@ export const FundPoliciesParameters: React.FC<FundPoliciesParametersProps> = pro
     }
 
     case 'UserWhitelist': {
-      return <UserWhitelist />;
+      return <BodyCell>N/A</BodyCell>;
     }
 
     case 'CustomPolicy': {
@@ -95,7 +94,7 @@ export const FundPolicies: React.FC<FundPoliciesProps> = ({ address }) => {
               </HeaderRow>
             </thead>
             <tbody>
-              {policies.map(policy => (
+              {policies.map((policy) => (
                 <BodyRow key={policy.address}>
                   <BodyCell>{policy.identifier}</BodyCell>
                   <FundPoliciesParameters policy={policy} environment={environment} />

@@ -12,7 +12,7 @@ export const ScrollableTable = styled.div<ScrollableTableProps>`
   margin-bottom: 25px;
   padding-bottom: 25px;
 
-  ${props =>
+  ${(props) =>
     props.maxHeight &&
     `
     max-height: ${props.maxHeight};
@@ -20,7 +20,7 @@ export const ScrollableTable = styled.div<ScrollableTableProps>`
 `;
 
 export const Table = styled.table`
-  background-color: ${props => props.theme.mainColors.primary};
+  background-color: ${(props) => props.theme.mainColors.primary};
   width: 100%;
   border-spacing: 0;
 `;
@@ -31,19 +31,19 @@ export interface HeaderCellProps {
 
 export const HeaderCell = styled.th<HeaderCellProps>`
   text-align: left;
-  padding: ${props => props.theme.spaceUnits.s};
-  cursor: ${props => props.hover && 'pointer'};
+  padding: ${(props) => props.theme.spaceUnits.s};
+  cursor: ${(props) => props.hover && 'pointer'};
 `;
 
 export const HeaderCellRightAlign = styled.th<HeaderCellProps>`
-  cursor: ${props => props.hover && 'pointer'};
+  cursor: ${(props) => props.hover && 'pointer'};
   text-align: right;
-  padding: ${props => props.theme.spaceUnits.s};
+  padding: ${(props) => props.theme.spaceUnits.s};
 `;
 
 export const HeaderRow = styled.tr`
   font-weight: bold;
-  border-bottom: 1px solid ${props => props.theme.mainColors.textColor};
+  border-bottom: 1px solid ${(props) => props.theme.mainColors.textColor};
 `;
 
 export interface BodyCellProps {
@@ -51,7 +51,7 @@ export interface BodyCellProps {
 }
 
 export const BodyCell = styled.td<BodyCellProps>`
-  ${props =>
+  ${(props) =>
     props.maxWidth &&
     `
     max-width: ${props.maxWidth};
@@ -60,11 +60,11 @@ export const BodyCell = styled.td<BodyCellProps>`
     overflow: hidden;
   `}
   
-  padding: ${props => props.theme.spaceUnits.s};
+  padding: ${(props) => props.theme.spaceUnits.s};
 `;
 
 export const BodyCellRightAlign = styled.td`
-  padding: ${props => props.theme.spaceUnits.s};
+  padding: ${(props) => props.theme.spaceUnits.s};
   text-align: right;
 `;
 
@@ -74,16 +74,16 @@ export interface BodyRowProps {
 
 export const BodyRow = styled.tr<BodyRowProps>`
   line-height: 1;
-  border-top: 1px solid ${props => props.theme.mainColors.secondaryDarkAlpha};
+  border-top: 1px solid ${(props) => props.theme.mainColors.secondaryDarkAlpha};
 
   &:not(:last-child) {
-    border-bottom: 1px dashed ${props => props.theme.mainColors.border};
+    border-bottom: 1px dashed ${(props) => props.theme.mainColors.border};
   }
 
-  ${props => {
+  ${(props) => {
     if (props.highlighted) {
       return css`
-        background-color: ${props => props.theme.mainColors.secondary};
+        background-color: ${(props) => props.theme.mainColors.secondary};
       `;
     }
   }}
@@ -95,6 +95,6 @@ export const BodyRowHover = styled(BodyRow)`
   cursor: pointer;
 
   &:hover {
-    background-color: ${props => props.theme.mainColors.secondary};
+    background-color: ${(props) => props.theme.mainColors.secondary};
   }
 `;

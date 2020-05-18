@@ -4,7 +4,7 @@ import { Headline } from '~/storybook/Headline/Headline';
 import { useAccount } from '~/hooks/useAccount';
 import { EtherscanLink } from '~/components/Common/EtherscanLink/EtherscanLink';
 import { DataBlockSection, DataBlock } from '~/storybook/DataBlock/DataBlock';
-import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
+import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 
 export const WalletHeader: React.FC = () => {
   const account = useAccount()!;
@@ -15,7 +15,7 @@ export const WalletHeader: React.FC = () => {
         <Headline title="Your account" text={<EtherscanLink address={account.address} />} icon="WALLET" />
         <DataBlockSection>
           <DataBlock label="Balance">
-            <TokenValue value={account.eth!} symbol="ETH" />
+            <TokenValueDisplay value={account.eth!} symbol="ETH" />
           </DataBlock>
         </DataBlockSection>
       </BarContent>

@@ -3,6 +3,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { ThemeProvider } from './Theme';
 import { ApolloProvider } from './Contexts/Apollo/Apollo';
 import { ConnectionProvider } from './Contexts/Connection/Connection';
+import { RatesProvider } from './Contexts/Rates/Rates';
 import { AccountProvider } from './Contexts/Account/Account';
 
 // NOTE: Imported using root relative import to allow overrides with webpack.
@@ -15,10 +16,9 @@ import { method as coinbase } from './Layout/ConnectionSelector/Coinbase/Coinbas
 import { method as frame } from './Layout/ConnectionSelector/Frame/Frame';
 import { method as ganache } from './Layout/ConnectionSelector/Ganache/Ganache';
 import { method as fortmatic } from './Layout/ConnectionSelector/Fortmatic/Fortmatic';
-import { method as walletconnect } from './Layout/ConnectionSelector/WalletConnect/WalletConnect';
 import { method as anonymous } from './Layout/ConnectionSelector/Anonymous/Anonymous';
 
-const common = [metamask, dapper, coinbase, frame, fortmatic, walletconnect];
+const common = [metamask, dapper, coinbase, frame, fortmatic];
 let start = anonymous;
 let methods = process.env.MELON_TESTNET ? [ganache, ...common] : common;
 let switchable = true;
@@ -34,9 +34,11 @@ const AppComponent = () => (
     <ConnectionProvider methods={methods} default={start} disconnect={anonymous}>
       <ApolloProvider>
         <AccountProvider>
-          <Router>
-            <AppRouter connectionSwitch={switchable} />
-          </Router>
+          <RatesProvider>
+            <Router>
+              <AppRouter connectionSwitch={switchable} />
+            </Router>
+          </RatesProvider>
         </AccountProvider>
       </ApolloProvider>
     </ConnectionProvider>

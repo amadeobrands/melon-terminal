@@ -19,7 +19,7 @@ interface DarkModeProviderProps {
   override?: boolean;
 }
 
-const DarkModeProvider: React.FC<DarkModeProviderProps> = props => {
+const DarkModeProvider: React.FC<DarkModeProviderProps> = (props) => {
   const [dark, $$setDark] = React.useState(!!JSON.parse(localStorage.getItem('theme.mode') || 'false'));
   const setDark = React.useCallback(
     (mode: boolean) => {
@@ -56,7 +56,7 @@ export interface ThemeProviderProps {
   dark?: boolean;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = props => {
+export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
   return (
     <DarkModeProvider override={props.dark}>
       <SwitchableTheme>{props.children}</SwitchableTheme>

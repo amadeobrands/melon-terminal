@@ -1,21 +1,23 @@
 import React from 'react';
 import {
+  ActionMeta,
+  components,
+  ControlProps,
   default as SelectBase,
-  Props as SelectPropsBase,
+  MultiValueProps,
   OptionProps,
   OptionsType,
-  ActionMeta,
-  ValueType,
-  components,
-  MultiValueProps,
+  Props as SelectPropsBase,
   SingleValueProps,
+  ValueType,
 } from 'react-select';
-import { useField, Wrapper, Label, Error } from '~/components/Form/Form';
-import { Icons, IconName } from '~/storybook/Icons/Icons';
+import { MenuListProps, MenuListComponentProps } from 'react-select/src/components/Menu';
+import { Error, Label, useField, Wrapper } from '~/components/Form/Form';
+import { IconName, Icons } from '~/storybook/Icons/Icons';
 import * as S from './Select.styles';
 
-export interface SelectOption {
-  value: string;
+export interface SelectOption<TValue = string | number> {
+  value: TValue;
   label: string;
   description?: string;
   icon?: string;
@@ -26,31 +28,32 @@ export interface SelectProps<TOption extends SelectOption = SelectOption> extend
   options: OptionsType<TOption>;
   name: string;
   label?: string;
+  Component?: React.ElementType<SelectPropsBase<TOption>>;
 }
 
-export const Select: React.FC<SelectProps> = props => {
-  const [field, meta, helpers] = useField({ type: 'select', name: props.name });
+export const Select: React.FC<SelectProps> = (props) => {
+  const [field, meta, { setValue }] = useField({ type: 'select', name: props.name });
   const value = React.useMemo(() => {
     if (props.isMulti) {
-      return props.options?.filter(option => field.value?.includes(option.value));
+      return props.options?.filter((option) => field.value?.includes(option.value));
     }
 
     return props.options?.find((option: SelectOption) => option.value === field.value);
   }, [field.value, props.options, props.isMulti]);
 
   const onChange = React.useCallback(
-    (option: ValueType<SelectOption>, action: ActionMeta) => {
+    (option: ValueType<SelectOption>, action: ActionMeta<SelectOption>) => {
       const selection = props.isMulti
-        ? ((option as any) as SelectOption[]).map(item => item.value)
+        ? ((option as any) as SelectOption[]).map((item) => item.value)
         : ((option as any) as SelectOption).value;
 
-      helpers.setValue(selection);
+      setValue(selection);
 
       if (typeof props.onChange === 'function') {
         props.onChange(option, action);
       }
     },
-    [field.value, helpers.setValue, props.isMulti, props.onChange]
+    [setValue, props.isMulti, props.onChange]
   );
 
   return <SelectWidget {...meta} {...field} {...props} value={value} onChange={onChange} />;
@@ -61,12 +64,12 @@ export const SelectWidget: React.FC<SelectProps> = ({ label, ...props }) => {
     <Wrapper>
       {label && <Label>{label}</Label>}
       <SelectField {...props} />
-      {props.error && <Error>{props.error}</Error>}
+      {props.touched && props.error && <Error>{props.error}</Error>}
     </Wrapper>
   );
 };
 
-export const SelectField: React.FC<SelectProps> = props => {
+export const SelectField: React.FC<SelectProps> = ({ Component = SelectBase, ...props }) => {
   const hasDescriptions = React.useMemo(() => {
     return props.options.some((option: any) => !!option.description);
   }, [props.options]);
@@ -76,66 +79,86 @@ export const SelectField: React.FC<SelectProps> = props => {
   }, [props.options]);
 
   return (
-    <SelectBase
-      components={{ Option, SingleValue, MultiValue }}
+    <Component
       {...props}
+      theme={props.theme}
+      isDisabled={props.disabled ?? props.isDisabled}
+      components={{ Option, SingleValue, MultiValue, Control, MenuList, ...props.components }}
       hasDescriptions={hasDescriptions}
       hasIcons={hasIcons}
+      classNamePrefix="melon"
     />
   );
 };
 
-const Option: React.FC<OptionProps<SelectOption>> = props => {
+export interface SelectLabelProps {
+  label: string;
+  icon?: string;
+}
+
+export const SelectLabel: React.FC<SelectLabelProps> = (props) => (
+  <S.SelectWrapper>
+    {props.icon ? (
+      <S.SelectIcon>
+        <Icons name={props.icon as IconName} size="small" />
+      </S.SelectIcon>
+    ) : null}
+    <S.SelectLabel>
+      {props.label}
+      {props.label.length === 3 && <>&nbsp;</>}
+    </S.SelectLabel>
+  </S.SelectWrapper>
+);
+
+const Option: React.FC<OptionProps<SelectOption>> = (props) => {
   const hasDescriptions = !!props.selectProps.hasDescriptions;
 
   return (
-    <components.Option {...props}>
-      <S.SelectWrapper>
-        {props.data.icon ? (
-          <S.SelectIcon>
-            <Icons name={props.data.icon as IconName} size={hasDescriptions ? 'normal' : 'small'} />
-          </S.SelectIcon>
-        ) : null}
+    <S.ComponentsOption>
+      <components.Option {...props}>
+        <S.SelectWrapper>
+          {props.data.icon ? (
+            <S.SelectIcon>
+              <Icons name={props.data.icon as IconName} size={hasDescriptions ? 'normal' : 'small'} />
+            </S.SelectIcon>
+          ) : null}
 
-        {props.data.description ? (
-          <S.SelecLabelWrapper>
+          {props.data.description ? (
+            <S.SelecLabelWrapper>
+              <S.SelectLabel>{props.data.label}</S.SelectLabel>
+              <S.SelectDescription>{props.data.description}</S.SelectDescription>
+            </S.SelecLabelWrapper>
+          ) : (
             <S.SelectLabel>{props.data.label}</S.SelectLabel>
-            <S.SelectDescription>{props.data.description}</S.SelectDescription>
-          </S.SelecLabelWrapper>
-        ) : (
-          <S.SelectLabel>{props.data.label}</S.SelectLabel>
-        )}
-      </S.SelectWrapper>
-    </components.Option>
+          )}
+        </S.SelectWrapper>
+      </components.Option>
+    </S.ComponentsOption>
   );
 };
 
-const SingleValue: React.FC<SingleValueProps<SelectOption>> = props => {
-  return (
+const SingleValue: React.FC<SingleValueProps<SelectOption>> = (props) => (
+  <S.ComponentsSingleValue>
     <components.SingleValue {...props}>
-      <S.SelectWrapper>
-        {props.data.icon ? (
-          <S.SelectIcon>
-            <Icons name={props.data.icon as IconName} size="small" />
-          </S.SelectIcon>
-        ) : null}
-        <S.SelectLabel>{props.data.label}</S.SelectLabel>
-      </S.SelectWrapper>
+      <SelectLabel {...props.data} />
     </components.SingleValue>
-  );
-};
+  </S.ComponentsSingleValue>
+);
 
-const MultiValue: React.FC<MultiValueProps<SelectOption>> = props => {
-  return (
-    <components.MultiValue {...props}>
-      <S.SelectWrapper>
-        {props.data.icon ? (
-          <S.SelectIcon>
-            <Icons name={props.data.icon as IconName} size="small" />
-          </S.SelectIcon>
-        ) : null}
-        <S.SelectLabel>{props.data.label}</S.SelectLabel>
-      </S.SelectWrapper>
-    </components.MultiValue>
-  );
-};
+const MultiValue: React.FC<MultiValueProps<SelectOption>> = (props) => (
+  <components.MultiValue {...props}>
+    <SelectLabel {...props.data} />
+  </components.MultiValue>
+);
+
+const Control: React.FC<ControlProps<SelectOption>> = (props) => (
+  <S.ComponentsControl>
+    <components.Control {...props} />
+  </S.ComponentsControl>
+);
+
+const MenuList: React.FC<MenuListComponentProps<SelectOption>> = (props) => (
+  <S.ComponentsMenuList>
+    <components.MenuList {...props} />
+  </S.ComponentsMenuList>
+);

@@ -142,7 +142,7 @@ function init(props: ConnectionProviderProps): ConnectionState {
   const storedAccount = window.localStorage.getItem('connection.account') || undefined;
 
   if (!!validUntil && Date.now() <= validUntil) {
-    if (!!storedMethod && props.methods.some(method => method.name === storedMethod)) {
+    if (!!storedMethod && props.methods.some((method) => method.name === storedMethod)) {
       return {
         ...common,
         method: storedMethod,
@@ -181,12 +181,12 @@ export function reducer(state: ConnectionState, action: ConnectionAction): Conne
 
     case ConnectionActionType.ACCOUNTS_CHANGED: {
       const accounts = action.accounts || [];
-      const account = (state.account && accounts.find(address => sameAddress(address, state.account))) || accounts[0];
+      const account = (state.account && accounts.find((address) => sameAddress(address, state.account))) || accounts[0];
       return { ...state, account, accounts };
     }
 
     case ConnectionActionType.ACCOUNT_CHANGED: {
-      if (!(state.accounts || []).find(address => sameAddress(address, action.account))) {
+      if (!(state.accounts || []).find((address) => sameAddress(address, action.account))) {
         throw new Error('Invalid account selected.');
       }
 
@@ -195,7 +195,7 @@ export function reducer(state: ConnectionState, action: ConnectionAction): Conne
 
     case ConnectionActionType.CONNECTION_ESTABLISHED: {
       const accounts = action.accounts || [];
-      const account = (state.account && accounts.find(address => sameAddress(address, state.account))) || accounts[0];
+      const account = (state.account && accounts.find((address) => sameAddress(address, state.account))) || accounts[0];
       return { ...state, account, network: action.network, accounts: action.accounts, eth: action.eth };
     }
 
@@ -264,7 +264,7 @@ export interface ConnectionProviderProps {
   disconnect: ConnectionMethod;
 }
 
-export const ConnectionProvider: React.FC<ConnectionProviderProps> = props => {
+export const ConnectionProvider: React.FC<ConnectionProviderProps> = (props) => {
   const [state, dispatch] = useReducer<React.Reducer<ConnectionState, ConnectionAction>, ConnectionProviderProps>(
     reducer,
     props,
@@ -285,7 +285,7 @@ export const ConnectionProvider: React.FC<ConnectionProviderProps> = props => {
         return Date.now() + 60000;
       })
     );
-    const subscription = observable$.subscribe(now => {
+    const subscription = observable$.subscribe((now) => {
       window.localStorage.setItem('connection.validity', `${now}`);
     });
 
@@ -313,10 +313,10 @@ export const ConnectionProvider: React.FC<ConnectionProviderProps> = props => {
   // Subscribe to the current connection method's observable whenever it changes.
   useEffect(() => {
     const method =
-      [...props.methods, props.default, props.disconnect].find(item => item.name === state.method) ?? props.default;
+      [...props.methods, props.default, props.disconnect].find((item) => item.name === state.method) ?? props.default;
     const observable = method.connect();
     const subscription = observable.subscribe({
-      next: action => dispatch(action),
+      next: (action) => dispatch(action),
     });
 
     return () => {
@@ -334,8 +334,8 @@ export const ConnectionProvider: React.FC<ConnectionProviderProps> = props => {
     dispatch(deploymentLoading());
 
     const subscription = Rx.from(config.deployment()).subscribe({
-      next: deployment => dispatch(deploymentLoaded(deployment)),
-      error: error => dispatch(deploymentError(error)),
+      next: (deployment) => dispatch(deploymentLoaded(deployment)),
+      error: (error) => dispatch(deploymentError(error)),
     });
 
     return () => subscription.unsubscribe();

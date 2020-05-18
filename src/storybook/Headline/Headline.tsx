@@ -9,7 +9,7 @@ export interface HeadlineProps {
   icon?: 'WALLET' | 'ETHEREUM';
 }
 
-export const Headline: React.FC<HeadlineProps> = props => {
+export const Headline: React.FC<HeadlineProps> = (props) => {
   return (
     <H.Headline>
       {props.icon && (

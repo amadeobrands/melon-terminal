@@ -22,7 +22,8 @@
       "MELON_WALLETCONNECT_INFURA_ID": "b39a0d1b493b42fd8d9bdc8f91d2d0bb",
       "MELON_API_GATEWAY": "https://gateway.avantgarde.finance",
       "MELON_MAX_EXPOSURE": "50000",
-      "MELON_TELEGRAM_API": "https://bot.avantgarde.finance/api"
+      "MELON_TELEGRAM_API": "https://bot.avantgarde.finance",
+      "MELON_RATES_API": "https://rates.avantgarde.finance"
     }
   }
 }

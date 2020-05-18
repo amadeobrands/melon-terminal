@@ -10,20 +10,26 @@ export const Default: React.FC = () => {
       <GridRow>
         <GridCol xs={12} sm={6} md={4} lg={4}>
           <Block>
-            3 Small columns, stacked on xs-screens<br></br>
-            <hr></hr>xs={12} sm={12} md={4} lg={4}
+            3 Small columns, stacked on xs-screens
+            <br />
+            <hr />
+            xs={12} sm={12} md={4} lg={4}
           </Block>
         </GridCol>
         <GridCol xs={12} sm={6} md={4} lg={4}>
           <Block>
-            3 Small columns, stacked on xs-screens<br></br>
-            <hr></hr>xs={12} sm={12} md={4} lg={4}
+            3 Small columns, stacked on xs-screens
+            <br />
+            <hr />
+            xs={12} sm={12} md={4} lg={4}
           </Block>
         </GridCol>
         <GridCol xs={12} sm={6} md={4} lg={4}>
           <Block>
-            3 Small columns, stacked on xs-screens<br></br>
-            <hr></hr>xs={12} sm={12} md={4} lg={4}
+            3 Small columns, stacked on xs-screens
+            <br />
+            <hr />
+            xs={12} sm={12} md={4} lg={4}
           </Block>
         </GridCol>
       </GridRow>
@@ -37,14 +43,18 @@ export const TwoColumns: React.FC = () => {
       <GridRow>
         <GridCol xs={12} sm={6}>
           <Block>
-            Two columns, stacked on xs-screens<br></br>
-            <hr></hr>xs={12} sm={6}
+            Two columns, stacked on xs-screens
+            <br />
+            <hr />
+            xs={12} sm={6}
           </Block>
         </GridCol>
         <GridCol xs={12} sm={6}>
           <Block>
-            Two columns, stacked on xs-screens<br></br>
-            <hr></hr>xs={12} sm={6}
+            Two columns, stacked on xs-screens
+            <br />
+            <hr />
+            xs={12} sm={6}
           </Block>
         </GridCol>
       </GridRow>
@@ -58,7 +68,9 @@ export const StandaloneSmall: React.FC = () => {
       <GridRow justify="center">
         <GridCol xs={12} sm={6} md={4} lg={4}>
           <Block>
-            Stand-alone form with small fields<hr></hr>xs={12} sm={6} md={4} lg={4}
+            Stand-alone form with small fields
+            <hr />
+            xs={12} sm={6} md={4} lg={4}
           </Block>
         </GridCol>
       </GridRow>
@@ -72,7 +84,9 @@ export const StandaloneMedium: React.FC = () => {
       <GridRow justify="center">
         <GridCol xs={12} sm={10} md={8} lg={6}>
           <Block>
-            Stand-alone block long form fields/text<hr></hr>xs={12} sm={10} md={8} lg={6}
+            Stand-alone block long form fields/text
+            <hr />
+            xs={12} sm={10} md={8} lg={6}
           </Block>
         </GridCol>
       </GridRow>
@@ -86,34 +100,42 @@ export const FundLayout: React.FC = () => {
       <GridRow>
         <GridCol xs={12} sm={6} md={3}>
           <Block>
-            <h2>Holdings</h2> Top-Left Fund section <hr></hr> xs={12} sm={6} md={3}
+            <h2>Holdings</h2> Top-Left Fund section <hr /> xs={12} sm={6} md={3}
           </Block>
         </GridCol>
         <GridCol xs={12} sm={6} md={6}>
           <Block>
-            <h2>Order Books</h2>Top-Center Fund Section <hr></hr> xs={12} sm={6} md={6}
+            <h2>Order Books</h2>Top-Center Fund Section <hr /> xs={12} sm={6} md={6}
           </Block>
         </GridCol>
         <GridCol xs={12} sm={12} md={3}>
           <Block>
-            <h2>Trades</h2>Top-Right fund section<hr></hr>xs={12} sm={6} md={3}{' '}
+            <h2>Trades</h2>Top-Right fund section
+            <hr />
+            xs={12} sm={6} md={3}{' '}
           </Block>
         </GridCol>
       </GridRow>
       <GridRow>
         <GridCol xs={12} sm={6} md={3}>
           <Block>
-            <h2>Policies</h2>Bottom-Left fund section<hr></hr>xs={12} sm={6} md={3}
+            <h2>Policies</h2>Bottom-Left fund section
+            <hr />
+            xs={12} sm={6} md={3}
           </Block>
         </GridCol>
         <GridCol xs={12} sm={6} md={3}>
           <Block>
-            <h2>Open Orders</h2>Bottom-CenterLeft fund section<hr></hr>xs={12} sm={6} md={3}
+            <h2>Open Orders</h2>Bottom-CenterLeft fund section
+            <hr />
+            xs={12} sm={6} md={3}
           </Block>
         </GridCol>
         <GridCol xs={12} sm={6} md={6}>
           <Block>
-            <h2>Trading History</h2>Bottom-CenterRight fund section<hr></hr>xs={12} sm={6} md={6}
+            <h2>Trading History</h2>Bottom-CenterRight fund section
+            <hr />
+            xs={12} sm={6} md={6}
           </Block>
         </GridCol>
       </GridRow>
@@ -127,7 +149,9 @@ export const WithoutBlocks: React.FC = () => {
       <GridRow>
         <GridCol xs={12}>
           <div>
-            Stand-alone grid full<hr></hr>xs={12}
+            Stand-alone grid full
+            <hr />
+            xs={12}
           </div>
         </GridCol>
       </GridRow>

@@ -1,5 +1,5 @@
 import React, { Fragment, useState, useMemo } from 'react';
-
+import styled from 'styled-components';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import {
   ScrollableTable,
@@ -16,9 +16,8 @@ import { Block } from '~/storybook/Block/Block';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { useFundPerformanceQuery } from './FundPerformance.query';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
-import styled from 'styled-components';
-import { Dropdown } from '~/storybook/Dropdown/Dropdown';
-import { Button } from '~/storybook/Button/Button.styles';
+import { SelectWidget } from '~/components/Form/Select/Select';
+import { Button } from '~/components/Form/Button/Button.styles';
 
 export interface FundPerformanceTableProps {
   address: string;
@@ -26,9 +25,9 @@ export interface FundPerformanceTableProps {
 
 const TableDescription = styled.span`
   text-align: right;
-  color: ${props => props.theme.mainColors.secondaryDark};
-  font-size: ${props => props.theme.fontSizes.s};
-  margin-bottom: ${props => props.theme.spaceUnits.m};
+  color: ${(props) => props.theme.mainColors.secondaryDark};
+  font-size: ${(props) => props.theme.fontSizes.s};
+  margin-bottom: ${(props) => props.theme.spaceUnits.m};
   margin-left: 0;
 `;
 
@@ -37,23 +36,19 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
   const startingTokens = ['WETH', 'DAI', 'WBTC'];
 
   const tokens = useEnvironment()!
-    .tokens.filter(token => !excludedTokens.includes(token.symbol))
-    .map(token => ({
-      name: token.symbol,
+    .tokens.filter((token) => !excludedTokens.includes(token.symbol))
+    .map((token) => ({
+      label: token.symbol,
       value: token.symbol,
     }));
 
   const [selectedTokens, setSelectedTokens] = useState(() =>
-    tokens.filter(token => startingTokens.includes(token.name)).map(token => token.name)
+    tokens.filter((token) => startingTokens.includes(token.label)).map((token) => token.label)
   );
 
-  const unselectedTokens = useMemo(
-    () =>
-      tokens
-        .filter(token => !selectedTokens.includes(token.name))
-        .concat({ name: 'Choose an asset to compare', value: '' }),
-    [selectedTokens]
-  );
+  const unselectedTokens = useMemo(() => {
+    return tokens.filter((token) => !selectedTokens.includes(token.label));
+  }, [selectedTokens]);
 
   const [fund, assets, query] = useFundPerformanceQuery(address, selectedTokens);
 
@@ -62,7 +57,7 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
       return;
     }
     if (selectedTokens.includes(symbol)) {
-      setSelectedTokens(selectedTokens.filter(token => token !== symbol));
+      setSelectedTokens(selectedTokens.filter((token) => token !== symbol));
     } else {
       setSelectedTokens(selectedTokens.concat([symbol]));
     }
@@ -77,7 +72,7 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
     );
   }
 
-  const items = assets && selectedTokens.filter(symbol => assets[symbol]).map(symbol => assets[symbol]);
+  const items = assets && selectedTokens.filter((symbol) => assets[symbol]).map((symbol) => assets[symbol]);
 
   return (
     <Block>
@@ -99,7 +94,7 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
             </thead>
 
             <tbody>
-              {(items ?? []).map(item => (
+              {(items ?? []).map((item) => (
                 <Fragment key={item.symbol}>
                   <BodyRow>
                     <BodyCell>
@@ -166,7 +161,13 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
         </ScrollableTable>
       )}
       {unselectedTokens.length > 1 && (
-        <Dropdown options={unselectedTokens} onChange={event => toggleTokenSelection(event?.target.value)} value="" />
+        <SelectWidget
+          name="token"
+          placeholder="Select an asset to compare"
+          options={unselectedTokens}
+          onChange={(value) => value && toggleTokenSelection((value as any).value)}
+          value={null}
+        />
       )}
       <TableDescription>Fund share price and assets benchmarked against ETH</TableDescription>
     </Block>

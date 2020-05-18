@@ -8,7 +8,7 @@ export interface GridProps {
 
 export const Grid = styled(Container)<GridProps>`
   width: 100%;
-  ${props => !props.noGap && `margin: ${props.theme.spaceUnits.l} auto;`}
+  ${(props) => !props.noGap && `margin: ${props.theme.spaceUnits.l} auto;`}
 `;
 
 export interface GridRowProps {
@@ -16,7 +16,7 @@ export interface GridRowProps {
 }
 
 export const GridRow = styled(Row)<GridRowProps>`
-  ${props =>
+  ${(props) =>
     !props.noGap &&
     `
     :not(:last-child) {
@@ -26,7 +26,7 @@ export const GridRow = styled(Row)<GridRowProps>`
 `;
 
 export const GridCol = styled(Col)`
-  margin-bottom: ${props => props.theme.spaceUnits.xs};
+  margin-bottom: ${(props) => props.theme.spaceUnits.xs};
 
   & > ${Block} {
     height: 100%;

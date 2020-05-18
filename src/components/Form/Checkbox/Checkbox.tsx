@@ -5,6 +5,8 @@ import { CheckboxIcon, CheckboxContainer, CheckboxInput, CheckboxMask, CheckboxL
 export interface CheckboxProps extends GenericInputProps {
   name: string;
   label?: string;
+  touched?: boolean;
+  error?: string;
 }
 
 export const CheckboxItem: React.FC<CheckboxProps> = ({ label, ...rest }) => {
@@ -19,12 +21,12 @@ export const CheckboxItem: React.FC<CheckboxProps> = ({ label, ...rest }) => {
       </CheckboxMask>
 
       {label && <CheckboxLabel htmlFor={id}>{label}</CheckboxLabel>}
-      {rest.error && <Error>{rest.error}</Error>}
+      {rest.touched && rest.error && <Error>{rest.error}</Error>}
     </CheckboxContainer>
   );
 };
 
-export const Checkbox: React.FC<CheckboxProps> = props => {
+export const Checkbox: React.FC<CheckboxProps> = (props) => {
   const [field, meta] = useField({ type: 'checkbox', ...props });
 
   return (

@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import gql from 'graphql-tag';
 import { useTheGraphQuery } from '~/hooks/useQuery';
+import React from 'react';
 
 export interface InvestorTotalExposureResult {
   investor: {
@@ -34,9 +35,11 @@ export const useInvestorTotalExposureQuery = (address?: string) => {
     skip: !address,
   });
 
-  const totalExposure = result?.data?.investor?.investments?.reduce((carry, item) => {
-    return carry.plus(new BigNumber(item.gav));
-  }, new BigNumber(0));
+  const totalExposure = React.useMemo(() => {
+    return result?.data?.investor?.investments?.reduce((carry, item) => {
+      return carry.plus(new BigNumber(item.gav));
+    }, new BigNumber(0));
+  }, [result]);
 
   return [totalExposure, result] as [typeof totalExposure, typeof result];
 };

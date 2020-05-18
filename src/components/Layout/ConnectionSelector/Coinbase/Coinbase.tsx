@@ -10,7 +10,7 @@ import {
   ConnectionMethodProps,
 } from '~/components/Contexts/Connection/Connection';
 import { SectionTitle } from '~/storybook/Title/Title';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 
 const supported = () => {
   const ethereum = (window as any).ethereum;
@@ -29,7 +29,7 @@ const connect = (): Rx.Observable<ConnectionAction> => {
 
   const enable$ = Rx.defer(() => ethereum.enable() as Promise<string[]>);
   const initial$ = enable$.pipe(
-    switchMap(async accounts => {
+    switchMap(async (accounts) => {
       const network = networkFromId(await eth.net.getId());
       return connectionEstablished(eth, network, accounts);
     })

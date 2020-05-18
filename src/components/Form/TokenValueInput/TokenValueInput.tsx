@@ -1,36 +1,26 @@
 import React from 'react';
 import BigNumber from 'bignumber.js';
 import { NumberFormatValues } from 'react-number-format';
-import { BigNumberInputField } from '~/components/Form/BigNumberInput/BigNumberInput';
-import { SelectField, SelectOption } from '~/components/Form/Select/Select';
+import { TokenDefinition } from '@melonproject/melonjs';
 import { useField, Wrapper, Error, Label } from '~/components/Form/Form';
-import { TokenValue } from './TokenValue';
-import { TokenDefinition, sameAddress } from '@melonproject/melonjs';
-import { ValueType } from 'react-select';
+import { SelectLabel } from '~/components/Form/Select/Select';
+import { BigNumberInputField } from '~/components/Form/BigNumberInput/BigNumberInput';
+import { TokenValue } from '~/TokenValue';
+import * as S from './TokenValueInput.styles';
 
 export interface TokenValueInputProps {
   name: string;
   label?: string;
-  tokens: TokenDefinition[];
+  // token: TokenDefinition;
+  disabled?: boolean;
+  noIcon?: boolean;
+  onChange?: (value: TokenValue, before?: TokenValue) => void;
 }
 
-export const TokenValueInput: React.FC<TokenValueInputProps> = ({ tokens, label, ...props }) => {
-  const [{ onChange, ...field }, meta, helpers] = useField<TokenValue | undefined>(props.name);
+export const TokenValueInput: React.FC<TokenValueInputProps> = ({ label, onChange: onChangeFeedback, ...props }) => {
+  const [{ onChange, ...field }, meta, { setValue }] = useField<TokenValue | undefined>(props.name);
 
-  const options = React.useMemo<SelectOption[]>(() => {
-    return tokens.map(item => ({
-      value: item.address,
-      label: item.name,
-      icon: item.symbol,
-      token: item,
-    }));
-  }, [tokens]);
-
-  const token = React.useMemo(() => {
-    return options.find(option => sameAddress(option.value, field.value?.token.address));
-  }, [options, field.value]);
-
-  const value = React.useMemo(() => {
+  const number = React.useMemo(() => {
     if (!field.value) {
       return;
     }
@@ -39,48 +29,47 @@ export const TokenValueInput: React.FC<TokenValueInputProps> = ({ tokens, label,
     return (BigNumber.isBigNumber(value) ? value.toFixed() : value) as string;
   }, [field.value]);
 
-  const onSelectChange = React.useCallback(
-    (option: ValueType<SelectOption>) => {
-      if (Array.isArray(option)) {
-        return;
-      }
-
-      const value = field.value?.value;
-      const token = (option as SelectOption).token as TokenDefinition;
-      helpers.setValue(new TokenValue(token, value));
-    },
-    [tokens, field.value, helpers.setValue]
-  );
+  const token = React.useMemo(() => {
+    return field.value?.token ? field.value.token : ({} as TokenDefinition);
+  }, [field.value]);
 
   const onValueChange = React.useCallback(
     (values: NumberFormatValues) => {
-      if (!field.value?.token) {
+      const before = field.value;
+      const value = !values.value ? new TokenValue(token) : new TokenValue(token, values.value);
+
+      if (before?.value?.comparedTo(value.value ?? '') === 0) {
         return;
       }
 
-      const value = new BigNumber(values.value);
-      const token = field.value.token;
-      helpers.setValue(new TokenValue(token, value));
+      setValue(new TokenValue(token, values.value));
+      onChangeFeedback?.(value, before);
     },
-    [field.value, helpers.setValue]
+    [field.value, setValue, onChange]
   );
-
-  const isAllowed = React.useCallback(() => !!field.value, [field.value]);
 
   return (
     <Wrapper>
       <Label>{label}</Label>
-      <SelectField {...meta} {...field} {...props} value={token} options={options} onChange={onSelectChange} />
-      <BigNumberInputField
-        {...meta}
-        {...field}
-        {...props}
-        value={value}
-        decimalScale={field.value?.token.decimals}
-        isAllowed={isAllowed}
-        onValueChange={onValueChange}
-      />
-      {meta.error && <Error>{meta.error}</Error>}
+      <S.InputContainer>
+        <BigNumberInputField
+          {...meta}
+          {...field}
+          {...props}
+          value={number}
+          decimalScale={token.decimals}
+          onValueChange={onValueChange}
+          placeholder={field.value ? 'Enter a value ...' : undefined}
+        />
+
+        {props.noIcon || (
+          <S.TokenWrapper>
+            <SelectLabel icon={token.symbol} label={token.symbol} />
+          </S.TokenWrapper>
+        )}
+      </S.InputContainer>
+
+      {meta.touched && meta.error && <Error>{meta.error}</Error>}
     </Wrapper>
   );
 };

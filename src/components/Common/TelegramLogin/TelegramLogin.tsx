@@ -5,7 +5,7 @@ export interface TelegramLoginProps {
   botName: string;
 }
 
-export const TelegramLogin: React.FC<TelegramLoginProps> = props => {
+export const TelegramLogin: React.FC<TelegramLoginProps> = (props) => {
   const [ref, setRef] = React.useState<HTMLElement | null>();
   const method = React.useMemo(() => {
     const id = (Math.random() + 1).toString(36).substr(2, 5);

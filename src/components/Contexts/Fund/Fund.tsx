@@ -18,7 +18,7 @@ export const Fund = createContext<FundContextValue>({
   loading: true,
 });
 
-export const FundProvider: React.FC<FundProviderProps> = props => {
+export const FundProvider: React.FC<FundProviderProps> = (props) => {
   const address = isAddress(props.address) ? toChecksumAddress(props.address) : undefined;
   const [fund, query] = useFundContextQuery({
     variables: address ? { address } : {},

@@ -23,16 +23,16 @@ export const Loader = styled.div<LoaderProps>`
   position: absolute;
   top: 0;
   border-style: solid;
-  border-top-color: ${props => props.theme.otherColors.black};
-  border-right-color: ${props => props.theme.otherColors.grey};
-  border-bottom-color: ${props => props.theme.otherColors.black};
-  border-left-color: ${props => props.theme.otherColors.grey};
+  border-top-color: ${(props) => props.theme.otherColors.black};
+  border-right-color: ${(props) => props.theme.otherColors.grey};
+  border-bottom-color: ${(props) => props.theme.otherColors.black};
+  border-left-color: ${(props) => props.theme.otherColors.grey};
   transform: translateZ(0);
   animation: ${rotate} 2s infinite linear;
 `;
 
 export const Text = styled.div`
-  margin-top: ${props => props.theme.spaceUnits.s};
+  margin-top: ${(props) => props.theme.spaceUnits.s};
   text-align: center;
 `;
 
@@ -66,7 +66,7 @@ const sizes = {
 };
 
 export const Spinner = styled.div<SpinnerProps>`
-  ${props => {
+  ${(props) => {
     const size = sizes[props.size || 'default'];
 
     return css`
@@ -83,14 +83,14 @@ export const Spinner = styled.div<SpinnerProps>`
 
 export const SpinnerPositioning = styled.div<SpinnerProps>`
   position: relative;
-  margin: ${props => props.theme.spaceUnits.xxl} auto;
+  margin: ${(props) => props.theme.spaceUnits.xxl} auto;
 
-  ${props => {
+  ${(props) => {
     const size = sizes[props.size || 'default'];
 
     if (props.positioning === 'overlay') {
       return css`
-        background-color: ${props => props.theme.mainColors.secondary};
+        background-color: ${(props) => props.theme.mainColors.secondary};
         position: fixed;
         top: 0;
         bottom: 0;

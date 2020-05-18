@@ -20,7 +20,7 @@ export const ButtonDay = styled.button`
   overflow: hidden;
 
   :hover {
-    background-color: ${props => props.theme.mainColors.secondary};
+    background-color: ${(props) => props.theme.mainColors.secondary};
   }
 `;
 
@@ -31,7 +31,7 @@ export const ButtonNight = styled.button`
   overflow: hidden;
 
   :hover {
-    background-color: ${props => props.theme.mainColors.textColor};
+    background-color: ${(props) => props.theme.mainColors.textColor};
     svg {
       fill: black;
     }

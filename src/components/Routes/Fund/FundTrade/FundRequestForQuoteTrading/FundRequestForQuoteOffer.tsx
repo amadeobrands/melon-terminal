@@ -1,21 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import { assetDataUtils, SignedOrder } from '@0x/order-utils-v2';
+import { ExchangeDefinition, TokenDefinition, Trading, ZeroExV2TradingAdapter } from '@melonproject/melonjs';
 import BigNumber from 'bignumber.js';
+import React, { useEffect, useState } from 'react';
 import * as Rx from 'rxjs';
-import { ExchangeDefinition, Trading, ZeroExV2TradingAdapter, TokenDefinition } from '@melonproject/melonjs';
-import { useEnvironment } from '~/hooks/useEnvironment';
-import { useAccount } from '~/hooks/useAccount';
-import { useTransaction } from '~/hooks/useTransaction';
-import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
-import { Button } from '~/storybook/Button/Button';
 import { catchError, switchMap } from 'rxjs/operators';
-import { SignedOrder, assetDataUtils } from '@0x/order-utils-v2';
-import { Subtitle } from '~/storybook/Title/Title';
 import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
+import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
+import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
+import { useAccount } from '~/hooks/useAccount';
+import { useEnvironment } from '~/hooks/useEnvironment';
+import { useTransaction } from '~/hooks/useTransaction';
+import { Button } from '~/components/Form/Button/Button';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
-import { TokenValue } from '~/components/Common/TokenValue/TokenValue';
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
+import { validatePolicies } from '../validatePolicies';
+import { FundRequestForQuoteTradingProps } from './FundRequestForQuoteTrading';
+import { Subtitle } from '~/storybook/Title/Title';
 
-export interface FundRequestForQuoteOfferProps {
+export interface FundRequestForQuoteOfferProps extends FundRequestForQuoteTradingProps {
   active: boolean;
   trading: string;
   exchange: ExchangeDefinition;
@@ -25,7 +27,7 @@ export interface FundRequestForQuoteOfferProps {
   side?: 'buy' | 'sell';
 }
 
-export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> = props => {
+export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> = (props) => {
   const [quote, setQuote] = useState<{
     offer: SignedOrder;
     taker: TokenDefinition;
@@ -38,6 +40,8 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
     price: new BigNumber(0),
     loading: false,
   }));
+
+  const [policyValidation, setPolicyValidation] = useState({ valid: true, message: '' });
 
   const environment = useEnvironment()!;
   const account = useAccount()!;
@@ -85,7 +89,7 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
     );
 
     const empty$ = Rx.of(new BigNumber(0));
-    const subscription = (active ? observable$ : empty$).subscribe(price => {
+    const subscription = (active ? observable$ : empty$).subscribe((price) => {
       setState(() => ({
         price,
         loading: false,
@@ -122,6 +126,22 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
         const taker = assetDataUtils.decodeERC20AssetData(offer.takerAssetData).tokenAddress;
         const maker = assetDataUtils.decodeERC20AssetData(offer.makerAssetData).tokenAddress;
 
+        await validatePolicies({
+          environment,
+          setPolicyValidation,
+          policies: props.policies,
+          taker: environment.getToken(taker)!,
+          maker: environment.getToken(maker)!,
+          takerAmount: new BigNumber(offer.takerAssetAmount),
+          makerAmount: new BigNumber(offer.makerAssetAmount),
+          holdings: props.holdings,
+          denominationAsset: props.denominationAsset,
+          tradingAddress: props.trading,
+        });
+        if (!policyValidation.valid) {
+          return;
+        }
+
         setQuote({
           price: new BigNumber(result?.price ?? 'NaN'),
           amount: new BigNumber(result?.amount ?? 'NaN'),
@@ -147,6 +167,10 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
 
   useEffect(() => {
     if (!quote) {
+      return;
+    }
+
+    if (!policyValidation.valid) {
       return;
     }
 
@@ -177,21 +201,26 @@ export const FundRequestForQuoteOffer: React.FC<FundRequestForQuoteOfferProps> =
           ? `Buy ${state.price.multipliedBy(props.amount!).toFixed(4)} ${props.symbol}`
           : 'No Offer'}
       </Button>
+      {!policyValidation.valid && (
+        <NotificationBar kind="error">
+          <NotificationContent>{policyValidation.message}</NotificationContent>
+        </NotificationBar>
+      )}
 
       <TransactionModal transaction={transaction}>
         <NotificationBar kind="neutral">
           <NotificationContent>
             Final quote: You are selling{' '}
-            <TokenValue value={quantity} decimals={quote?.taker.decimals} symbol={quote?.taker.symbol} /> in exchange
-            for{' '}
-            <TokenValue
+            <TokenValueDisplay value={quantity} decimals={quote?.taker.decimals} symbol={quote?.taker.symbol} /> in
+            exchange for{' '}
+            <TokenValueDisplay
               value={quote?.offer.makerAssetAmount}
               decimals={quote?.maker.decimals}
               symbol={quote?.maker.symbol}
             />
             .<br />
-            (Rate: <TokenValue value={1} digits={0} decimals={0} symbol={maker} /> ={' '}
-            <TokenValue value={rate} decimals={0} symbol={taker} />)
+            (Rate: <TokenValueDisplay value={1} digits={0} decimals={0} symbol={maker} /> ={' '}
+            <TokenValueDisplay value={rate} decimals={0} symbol={taker} />)
             <br />
             <br />
             This quote is valid until <FormattedDate timestamp={quote?.offer?.expirationTimeSeconds} />.
