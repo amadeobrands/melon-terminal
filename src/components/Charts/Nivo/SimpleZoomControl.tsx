@@ -2,6 +2,7 @@ import React from 'react';
 import { Serie } from '@nivo/line';
 import { SimplePriceChart } from './SimplePriceChart';
 import * as S from './PriceChart.styles';
+import { StepPriceChart } from './StepPriceChart';
 
 /**
  * This component wraps a SimplePriceChart and controls the fetching and parsing of data that
@@ -38,6 +39,7 @@ export interface LineChartProps {
   loading?: boolean;
   depth: Depth;
   data: Serie[];
+  secondaryData?: Serie[];
   setDepth: (depth: Depth) => void;
 }
 
@@ -58,6 +60,10 @@ export const SimpleZoomControl: React.FC<LineChartProps> = (props) => {
     }));
   }, [props.depth]);
 
+  const topLayerChart = () => {
+    return <StepPriceChart data={props.secondaryData!} />;
+  };
+
   return (
     <>
       <S.ControlBox>
@@ -74,7 +80,13 @@ export const SimpleZoomControl: React.FC<LineChartProps> = (props) => {
         ))}
       </S.ControlBox>
 
-      <SimplePriceChart area={false} loading={props.loading} data={props.data} depth={props.depth} />
+      <SimplePriceChart
+        area={false}
+        secondary={topLayerChart}
+        loading={props.loading}
+        data={props.data}
+        depth={props.depth}
+      />
     </>
   );
 };

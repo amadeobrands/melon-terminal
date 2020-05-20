@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTheme } from 'styled-components';
-import { Serie, ResponsiveLine } from '@nivo/line';
+import { Serie, ResponsiveLine, CustomLayer, CustomLayer } from '@nivo/line';
 import * as S from './PriceChart.styles';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { Depth } from './SimpleZoomControl';
@@ -34,6 +34,7 @@ export interface BasicLineChartProps {
   loading?: boolean;
   area: boolean;
   depth: Depth;
+  secondary?: CustomLayer;
 }
 
 interface DepthConfiguration {
@@ -125,6 +126,9 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
   const minValue = lowestValue - valueMargin;
   const maxValue = highestValue;
 
+  const layers = props.secondary
+    ? ['grid', props.secondary, 'markers', 'axes', 'areas', 'lines', 'slices', 'dots', 'legends']
+    : ['grid', 'markers', 'axes', 'areas', 'lines', 'slices', 'dots', 'legends'];
   // TODO: This value is currently incorrectly typed: https://github.com/plouc/nivo/pull/961
   const extraProps = { areaBaselineValue: minValue };
 
@@ -180,25 +184,26 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
             enablePoints={false} // enables point graphics for each data point (defaults to true)
             enableGridX={false}
             enableGridY={true}
-            enableArea={true} // fills in the area below the lines
+            enableArea={false} // fills in the area below the lines
             areaOpacity={0.5} // opacity of the area underneath the lines
             enableSlices="x"
-            // tooltip={(props) => {
-            //   console.log('asd');
-            //   return (
-            //     <S.ToolTipContainer>
-            //       {/* <S.ToolTipText>Date: {slice.points[0].data.xFormatted}</S.ToolTipText> */}
-            //       <S.ToolTipText
-            //         style={{
-            //           color: props.point.serieColor,
-            //           padding: '3px 0',
-            //         }}
-            //       >
-            //         <strong>{props.point.serieId}:</strong> {props.point.data.yFormatted}
-            //       </S.ToolTipText>
-            //     </S.ToolTipContainer>
-            //   );
-            // }}
+            layers={layers}
+            tooltip={(props) => {
+              console.log(props.point);
+              return (
+                <S.ToolTipContainer>
+                  {/* <S.ToolTipText>Date: {props.point[0].data.xFormatted}</S.ToolTipText> */}
+                  <S.ToolTipText
+                    style={{
+                      color: props.point.serieColor,
+                      padding: '3px 0',
+                    }}
+                  >
+                    <strong>{props.point.serieId}:</strong> {props.point.data.yFormatted}
+                  </S.ToolTipText>
+                </S.ToolTipContainer>
+              );
+            }}
           />
         )}
       </S.Chart>

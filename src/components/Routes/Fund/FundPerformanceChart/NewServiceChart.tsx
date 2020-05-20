@@ -6,6 +6,7 @@ import { SectionTitle } from '~/storybook/Title/Title';
 import { SimpleZoomControl } from '~/components/Charts/Nivo/SimpleZoomControl';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { Datum, Serie } from '@nivo/line';
+import { useFundSharePriceQuery } from './SharePriceQuery';
 
 export interface NewFundPerformanceChartProps {
   address: string;
@@ -31,6 +32,8 @@ export type Depth = '1y' | '6m' | '3m' | '1m' | '1w' | '1d';
 async function fetchFundHistory(key: string, fund: string, depth: Depth) {
   const api = process.env.MELON_METRICS_API;
   const url = `${api}/api/portfolio?address=${fund}&depth=${depth}`;
+  console.log(url);
+
   const response = await fetch(url).then((res) => res.json());
   const data = (response.data as TimelineItem[]).map<Datum>((item) => ({
     x: new Date(item.timestamp * 1000),
@@ -50,6 +53,7 @@ export function useFundHistory(fund: string, depth: Depth) {
 export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (props) => {
   const [depth, setDepth] = React.useState<Depth>('1m');
   const { data, error, isFetching } = useFundHistory(props.address, depth);
+  const secondaryData = useFundSharePriceQuery(props.address);
   const series = React.useMemo(() => {
     return [{ id: props.address, data }] as Serie[];
   }, [data]);
