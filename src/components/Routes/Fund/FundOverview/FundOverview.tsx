@@ -24,7 +24,7 @@ export const FundOverview: React.FC<FundOverviewProps> = ({ address }) => (
     <GridRow>
       <GridCol>
         <FundPerformanceTable address={address} />
-        <FundMetrics />
+        <FundMetrics address={address} />
       </GridCol>
     </GridRow>
     <GridRow>
