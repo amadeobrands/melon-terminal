@@ -1,11 +1,8 @@
 import * as React from 'react';
 import { useFund } from '~/hooks/useFund';
-import { useQuery } from 'react-query';
 import { standardDeviation, calculateReturn } from '~/utils/finance';
-import { Grid, GridRow, GridCol } from '~/storybook/Grid/Grid';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { Block } from '~/storybook/Block/Block';
-import { useFundHistoricalPriceQuery } from './FundHistoricalPriceQuery';
 import BigNumber from 'bignumber.js';
 import {
   getUnixTime,
@@ -16,6 +13,7 @@ import {
   startOfDay,
   differenceInCalendarMonths,
   subMonths,
+  endOfMonth,
 } from 'date-fns';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { DictionaryEntry, DictionaryLabel, DictionaryData, Dictionary } from '~/storybook/Dictionary/Dictionary';
@@ -40,30 +38,42 @@ export default function FundMetrics(props: IFundMetricsProps) {
   const fundInception = fund.creationTime!;
   const today = new Date();
   const ageInMonths = differenceInCalendarMonths(today, fundInception);
-  for (let i = ageInMonths; i >= 0; i--) {
-    console.log(subMonths(today, i));
-  }
-  const monthStartDate = new BigNumber(getUnixTime(startOfMonth(today)));
-  const [monthStartPrice, monthQuery] = useFundHistoricalPriceQuery(props.address.toLowerCase(), monthStartDate);
-  const [currentSharePrice, currentQuery] = useFundHistoricalPriceQuery(
-    props.address.toLowerCase(),
-    new BigNumber(getUnixTime(startOfDay(today)))
-  );
 
-  if (!monthQuery || monthQuery.loading || !currentQuery || currentQuery.loading) {
-    return (
-      <Block>
-        <Spinner />
-      </Block>
-    );
+  async function mockPriceQuery(date: Date) {
+    const response = await fetch('https://jsonplaceholder.typicode.com/todos/1').then((response) => response.json());
+    return new BigNumber(response.userId);
   }
+
+  function average(data: BigNumber[]) {
+    const sum = data.reduce((s, value) => {
+      return s.plus(value);
+    }, new BigNumber(0));
+    const avg = sum.dividedBy(data.length);
+    return avg;
+  }
+
+  const fundMonthDates = new Array(ageInMonths)
+    .map((item, index) => {
+      const targetMonth = subMonths(today, index);
+      return [startOfMonth(targetMonth), endOfMonth(targetMonth)];
+    })
+    .reverse();
+
+  //
+  const fundMonthlyPrices = fundMonthDates.map((item) => {
+    Promise.all(item.map((date) => mockPriceQuery(date)));
+  });
+
+  const fundMonthlyReturns = fundMonthlyPrices.map((item) => {
+    return calculateReturn(item[0], item[1]);
+  });
 
   const monthlyPerformance = 8522; // calculateReturn(currentSharePrice, monthStartPrice);
   const performanceYTD = 234; // calculateReturn(currentSharePrice, yearStartSharePrice)
   const annualizedReturn = 567; // all time return calculateReturn(currentSharePrice, 1) raised to the (1/time) minus 1 where time is the years since fund inception as a decimal
   const monthlyVolatility = 890; // pass array with a month's worth of prices to standardDeviation()
   const monthlyVAR = 2390; // come back to this
-  const sharpeRatio = 212; // (monthlyVolatility - assumedRiskFreeRate)/monthlyVolatility
+  const sharpeRatio = 212; // (monthlyReturns - assumedRiskFreeRate)/monthlyVolatility
   const monthlyAverageReturn = 2390; //
   /**
    * need to get monthly returns for all months the fund's been in existence
@@ -74,10 +84,24 @@ export default function FundMetrics(props: IFundMetricsProps) {
    *  - you now have an array of prices, map over it and call calculateReturn(item[0], item[1])
    *  - you now have an array of returns, over which you can reduce to find best month worst month, positive/negative ratio, etc
    */
-  const bestMonth = 32810;
-  const worstMonth = 231;
+  const bestMonth = fundMonthlyReturns.reduce((current, carry) => {
+    if (current.isGreaterThan(carry)) {
+      return current;
+    }
+    return carry;
+  }, fundMonthlyReturns[0]);
+
+  const worstMonth = fundMonthlyReturns.reduce((current, carry) => {
+    if (current.isLessThan(carry)) {
+      return current;
+    }
+    return carry;
+  }, fundMonthlyReturns[0]);
+
   const positiveMonthRatio = 234;
-  const averageGain = 292;
+
+  const averageGain = average(fundMonthlyReturns);
+
   const assumedRiskFreeRate = 19;
 
   console.log(monthlyPerformance.toFixed());
