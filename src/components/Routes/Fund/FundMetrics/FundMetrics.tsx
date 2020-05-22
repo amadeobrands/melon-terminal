@@ -52,6 +52,11 @@ export default function FundMetrics(props: IFundMetricsProps) {
     return avg;
   }
 
+  const currentSharePrice = new BigNumber(1.25); // sharePriceQuery(today)
+  const monthStartPrice = new BigNumber(1.19); // sharePriceQuery(startOfMonth(today))
+  const yearStartPrice = new BigNumber(1.03); // sharePriceQuery(startOfYear(today))
+  const allTimeReturn = calculateReturn(currentSharePrice, new BigNumber(1));
+
   const fundMonthDates = new Array(ageInMonths)
     .map((item, index) => {
       const targetMonth = subMonths(today, index);
@@ -68,9 +73,9 @@ export default function FundMetrics(props: IFundMetricsProps) {
     return calculateReturn(item[0], item[1]);
   });
 
-  const monthlyPerformance = 8522; // calculateReturn(currentSharePrice, monthStartPrice);
-  const performanceYTD = 234; // calculateReturn(currentSharePrice, yearStartSharePrice)
-  const annualizedReturn = 567; // all time return calculateReturn(currentSharePrice, 1) raised to the (1/time) minus 1 where time is the years since fund inception as a decimal
+  const monthlyPerformance = calculateReturn(currentSharePrice, monthStartPrice);
+  const performanceYTD = calculateReturn(currentSharePrice, yearStartPrice); // calculateReturn(currentSharePrice, yearStartSharePrice)
+  const annualizedReturn = allTimeReturn.exponentiatedBy(1 / (ageInMonths / 12)).minus(1); // all time return calculateReturn(currentSharePrice, 1) raised to the (1/time) minus 1 where time is the years since fund inception as a decimal
   const monthlyVolatility = 890; // pass array with a month's worth of prices to standardDeviation()
   const monthlyVAR = 2390; // come back to this
   const sharpeRatio = 212; // (monthlyReturns - assumedRiskFreeRate)/monthlyVolatility
@@ -84,27 +89,36 @@ export default function FundMetrics(props: IFundMetricsProps) {
    *  - you now have an array of prices, map over it and call calculateReturn(item[0], item[1])
    *  - you now have an array of returns, over which you can reduce to find best month worst month, positive/negative ratio, etc
    */
-  const bestMonth = fundMonthlyReturns.reduce((current, carry) => {
+  const bestMonth = fundMonthlyReturns.reduce((carry, current) => {
     if (current.isGreaterThan(carry)) {
       return current;
     }
     return carry;
   }, fundMonthlyReturns[0]);
 
-  const worstMonth = fundMonthlyReturns.reduce((current, carry) => {
+  const worstMonth = fundMonthlyReturns.reduce((carry, current) => {
     if (current.isLessThan(carry)) {
       return current;
     }
     return carry;
   }, fundMonthlyReturns[0]);
 
-  const positiveMonthRatio = 234;
+  const positiveMonthRatio = fundMonthlyReturns.reduce(
+    (carry, current) => {
+      if (current.isGreaterThanOrEqualTo(0)) {
+        carry.win++;
+        return carry;
+      }
+
+      carry.lose++;
+      return carry;
+    },
+    { win: 0, lose: 0 }
+  );
 
   const averageGain = average(fundMonthlyReturns);
 
-  const assumedRiskFreeRate = 19;
-
-  console.log(monthlyPerformance.toFixed());
+  const assumedRiskFreeRate = 0.5;
 
   return (
     <Dictionary>
@@ -118,19 +132,19 @@ export default function FundMetrics(props: IFundMetricsProps) {
       <DictionaryEntry>
         <DictionaryLabel>Performance YTD</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} colorize={true} value={performanceYTD} />
+          <FormattedNumber decimals={2} suffix={'%'} colorize={true} value={performanceYTD} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Annualized return</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} colorize={true} value={annualizedReturn} />
+          <FormattedNumber decimals={2} suffix={'%'} colorize={true} value={annualizedReturn} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Monthly Volatility</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} colorize={true} value={monthlyVolatility} />
+          <FormattedNumber decimals={2} suffix={'%'} colorize={true} value={monthlyVolatility} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
@@ -148,31 +162,31 @@ export default function FundMetrics(props: IFundMetricsProps) {
       <DictionaryEntry>
         <DictionaryLabel>Monthly Average Return</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} colorize={true} value={monthlyAverageReturn} />
+          <FormattedNumber decimals={2} suffix={'%'} colorize={true} value={monthlyAverageReturn} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Best Month</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} colorize={true} value={bestMonth} />
+          <FormattedNumber decimals={2} suffix={'%'} colorize={true} value={bestMonth} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Worst Month</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} colorize={true} value={worstMonth} />
+          <FormattedNumber decimals={2} suffix={'%'} colorize={true} value={worstMonth} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>% Positive Months</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} colorize={true} value={positiveMonthRatio} />
+          <FormattedNumber decimals={2} colorize={true} value={positiveMonthRatio.win / positiveMonthRatio.lose} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Average Gain</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} colorize={true} value={averageGain} />
+          <FormattedNumber decimals={2} suffix={'%'} colorize={true} value={averageGain} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
