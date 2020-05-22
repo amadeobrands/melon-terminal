@@ -60,10 +60,6 @@ export const SimpleZoomControl: React.FC<LineChartProps> = (props) => {
     }));
   }, [props.depth]);
 
-  const topLayerChart = () => {
-    return <StepPriceChart data={props.secondaryData!} />;
-  };
-
   return (
     <>
       <S.ControlBox>
@@ -82,7 +78,7 @@ export const SimpleZoomControl: React.FC<LineChartProps> = (props) => {
 
       <SimplePriceChart
         area={false}
-        secondary={topLayerChart}
+        secondaryData={props.secondaryData}
         loading={props.loading}
         data={props.data}
         depth={props.depth}

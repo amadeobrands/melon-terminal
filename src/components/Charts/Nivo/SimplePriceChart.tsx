@@ -1,12 +1,13 @@
 import React from 'react';
 import { useTheme } from 'styled-components';
-import { Serie, ResponsiveLine, CustomLayer, CustomLayer } from '@nivo/line';
+import { Serie, ResponsiveLine, CustomLayer, Layer } from '@nivo/line';
 import * as S from './PriceChart.styles';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { Depth } from './SimpleZoomControl';
 import { TimeScale } from '@nivo/scales';
 import { subYears, subMonths, subWeeks } from 'date-fns';
 import { subDays, min } from 'date-fns/esm';
+import { StepPriceChart } from './StepPriceChart';
 
 /**
  * A price chart can accept and display price data over time for multiple assets.
@@ -31,10 +32,10 @@ import { subDays, min } from 'date-fns/esm';
 
 export interface BasicLineChartProps {
   data: Serie[];
+  secondaryData?: Serie[];
   loading?: boolean;
   area: boolean;
   depth: Depth;
-  secondary?: CustomLayer;
 }
 
 interface DepthConfiguration {
@@ -126,9 +127,29 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
   const minValue = lowestValue - valueMargin;
   const maxValue = highestValue;
 
-  const layers = props.secondary
-    ? ['grid', props.secondary, 'markers', 'axes', 'areas', 'lines', 'slices', 'dots', 'legends']
-    : ['grid', 'markers', 'axes', 'areas', 'lines', 'slices', 'dots', 'legends'];
+  const secondaryLayer = () => {
+    if (props.secondaryData) {
+      return (
+        <StepPriceChart
+          data={props.secondaryData}
+          precision={chartConfig.precision}
+          minDate={chartConfig.minDate}
+          area={true}
+          format={chartConfig.format}
+          tickValues={chartConfig.tickValues}
+          minValue={minValue}
+          maxValue={maxValue}
+        />
+      );
+    }
+  };
+
+  const areaProp = props.secondaryData ? true : false;
+
+  const layersProp = props.secondaryData
+    ? (['grid', secondaryLayer, 'markers', 'axes', 'areas', 'lines', 'slices', 'dots', 'legends'] as Layer[])
+    : (['grid', 'markers', 'axes', 'areas', 'lines', 'slices', 'dots', 'legends'] as Layer[]);
+
   // TODO: This value is currently incorrectly typed: https://github.com/plouc/nivo/pull/961
   const extraProps = { areaBaselineValue: minValue };
 
@@ -159,6 +180,7 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
               min: minValue,
               max: maxValue,
             }}
+            layers={layersProp}
             lineWidth={3}
             curve="monotoneX"
             axisBottom={{
@@ -184,26 +206,25 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
             enablePoints={false} // enables point graphics for each data point (defaults to true)
             enableGridX={false}
             enableGridY={true}
-            enableArea={false} // fills in the area below the lines
+            enableArea={areaProp} // fills in the area below the lines
             areaOpacity={0.5} // opacity of the area underneath the lines
             enableSlices="x"
-            layers={layers}
-            tooltip={(props) => {
-              console.log(props.point);
-              return (
-                <S.ToolTipContainer>
-                  {/* <S.ToolTipText>Date: {props.point[0].data.xFormatted}</S.ToolTipText> */}
-                  <S.ToolTipText
-                    style={{
-                      color: props.point.serieColor,
-                      padding: '3px 0',
-                    }}
-                  >
-                    <strong>{props.point.serieId}:</strong> {props.point.data.yFormatted}
-                  </S.ToolTipText>
-                </S.ToolTipContainer>
-              );
-            }}
+            // tooltip={(props) => {
+            //   console.log('asd');
+            //   return (
+            //     <S.ToolTipContainer>
+            //       {/* <S.ToolTipText>Date: {slice.points[0].data.xFormatted}</S.ToolTipText> */}
+            //       <S.ToolTipText
+            //         style={{
+            //           color: props.point.serieColor,
+            //           padding: '3px 0',
+            //         }}
+            //       >
+            //         <strong>{props.point.serieId}:</strong> {props.point.data.yFormatted}
+            //       </S.ToolTipText>
+            //     </S.ToolTipContainer>
+            //   );
+            // }}
           />
         )}
       </S.Chart>
