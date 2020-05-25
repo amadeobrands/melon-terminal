@@ -146,9 +146,7 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
 
   const areaProp = props.secondaryData ? true : false;
 
-  const layersProp = props.secondaryData
-    ? (['grid', secondaryLayer, 'markers', 'axes', 'areas', 'lines', 'slices', 'dots', 'legends'] as Layer[])
-    : (['grid', 'markers', 'axes', 'areas', 'lines', 'slices', 'dots', 'legends'] as Layer[]);
+  const layersProp = ['grid', 'markers', 'axes', secondaryLayer, 'lines', 'slices', 'points', 'legends'] as Layer[];
 
   // TODO: This value is currently incorrectly typed: https://github.com/plouc/nivo/pull/961
   const extraProps = { areaBaselineValue: minValue };
@@ -170,7 +168,7 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
               type: 'time',
               format: 'native',
               precision: chartConfig.precision,
-              min: chartConfig.minDate,
+              // min: chartConfig.minDate,
             }}
             xFormat="time: %Y-%m-%d %H:%m"
             yScale={{

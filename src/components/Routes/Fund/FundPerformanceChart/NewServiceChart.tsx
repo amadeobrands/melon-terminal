@@ -73,7 +73,7 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
   const { data, error, isFetching } = useFundHistory(props.address, depth);
 
   const primary = React.useMemo(() => {
-    return data && ([{ id: props.address, data: data!.offchain }] as Serie[]);
+    return data ? ([{ id: props.address, data: data!.offchain }] as Serie[]) : ([] as Serie[]);
   }, [data]);
 
   const secondary = React.useMemo(() => {
@@ -88,7 +88,7 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
       ) : data ? (
         <SimpleZoomControl
           setDepth={setDepth}
-          secondaryData={secondary}
+          // secondaryData={secondary}
           depth={depth}
           data={primary}
           loading={isFetching}

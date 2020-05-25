@@ -19,11 +19,12 @@ export const StepPriceChart: React.FC<StepLineChartProps> = (props) => {
   const theme = useTheme();
   const chartColor = theme.mode === 'light' ? 'accent' : 'set2'; // https://nivo.rocks/guides/colors/
   const extraProps = { areaBaselineValue: props.minValue };
+
   return (
     <>
       <S.Chart>
         <ResponsiveLine
-          {...extraProps}
+          // {...extraProps}
           data={props.data}
           theme={theme.chartColors}
           colors={{ scheme: chartColor }} // data colors
@@ -33,7 +34,7 @@ export const StepPriceChart: React.FC<StepLineChartProps> = (props) => {
             type: 'time',
             format: 'native',
             precision: props.precision,
-            min: props.minDate,
+            // min: props.minDate,
           }}
           xFormat="time: %Y-%m-%d %H:%m"
           yScale={{
