@@ -31,11 +31,6 @@ export const FundExchanges: React.FC<ExchangesProps> = ({ address }) => {
     return exchanges.map((exchange) => environment.getExchange(exchange as any)).filter((exchange) => !!exchange);
   }, [details?.fund?.routes?.trading?.exchanges]);
 
-  const exchangesRef = useRef(exchanges);
-  useEffect(() => {
-    exchangesRef.current = exchanges;
-  }, [exchanges]);
-
   if (query.loading) {
     return (
       <Block>
@@ -58,7 +53,6 @@ export const FundExchanges: React.FC<ExchangesProps> = ({ address }) => {
     <Block>
       <FundExchangesForm
         exchanges={exchanges}
-        exchangesRef={exchangesRef}
         details={details}
         options={options}
         environment={environment}
@@ -78,18 +72,17 @@ const validationSchema = Yup.object().shape({
   exchanges: Yup.array<string>()
     .compact()
     .test('at-least-one', "You didn't select a new exchange.", function (value: string[]) {
-      const options = (this.options.context as any).exchangesRef.current as ExchangeDefinition[];
+      const options = (this.options.context as any).exchanges as ExchangeDefinition[];
       return value.some((selected) => selected && !options.some((available: any) => available.id === selected))!;
     })
     .test('only-one', 'You can only add one exchange at a time.', function (value: string[]) {
-      const options = (this.options.context as any).exchangesRef.current as ExchangeDefinition[];
+      const options = (this.options.context as any).exchanges as ExchangeDefinition[];
       const add = value.filter((selected) => selected && !options.some((available: any) => available.id === selected))!;
       return add.length === 1;
     }),
 });
 
 interface FundExchangesFormProps {
-  exchangesRef: any;
   exchanges: ExchangeDefinition[];
   details: any;
   options: CheckboxGroupOption[];
@@ -99,7 +92,6 @@ interface FundExchangesFormProps {
 }
 
 const FundExchangesForm: React.FC<FundExchangesFormProps> = ({
-  exchangesRef,
   exchanges,
   details,
   options,
@@ -108,16 +100,16 @@ const FundExchangesForm: React.FC<FundExchangesFormProps> = ({
   transaction,
 }) => {
   const initialValues = {
-    exchanges: [],
+    exchanges: exchanges.map((item) => item.id),
   };
 
   const validationContext = React.useMemo(
     () => ({
       account,
       environment,
-      exchangesRef,
+      exchanges,
     }),
-    [account, environment, exchangesRef]
+    [account, environment, exchanges]
   );
 
   const formik = useFormik({

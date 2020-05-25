@@ -3,7 +3,7 @@ import { useEnvironment } from '~/hooks/useEnvironment';
 import { useAccount } from '~/hooks/useAccount';
 import { Participation } from '@melonproject/melonjs';
 import { TransactionHookValues } from '~/hooks/useTransaction';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 
 export interface CancelRequestProps {
   participationAddress: string;

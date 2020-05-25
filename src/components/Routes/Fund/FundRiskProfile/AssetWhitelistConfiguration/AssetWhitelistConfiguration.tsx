@@ -25,7 +25,7 @@ const validationSchema = Yup.object().shape({
     .label('Asset whitelist')
     .compact()
     .min(1, 'Select at least one asset')
-    .test('max-One', 'You can remove maximum one asset at a time.', function (assetWhitelist: string[]) {
+    .test('max-One', 'You can only remove one asset at a time.', function (assetWhitelist: string[]) {
       const preExistingPolicy = (this.options.context as any).preExistingPolicy as AssetWhitelistPolicy | undefined;
 
       if (!preExistingPolicy) {

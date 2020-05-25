@@ -220,6 +220,7 @@ export const FundInvest: React.FC<FundInvestProps> = ({ address }) => {
                   investableAssets={investableAssets}
                   currentShares={currentShares!}
                   transaction={transaction}
+                  denominationAsset={denominationAsset}
                 />
               ) : (
                 <>

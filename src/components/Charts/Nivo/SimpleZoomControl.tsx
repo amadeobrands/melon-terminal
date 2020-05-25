@@ -1,9 +1,8 @@
 import React from 'react';
 import { Serie } from '@nivo/line';
-import { subMonths, startOfDay, isAfter, startOfYear } from 'date-fns';
-import * as S from './PriceChart.styles';
 import { SimplePriceChart } from './SimplePriceChart';
-import { findCorrectFromTime } from '~/utils/priceServiceDates';
+import * as S from './PriceChart.styles';
+import { StepPriceChart } from './StepPriceChart';
 
 /**
  * This component wraps a SimplePriceChart and controls the fetching and parsing of data that
@@ -28,76 +27,62 @@ import { findCorrectFromTime } from '~/utils/priceServiceDates';
  *
  */
 
-export interface LineChartData {
-  earliestDate: number;
-  data: Serie[];
+interface ZoomOption {
+  value: Depth;
+  label: string;
+  active?: boolean;
 }
+
+export type Depth = '1d' | '1w' | '1m' | '3m' | '6m' | '1y';
 
 export interface LineChartProps {
-  triggerFunction: (start: number) => void;
-  chartData: LineChartData;
-  startDate: number;
-  loading: boolean;
-  fundCreation: number;
-}
-
-interface ButtonDate {
-  label: string;
-  timeStamp: number;
-  active: boolean;
-  disabled: boolean;
+  loading?: boolean;
+  depth: Depth;
+  data: Serie[];
+  secondaryData?: Serie[];
+  setDepth: (depth: Depth) => void;
 }
 
 export const SimpleZoomControl: React.FC<LineChartProps> = (props) => {
-  const today = React.useMemo(() => startOfDay(new Date()), []);
-  const ytdDate = React.useMemo(() => findCorrectFromTime(startOfYear(new Date())), []);
-
-  const historicalDates = React.useMemo<ButtonDate[]>(() => {
-    const options = [
-      { label: '1m', timeStamp: findCorrectFromTime(subMonths(today, 1)) },
-      { label: '3m', timeStamp: findCorrectFromTime(subMonths(today, 3)) },
-      { label: '6m', timeStamp: findCorrectFromTime(subMonths(today, 6)) },
-      { label: '1y', timeStamp: findCorrectFromTime(subMonths(today, 12)) },
+  const options = React.useMemo<ZoomOption[]>(() => {
+    const options: ZoomOption[] = [
+      { label: '1d', value: '1d' },
+      { label: '1w', value: '1w' },
+      { label: '1m', value: '1m' },
+      { label: '3m', value: '3m' },
+      { label: '6m', value: '6m' },
+      { label: '1y', value: '1y' },
     ];
 
     return options.map((item) => ({
       ...item,
-      disabled: !props.chartData || isAfter(props.fundCreation, item.timeStamp),
-      active: item.timeStamp === props.startDate,
+      active: item.value === props.depth,
     }));
-  }, [props.chartData, props.startDate, today]);
+  }, [props.depth]);
 
   return (
     <>
       <S.ControlBox>
         Zoom:
-        {historicalDates.map((item, index) => (
+        {options.map((item, index) => (
           <S.ChartButton
             kind={item.active ? 'success' : 'secondary'}
-            disabled={item.disabled}
             size="small"
             key={index}
-            onClick={() => props.triggerFunction(item.timeStamp)}
+            onClick={() => props.setDepth(item.value)}
           >
             {item.label}
           </S.ChartButton>
         ))}
-        <S.ChartButton
-          kind={props.startDate === ytdDate ? 'success' : 'secondary'}
-          size="small"
-          onClick={() => props.triggerFunction(ytdDate)}
-        >
-          YTD
-        </S.ChartButton>
-        <S.ChartButton
-          kind={props.startDate === props.fundCreation ? 'success' : 'secondary'}
-          size="small"
-          onClick={() => props.triggerFunction(props.fundCreation)}
-        >
-          All Time
-        </S.ChartButton>
       </S.ControlBox>
-      <SimplePriceChart area={false} loading={props.loading} chartData={props.chartData} stacked={false} />
+
+      <SimplePriceChart
+        area={false}
+        secondaryData={props.secondaryData}
+        loading={props.loading}
+        data={props.data}
+        depth={props.depth}
+      />
     </>
   );
 };

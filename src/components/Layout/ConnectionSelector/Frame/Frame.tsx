@@ -25,7 +25,7 @@ import {
 } from 'rxjs/operators';
 import { networkFromId } from '~/utils/networkFromId';
 import { SectionTitle } from '~/storybook/Title/Title';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 
 interface Resource extends Rx.Unsubscribable {
   eth: Eth;

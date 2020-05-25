@@ -3,7 +3,7 @@ import { SpinIcon } from '~/storybook/SpinIcon/SpinIcon';
 import * as S from './Button.styles';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  size?: 'large' | 'small';
+  size?: 'large' | 'small' | 'extrasmall';
   length?: 'stretch';
   kind?: 'secondary' | 'warning' | 'danger' | 'success';
   disabled?: boolean;

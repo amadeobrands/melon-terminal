@@ -3,7 +3,7 @@ import { useEnvironment } from '~/hooks/useEnvironment';
 import { TransactionHookValues } from '~/hooks/useTransaction';
 import { Participation, Transaction } from '@melonproject/melonjs';
 import { useAccount } from '~/hooks/useAccount';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 import { BigNumber } from 'bignumber.js';
 import { TransactionRef } from '~/components/Routes/Fund/FundInvestRedeem/FundInvest/FundInvest';
 

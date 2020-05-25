@@ -4,7 +4,7 @@ import Modal, { ModalProps } from 'styled-react-modal';
 import { TransactionHookValues, TransactionProgress } from '~/hooks/useTransaction';
 import { ProgressBar } from '~/components/Common/ProgressBar/ProgressBar';
 import { ProgressBarStep } from '~/components/Common/ProgressBar/ProgressBarStep/ProgressBarStep';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import * as S from '~/storybook/Modal/Modal';

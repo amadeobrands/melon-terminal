@@ -116,7 +116,7 @@ export const light = {
     primaryDark: 'rgb(29,29,29)',
     secondary: 'rgb(242, 242, 242)',
     secondaryDark: 'rgb(120, 120, 120)',
-    secondaryDarkAlpha: 'rgb(120, 120, 120)',
+    secondaryDarkAlpha: 'rgb(120, 120, 120, 0.6)',
     border: 'rgb(29, 29, 29)',
     progressBar: 'rgb(29, 29, 29)',
     textColor: 'rgb(0, 0, 0)',
@@ -174,9 +174,10 @@ export const light = {
     },
     grid: {
       line: {
-        stroke: '', // primaryDark
+        stroke: 'rgb(29,29,29)', // primaryDark
         strokeWidth: 1, // stroke width of grid lines
-        strokeDasharray: '', // makes dashed lines, pass in '4 4' (pixel of dash width and gap width) ------
+        strokeOpacity: 0.1,
+        // strokeDasharray: '4 4', // makes dashed lines, pass in '4 4' (pixel of dash width and gap width) ------
       },
     },
     crosshair: {
@@ -198,9 +199,9 @@ export const dark = {
     primary: '#313131',
     primaryAlpha: '#3B4252',
     primaryDark: '#e5dfdf',
-    secondary: '#313131',
+    secondary: '#414141',
     secondaryDark: '#aaaaaa',
-    secondaryDarkAlpha: 'rgb(196, 196, 196)',
+    secondaryDarkAlpha: 'rgb(196, 196, 196, 0.6)',
     border: 'rgb(29, 29, 29)',
     progressBar: '#e5dfdf',
     textColor: '#e5dfdf',
@@ -258,9 +259,10 @@ export const dark = {
     },
     grid: {
       line: {
-        stroke: '', // primaryDark
+        stroke: '#e5dfdf', // primaryDark
         strokeWidth: 1, // stroke width of grid lines
-        strokeDasharray: '', // makes dashed lines, pass in '4 4' (pixel of dash width and gap width) ------
+        strokeOpacity: 0.1,
+        // strokeDasharray: '', // makes dashed lines, pass in '4 4' (pixel of dash width and gap width) ------
       },
     },
     crosshair: {

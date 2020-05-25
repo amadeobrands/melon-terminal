@@ -37,6 +37,7 @@ declare global {
       MELON_MAX_EXPOSURE: string;
       MELON_TELEGRAM_API: string;
       MELON_RATES_API: string;
+      MELON_METRICS_API: string;
     }
   }
 }

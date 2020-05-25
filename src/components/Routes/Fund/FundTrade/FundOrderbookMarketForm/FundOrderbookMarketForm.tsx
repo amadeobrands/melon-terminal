@@ -21,7 +21,7 @@ import { TokenValueInput } from '~/components/Form/TokenValueInput/TokenValueInp
 import { useAccount } from '~/hooks/useAccount';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { useTransaction } from '~/hooks/useTransaction';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 import { TokenValue } from '~/TokenValue';
 import { tokenValueSchema } from '~/utils/formValidation';

@@ -18,7 +18,7 @@ const validationSchema = Yup.object().shape({
     .label('Asset blacklist')
     .compact()
     .min(1, 'Select at least one asset')
-    .test('maxOne', 'You can add maximum one new asset at a time.', function (assetBlacklist: string[]) {
+    .test('maxOne', 'You can only add one new asset at a time.', function (assetBlacklist: string[]) {
       const preExistingPolicy = (this.options.context as any).preExistingPolicy as AssetBlacklistPolicy | undefined;
 
       if (!preExistingPolicy) {

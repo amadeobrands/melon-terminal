@@ -16,15 +16,14 @@ import { TransactionModal } from '~/components/Common/TransactionModal/Transacti
 import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
 import { Holding, Token, Policy } from '@melonproject/melongql';
-import { Subtitle } from '~/storybook/Title/Title';
-import { Button } from '~/storybook/Button/Button';
+import { Button } from '~/components/Form/Button/Button';
 import { catchError, map, expand, switchMapTo } from 'rxjs/operators';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
-import { InputError } from '~/storybook/Input/Input.styles';
 import { validatePolicies } from '../validatePolicies';
-import { Label } from '~/components/Form/Form';
+import { Error } from '~/components/Form/Form';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
+import { Subtitle } from '~/storybook/Title/Title';
 
 export interface FundKyberTradingProps {
   trading: string;
@@ -135,10 +134,10 @@ export const FundKyberTrading: React.FC<FundKyberTradingProps> = (props) => {
 
   return (
     <>
-      <Label>
+      <Subtitle>
         Kyber Network (<FormattedNumber value={1} suffix={state.taker.symbol} decimals={0} /> ={' '}
         <FormattedNumber value={rate} suffix={state.maker.symbol} />)
-      </Label>
+      </Subtitle>
 
       <Button
         type="button"
@@ -162,7 +161,7 @@ export const FundKyberTrading: React.FC<FundKyberTradingProps> = (props) => {
         </NotificationBar>
       )}
 
-      {policyValidation.valid || <InputError>{policyValidation.message}</InputError>}
+      {policyValidation.valid || <Error>{policyValidation.message}</Error>}
 
       <TransactionModal transaction={transaction}>
         <TransactionDescription title="Take order on Kyber">

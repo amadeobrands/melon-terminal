@@ -12,7 +12,7 @@ import * as S from './TokenValueSelect.styles';
 
 export interface TokenValueSelectProps {
   name: string;
-  label?: string;
+  label?: string | JSX.Element;
   tokens: TokenDefinition[];
   disabled?: boolean;
   placeholder?: string;

@@ -76,9 +76,6 @@ export const CheckboxInput = styled.input`
       & + ${CheckboxMask} {
         border: 2px solid ${(props) => props.theme.mainColors.textColor};
         background: ${(props) => props.theme.mainColors.secondary};
-        ${CheckboxIcon} {
-          color: ${(props) => props.theme.mainColors.secondaryDark};
-        }
       }
 
       &:checked + ${CheckboxMask} {
