@@ -43,8 +43,7 @@ export const MaxPositionsConfiguration: React.FC<MaxPositionsConfigurationProps>
       <SectionTitle>Configure Max Positions Policy</SectionTitle>
       <NotificationBar kind="neutral">
         <NotificationContent>
-          The maximum number of positions policy imposes a maximum on the number of assets that a fund can hold. E.g. a
-          maximum of 10 positions means that the fund can hold up to 10 different assets in its portfolio.
+          The maximum number of positions policy imposes a maximum on the number of assets that a fund can hold.
         </NotificationContent>
       </NotificationBar>
       <Form formik={formik}>

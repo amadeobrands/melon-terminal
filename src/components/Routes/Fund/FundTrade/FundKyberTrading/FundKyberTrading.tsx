@@ -52,7 +52,7 @@ export const FundKyberTrading: React.FC<FundKyberTradingProps> = (props) => {
   const account = useAccount()!;
 
   const transaction = useTransaction(environment, {
-    handleError: () => 'The transaction failed. The rate offered by the exchange may have changed. Please try again.',
+    handleError: () => 'The price may have moved before the order was confirmed. Please try again.',
   });
 
   useEffect(() => {

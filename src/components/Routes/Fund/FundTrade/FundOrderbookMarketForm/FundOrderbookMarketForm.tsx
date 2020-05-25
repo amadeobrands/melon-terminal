@@ -82,6 +82,7 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = (
   const account = useAccount()!;
   const transaction = useTransaction(environment, {
     onAcknowledge: () => props.unsetOrder(),
+    handleError: () => 'The order may have been taken before it was confirmed. Please try again.',
   });
 
   const [policyValidation, setPolicyValidation] = useState({ valid: true, message: '' });

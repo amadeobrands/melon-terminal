@@ -133,7 +133,7 @@ const InvestmentAssetsForm: React.FC<InvestmentAssetsFormProps> = ({
         <p>Investors will be able to invest in your funds using any of the assets selected below.</p>
         <CheckboxGroup options={tokensOptions} name="assets" />
         <BlockActions>
-          <Button type="submit">Set Investment Assets</Button>
+          <Button type="submit">Update Investment Assets</Button>
         </BlockActions>
       </Form>
       <TransactionModal transaction={transaction}>

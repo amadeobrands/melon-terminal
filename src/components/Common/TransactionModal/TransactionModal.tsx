@@ -168,6 +168,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           {error && handled && (
             <NotificationBar kind="neutral">
               <NotificationContent>{handled}</NotificationContent>
+              <NotificationContent>
+                <a href={error.issueUri} target="_blank">
+                  Report error
+                </a>
+              </NotificationContent>
             </NotificationBar>
           )}
 

@@ -134,7 +134,7 @@ const FundExchangesForm: React.FC<FundExchangesFormProps> = ({
       <p>As a fund manager, you can trade on any of the exchanges selected below.</p>
       <CheckboxGroup name="exchanges" options={options} />
       <BlockActions>
-        <Button type="submit">Set Allowed Exchanges</Button>
+        <Button type="submit">Update Allowed Exchanges</Button>
       </BlockActions>
     </Form>
   );

@@ -272,7 +272,7 @@ function reducer(state: TransactionState, action: TransactionAction): Transactio
         ...state,
         progress: TransactionProgress.EXECUTION_ERROR,
         loading: false,
-        error: action.error,
+        error: { ...action.error, message: 'The transaction has failed. This is an error.' },
         handled: action.handled,
       };
     }

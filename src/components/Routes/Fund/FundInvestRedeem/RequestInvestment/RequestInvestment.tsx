@@ -24,6 +24,7 @@ import { NotificationBar, NotificationContent } from '~/storybook/NotificationBa
 import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { Link } from '~/storybook/Link/Link';
 import { Token } from '@melonproject/melongql';
+import { SectionTitle } from '~/storybook/Title/Title';
 
 export interface RequestInvestmentProps {
   fundAddress: string;
@@ -49,6 +50,9 @@ const validationSchema = Yup.object({
   investmentAmount: tokenValueSchema()
     .required()
     .lte(Yup.ref('tokenBalance'), 'Your balance is too low for this investment amount.'),
+  termsAndConditions: Yup.boolean()
+    .required()
+    .oneOf([true], 'You need to accept the terms and conditions in order to proceed.'),
 });
 
 export const RequestInvestment = React.forwardRef(
@@ -75,6 +79,7 @@ export const RequestInvestment = React.forwardRef(
         premiumPercentage: initialPremium,
         acknowledgeLimit: false,
         acknowledgeLimitRequired: false,
+        termsAndConditions: false,
       },
       onSubmit: (values) => {
         const contract = new Participation(environment, participationAddress);
@@ -222,8 +227,6 @@ export const RequestInvestment = React.forwardRef(
       investmentAmount.value?.dividedBy(requestedShares.value!)
     );
 
-    const test = <>asdfa</>;
-
     return (
       <Form formik={formik}>
         <TokenValueInput
@@ -246,13 +249,15 @@ export const RequestInvestment = React.forwardRef(
           onChange={handleInvestmentChange}
         />
 
-        <Select
-          name="premiumPercentage"
-          label="Maximum premium to current share price"
-          options={premiumOptions}
-          disabled={loading}
-          onChange={handlePremiumChange}
-        />
+        {initialPremium > 0 && (
+          <Select
+            name="premiumPercentage"
+            label="Maximum premium to current share price"
+            options={premiumOptions}
+            disabled={loading}
+            onChange={handlePremiumChange}
+          />
+        )}
 
         {formik.values.acknowledgeLimitRequired && (
           <>
@@ -297,18 +302,29 @@ export const RequestInvestment = React.forwardRef(
           <NotificationContent>
             <p style={{ textAlign: 'left', fontWeight: 'bold' }}>Investment summary</p>
             <p style={{ textAlign: 'left' }}>
-              You are requesting an investment of <TokenValueDisplay value={formik.values.requestedShares} /> at a
-              maximum price of <TokenValueDisplay value={maxSharePrice} /> per share. This is a{' '}
-              {formik.values.premiumPercentage * 100}% premium to the current share price of{' '}
-              <TokenValueDisplay value={shareCostInAsset} />.
+              You are submitting an investment request of <TokenValueDisplay value={formik.values.requestedShares} />{' '}
+              with limit price of <TokenValueDisplay value={maxSharePrice} /> per share.
             </p>
-            <p style={{ textAlign: 'left' }}>
-              Your investment request will be executed at the share price that is valid after the next price update. If
-              the share price at that point in time is higher than your maximum share price, your investment request
-              will not be executed.
-            </p>
+            <p style={{ textAlign: 'left' }}>Your investment request will be filled at the next price update.</p>
           </NotificationContent>
         </NotificationBar>
+
+        <SectionTitle>Terms and Conditions</SectionTitle>
+        <NotificationBar kind="neutral">
+          <NotificationContent style={{ textAlign: 'left' }}>
+            BY USING THIS SOFTWARE, YOU UNDERSTAND, ACKNOWLEDGE AND ACCEPT THAT THE MELON PROTOCOL AND/OR THE UNDERLYING
+            SOFTWARE ARE PROVIDED “AS IS” AND WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND EITHER EXPRESSED OR
+            IMPLIED. ANY USE OF THIS OPEN SOURCE SOFTWARE RELEASED UNDER THE GNU GENERAL PUBLIC LICENSE VERSION 3 (GPL
+            3) IS DONE AT YOUR OWN RISK TO THE FULLEST EXTENT PERMISSIBLE PURSUANT TO APPLICABLE LAW ANY AND ALL
+            LIABILITY AS WELL AS ALL WARRANTIES, INCLUDING ANY FITNESS FOR A PARTICULAR PURPOSE WITH RESPECT TO THE
+            MELON PROTOCOL AND/OR THE UNDERLYING SOFTWARE AND THE USE THEREOF ARE DISCLAIMED.
+            <br />
+            <br /> BY SIGNING THIS TRANSACTION YOU AGREE TO THESE TERMS AND CONDITIONS AS WELL AS TO ANY OTHER TERMS AND
+            CONDITIONS WHICH MAY HAVE BEEN COMMUNICATED INDEPENDENTLY OF THE PROTOCOL.
+          </NotificationContent>
+        </NotificationBar>
+
+        <Checkbox disabled={loading} name="termsAndConditions" label="I accept the terms and conditions." />
 
         <BlockActions>
           <Button type="submit" disabled={loading}>

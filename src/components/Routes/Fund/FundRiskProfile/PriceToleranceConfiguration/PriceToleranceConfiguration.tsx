@@ -43,9 +43,8 @@ export const PriceToleranceConfiguration: React.FC<PriceToleranceConfigurationPr
       <SectionTitle>Configure Price Tolerance Policy</SectionTitle>
       <NotificationBar kind="neutral">
         <NotificationContent>
-          The price tolerance policy sets a specific price tolerance for all trading activities. E.g. if you set a price
-          tolerance of 10%, then the fund manager can only trade assets at prices that are at most 10% lower than the
-          previous asset price update.
+          The price tolerance policy provides a pre-trade price check ensuring that you do not trade at a price that is
+          disadvantageous to the fund. It is expressed as a percentage and references the last on-chain price update.
         </NotificationContent>
       </NotificationBar>
       <Form formik={formik}>
