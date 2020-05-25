@@ -168,7 +168,6 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
               type: 'time',
               format: 'native',
               precision: chartConfig.precision,
-              // min: chartConfig.minDate,
             }}
             xFormat="time: %Y-%m-%d %H:%m"
             yScale={{
@@ -178,7 +177,7 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
               min: minValue,
               max: maxValue,
             }}
-            layers={layersProp}
+            // layers={layersProp}
             lineWidth={3}
             curve="monotoneX"
             axisBottom={{
@@ -207,22 +206,21 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
             enableArea={areaProp} // fills in the area below the lines
             areaOpacity={0.5} // opacity of the area underneath the lines
             enableSlices="x"
-            // tooltip={(props) => {
-            //   console.log('asd');
-            //   return (
-            //     <S.ToolTipContainer>
-            //       {/* <S.ToolTipText>Date: {slice.points[0].data.xFormatted}</S.ToolTipText> */}
-            //       <S.ToolTipText
-            //         style={{
-            //           color: props.point.serieColor,
-            //           padding: '3px 0',
-            //         }}
-            //       >
-            //         <strong>{props.point.serieId}:</strong> {props.point.data.yFormatted}
-            //       </S.ToolTipText>
-            //     </S.ToolTipContainer>
-            //   );
-            // }}
+            tooltip={(props) => {
+              return (
+                <S.ToolTipContainer>
+                  <S.ToolTipText>Date: {props.point.data.xFormatted}</S.ToolTipText>
+                  <S.ToolTipText
+                    style={{
+                      color: props.point.serieColor,
+                      padding: '3px 0',
+                    }}
+                  >
+                    <strong>{props.point.serieId}:</strong> {props.point.data.yFormatted}
+                  </S.ToolTipText>
+                </S.ToolTipContainer>
+              );
+            }}
           />
         )}
       </S.Chart>
