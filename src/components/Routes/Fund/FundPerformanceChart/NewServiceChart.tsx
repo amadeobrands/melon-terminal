@@ -75,8 +75,8 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
   const primary = React.useMemo(() => {
     return data
       ? ([
-          { id: 'off-chain', data: data!.offchain },
-          { id: 'on-chain', data: data.onchain },
+          { id: 'off-chain', name: 'Offchain', data: data!.offchain },
+          { id: 'on-chain', name: 'Onchain', data: data.onchain },
         ] as Serie[])
       : ([] as Serie[]);
   }, [data]);

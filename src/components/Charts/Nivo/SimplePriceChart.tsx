@@ -9,6 +9,8 @@ import { subYears, subMonths, subWeeks } from 'date-fns';
 import { subDays, min } from 'date-fns/esm';
 import { StepPriceChart } from './StepPriceChart';
 
+import ReactApexChart from 'react-apexcharts';
+
 /**
  * A price chart can accept and display price data over time for multiple assets.
  *
@@ -151,77 +153,121 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
   // TODO: This value is currently incorrectly typed: https://github.com/plouc/nivo/pull/961
   const extraProps = { areaBaselineValue: minValue };
 
+  const options = {
+    chart: {
+      type: 'area',
+      stacked: false,
+      height: 350,
+      zoom: {
+        type: 'x',
+        enabled: true,
+        autoScaleYaxis: true,
+      },
+      toolbar: {
+        autoSelected: 'zoom',
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    markers: {
+      size: 0,
+    },
+    // title: {
+    //   text: 'Stock Price Movement',
+    //   align: 'left',
+    // },
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shadeIntensity: 1,
+        inverseColors: false,
+        opacityFrom: 0.5,
+        opacityTo: 0,
+        stops: [0, 90, 100],
+      },
+    },
+    yaxis: {
+      // labels: {
+      //   formatter: function (val) {
+      //     return (val / 1000000).toFixed(0);
+      //   },
+      // },
+      title: {
+        text: 'Share price',
+      },
+    },
+    xaxis: {
+      type: 'datetime',
+    },
+    tooltip: {
+      shared: false,
+      x: {
+        format: 'dd-MM-yyyy',
+      },
+    },
+  };
+
   return (
     <>
       <S.Chart>
         {props.loading ? (
           <Spinner />
         ) : (
-          <ResponsiveLine
-            {...extraProps}
-            data={props.data}
-            theme={theme.chartColors}
-            colors={{ scheme: chartColor }} // data colors
-            animate={false}
-            margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-            xScale={{
-              type: 'time',
-              format: 'native',
-              precision: chartConfig.precision,
-            }}
-            xFormat="time: %Y-%m-%d %H:%m"
-            yScale={{
-              type: 'linear',
-              stacked: false,
-              reverse: false,
-              min: minValue,
-              max: maxValue,
-            }}
-            // layers={layersProp}
-            lineWidth={3}
-            curve="monotoneX"
-            axisBottom={{
-              legendPosition: 'end',
-              legendOffset: -10,
-              format: chartConfig.format,
-              orient: 'bottom',
-              tickValues: chartConfig.tickValues,
-              tickSize: 5,
-              tickPadding: 10,
-              tickRotation: 0,
-            }}
-            axisLeft={{
-              orient: 'left',
-              tickSize: 5,
-              tickPadding: 10,
-              tickRotation: 0,
-              legendOffset: 10,
-              legendPosition: 'middle',
-              legend: 'Price (ETH)',
-            }}
-            crosshairType="bottom-left" // sets the type of crosshair (though I can't get it to change)
-            enablePoints={false} // enables point graphics for each data point (defaults to true)
-            enableGridX={false}
-            enableGridY={true}
-            enableArea={areaProp} // fills in the area below the lines
-            areaOpacity={0.5} // opacity of the area underneath the lines
-            enableSlices="x"
-            tooltip={(props) => {
-              return (
-                <S.ToolTipContainer>
-                  <S.ToolTipText>Date: {props.point.data.xFormatted}</S.ToolTipText>
-                  <S.ToolTipText
-                    style={{
-                      color: props.point.serieColor,
-                      padding: '3px 0',
-                    }}
-                  >
-                    <strong>{props.point.serieId}:</strong> {props.point.data.yFormatted}
-                  </S.ToolTipText>
-                </S.ToolTipContainer>
-              );
-            }}
-          />
+          <>
+            {/* <ResponsiveLine
+              {...extraProps}
+              data={props.data}
+              theme={theme.chartColors}
+              colors={{ scheme: chartColor }} // data colors
+              animate={false}
+              margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+              xScale={{
+                type: 'time',
+                format: 'native',
+                precision: chartConfig.precision,
+              }}
+              xFormat="time: %Y-%m-%d %H:%m"
+              yScale={{
+                type: 'linear',
+                stacked: false,
+                reverse: false,
+                min: 0,
+                max: maxValue * 1.2,
+              }}
+              // layers={layersProp}
+              lineWidth={3}
+              curve="step"
+              axisBottom={{
+                legendPosition: 'end',
+                legendOffset: -10,
+                format: chartConfig.format,
+                orient: 'bottom',
+                tickValues: chartConfig.tickValues,
+                tickSize: 5,
+                tickPadding: 10,
+                tickRotation: 0,
+              }}
+              axisLeft={{
+                orient: 'left',
+                tickSize: 5,
+                tickPadding: 10,
+                tickRotation: 0,
+                legendOffset: 10,
+                legendPosition: 'middle',
+                legend: 'Price (ETH)',
+              }}
+              crosshairType="bottom-left" // sets the type of crosshair (though I can't get it to change)
+              enablePoints={false} // enables point graphics for each data point (defaults to true)
+              enableGridX={false}
+              enableGridY={true}
+              enableArea={false} // fills in the area below the lines
+              // areaOpacity={0.5} // opacity of the area underneath the lines
+              enableSlices="x"
+            /> */}
+
+            <ReactApexChart options={options} series={props.data} type="area" height={350} />
+          </>
         )}
       </S.Chart>
     </>
