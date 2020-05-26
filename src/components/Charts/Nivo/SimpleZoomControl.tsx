@@ -60,6 +60,8 @@ export const SimpleZoomControl: React.FC<LineChartProps> = (props) => {
     }));
   }, [props.depth]);
 
+  const showSecondaryData = props.depth === '1d' || props.depth === '1w' ? true : false;
+
   return (
     <>
       <S.ControlBox>
@@ -80,7 +82,7 @@ export const SimpleZoomControl: React.FC<LineChartProps> = (props) => {
         area={false}
         loading={props.loading}
         data={props.data}
-        secondaryData={props.secondaryData}
+        secondaryData={showSecondaryData ? props.secondaryData : []}
         depth={props.depth}
       />
     </>

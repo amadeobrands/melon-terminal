@@ -49,115 +49,16 @@ interface DepthConfiguration {
 
 export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
   const theme = useTheme();
-  const chartColor = theme.mode === 'light' ? 'set2' : 'accent'; // https://nivo.rocks/guides/colors/
 
-  const [lowestValue, highestValue] = React.useMemo(() => {
-    return props.data.reduce<[number, number]>(
-      (carry, current) => {
-        return current.data.reduce<[number, number]>(([lowest, highest], current) => {
-          const value = current.y! as number;
-          return [Math.min(value, lowest), Math.max(value, highest)];
-        }, carry);
-      },
-      [Infinity, -Infinity]
-    );
-  }, [props.data]);
-
-  const [earliestDate, latestDate] = React.useMemo(() => {
-    const [min, max] = props.data.reduce<[number, number]>(
-      (carry, current) => {
-        return current.data.reduce<[number, number]>(([lowest, highest], current) => {
-          const value = current.x! as Date;
-          return [Math.min(value.getTime(), lowest), Math.max(value.getTime(), highest)];
-        }, carry);
-      },
-      [Infinity, -Infinity]
-    );
-
-    return [new Date(min), new Date(max)];
-  }, [props.data]);
-
-  const chartConfig = React.useMemo(() => {
-    const depthMapping: { [depth in Depth]: DepthConfiguration } = {
-      '1d': {
-        precision: 'hour',
-        format: '%H:%m (%b %d)',
-        tickValues: 'every 4 hours',
-        minDate: subDays(Date.now(), 1),
-      },
-      '1w': {
-        precision: 'day',
-        format: '%b %d',
-        tickValues: 'every day',
-        minDate: subWeeks(Date.now(), 1),
-      },
-      '1m': {
-        precision: 'day',
-        format: '%b %d',
-        tickValues: 'every 5 days',
-        minDate: subMonths(Date.now(), 1),
-      },
-      '3m': {
-        precision: 'month',
-        format: '%b %d',
-        tickValues: 'every 2 weeks',
-        minDate: subMonths(Date.now(), 3),
-      },
-      '6m': {
-        precision: 'month',
-        format: '%b %d',
-        tickValues: 'every month',
-        minDate: subMonths(Date.now(), 6),
-      },
-      '1y': {
-        precision: 'month',
-        format: '%b %d',
-        tickValues: 'every month',
-        minDate: subYears(Date.now(), 1),
-      },
-    };
-
-    const depthConfig = depthMapping[props.depth];
-
-    return {
-      ...depthConfig,
-      minDate: min([earliestDate, depthConfig.minDate]),
-    };
-  }, [props.depth, earliestDate]);
-
-  const valueMargin = (highestValue - lowestValue) * 0.1;
-  const minValue = lowestValue - valueMargin;
-  const maxValue = highestValue;
-
-  const secondaryLayer = () => {
-    if (props.secondaryData) {
-      return (
-        <StepPriceChart
-          data={props.secondaryData}
-          precision={chartConfig.precision}
-          minDate={chartConfig.minDate}
-          area={true}
-          format={chartConfig.format}
-          tickValues={chartConfig.tickValues}
-          minValue={minValue}
-          maxValue={maxValue}
-        />
-      );
-    }
-  };
-
-  const areaProp = props.secondaryData ? true : false;
-
-  const layersProp = ['grid', 'markers', 'axes', secondaryLayer, 'lines', 'slices', 'points', 'legends'] as Layer[];
-
-  // TODO: This value is currently incorrectly typed: https://github.com/plouc/nivo/pull/961
-  const extraProps = { areaBaselineValue: minValue };
+  const data = [...props.data, ...(props.secondaryData ? props.secondaryData : [])];
 
   const options = {
     chart: {
       type: 'area',
       stacked: false,
-      height: 350,
+      height: 300,
+      fontFamily: theme.fontFamilies,
+      foreColor: theme.mainColors.textColor,
       zoom: {
         type: 'x',
         enabled: true,
@@ -165,43 +66,40 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
       },
       toolbar: {
         autoSelected: 'zoom',
+        tools: {
+          download: false,
+        },
       },
     },
+    colors: [theme.otherColors.green, '#aaaaaa'],
     dataLabels: {
       enabled: false,
+    },
+    fill: {
+      type: ['gradient', 'solid'],
+    },
+    legend: {
+      showForSingleSeries: true,
     },
     markers: {
       size: 0,
     },
-    // title: {
-    //   text: 'Stock Price Movement',
-    //   align: 'left',
-    // },
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shadeIntensity: 1,
-        inverseColors: false,
-        opacityFrom: 0.5,
-        opacityTo: 0,
-        stops: [0, 90, 100],
-      },
-    },
     yaxis: {
-      // labels: {
-      //   formatter: function (val) {
-      //     return (val / 1000000).toFixed(0);
-      //   },
-      // },
       title: {
         text: 'Share price',
       },
+      decimalsInFloat: 2,
     },
     xaxis: {
       type: 'datetime',
     },
+    stroke: {
+      width: [4, 2],
+      curve: ['stepline', 'smooth'],
+    },
     tooltip: {
-      shared: false,
+      shared: true,
+      theme: theme.mode,
       x: {
         format: 'dd-MM-yyyy',
       },
@@ -211,64 +109,7 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
   return (
     <>
       <S.Chart>
-        {props.loading ? (
-          <Spinner />
-        ) : (
-          <>
-            {/* <ResponsiveLine
-              {...extraProps}
-              data={props.data}
-              theme={theme.chartColors}
-              colors={{ scheme: chartColor }} // data colors
-              animate={false}
-              margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-              xScale={{
-                type: 'time',
-                format: 'native',
-                precision: chartConfig.precision,
-              }}
-              xFormat="time: %Y-%m-%d %H:%m"
-              yScale={{
-                type: 'linear',
-                stacked: false,
-                reverse: false,
-                min: 0,
-                max: maxValue * 1.2,
-              }}
-              // layers={layersProp}
-              lineWidth={3}
-              curve="step"
-              axisBottom={{
-                legendPosition: 'end',
-                legendOffset: -10,
-                format: chartConfig.format,
-                orient: 'bottom',
-                tickValues: chartConfig.tickValues,
-                tickSize: 5,
-                tickPadding: 10,
-                tickRotation: 0,
-              }}
-              axisLeft={{
-                orient: 'left',
-                tickSize: 5,
-                tickPadding: 10,
-                tickRotation: 0,
-                legendOffset: 10,
-                legendPosition: 'middle',
-                legend: 'Price (ETH)',
-              }}
-              crosshairType="bottom-left" // sets the type of crosshair (though I can't get it to change)
-              enablePoints={false} // enables point graphics for each data point (defaults to true)
-              enableGridX={false}
-              enableGridY={true}
-              enableArea={false} // fills in the area below the lines
-              // areaOpacity={0.5} // opacity of the area underneath the lines
-              enableSlices="x"
-            /> */}
-
-            <ReactApexChart options={options} series={props.data} type="area" height={350} />
-          </>
-        )}
+        {props.loading ? <Spinner /> : <ReactApexChart options={options} series={data} type="area" height={350} />}
       </S.Chart>
     </>
   );

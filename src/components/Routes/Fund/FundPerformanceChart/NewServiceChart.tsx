@@ -74,15 +74,14 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
 
   const primary = React.useMemo(() => {
     return data
-      ? ([
-          { id: 'off-chain', name: 'Offchain', data: data!.offchain },
-          { id: 'on-chain', name: 'Onchain', data: data.onchain },
-        ] as Serie[])
+      ? ([{ id: 'on-chain', name: 'Official price', type: 'area', data: data.onchain }] as Serie[])
       : ([] as Serie[]);
   }, [data]);
 
   const secondary = React.useMemo(() => {
-    return data && ([{ id: 'on chain', data: data.onchain }] as Serie[]);
+    return (
+      data && ([{ id: 'off-chain', name: 'Interim price movements', type: 'line', data: data.offchain }] as Serie[])
+    );
   }, [data]);
 
   return (
@@ -93,9 +92,9 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
       ) : data ? (
         <SimpleZoomControl
           setDepth={setDepth}
-          secondaryData={secondary}
           depth={depth}
           data={primary}
+          secondaryData={secondary}
           loading={isFetching}
         />
       ) : (
