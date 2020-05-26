@@ -18,29 +18,46 @@ import {
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { DictionaryEntry, DictionaryLabel, DictionaryData, Dictionary } from '~/storybook/Dictionary/Dictionary';
 import { SectionTitle } from '~/storybook/Title/Title';
+import { useQuery } from 'react-query';
 
 export interface FundMetricsProps {
   address: string;
 }
 
+export type Depth = '1y' | '6m' | '3m' | '1m' | '1w' | '1d';
+
+async function fetchPrices(key: string, address: string, depth: Depth) {
+  const url = process.env.MELON_METRICS_API;
+
+  const queryAddress = `https://metrics.avantgarde.finance/api/portfolio?address=${address}$depth=${depth}`;
+  console.log(queryAddress);
+  const response = await fetch(queryAddress).then((response) => response.json());
+  console.log(response);
+  return response;
+}
+
+export function useFetchedPrices(fund: string, depth: Depth) {
+  const address = React.useMemo(() => fund.toLowerCase(), [fund]);
+  return useQuery(['prices', address, depth], fetchPrices, {
+    refetchOnWindowFocus: false,
+  });
+}
+
+function average(data: BigNumber[]) {
+  const sum = data.reduce((s, value) => {
+    return s.plus(value);
+  }, new BigNumber(0));
+  const avg = sum.dividedBy(data.length);
+  return avg;
+}
+
 export default function FundMetrics(props: FundMetricsProps) {
   const fund = useFund();
+  const [depth, setDepth] = React.useState<Depth>('1m');
+  const { prices, error, isFetching } = useFetchedPrices(props.address, depth);
   const fundInception = fund.creationTime!;
   const today = new Date();
   const ageInMonths = differenceInCalendarMonths(today, fundInception);
-
-  async function mockPriceQuery(date: Date) {
-    const response = await fetch('https://jsonplaceholder.typicode.com/todos/1').then((response) => response.json());
-    return new BigNumber(response.userId);
-  }
-
-  function average(data: BigNumber[]) {
-    const sum = data.reduce((s, value) => {
-      return s.plus(value);
-    }, new BigNumber(0));
-    const avg = sum.dividedBy(data.length);
-    return avg;
-  }
 
   const currentSharePrice = new BigNumber(1.25); // sharePriceQuery(today)
   const monthStartPrice = new BigNumber(1.19); // sharePriceQuery(startOfMonth(today))
@@ -55,15 +72,16 @@ export default function FundMetrics(props: FundMetricsProps) {
     .reverse();
 
   //
-  const fundMonthlyPrices = fundMonthDates.map((item) => {
-    Promise.all(item.map((date) => mockPriceQuery(date)));
-  });
+  // const fundMonthlyPrices = fundMonthDates.map((item) => {
+  //   Promise.all(item.map((date) => mockPriceQuery(date)));
+  // });
 
-  const fundMonthlyReturns = fundMonthlyPrices.map((item) => {
-    return calculateReturn(item[0], item[1]);
-  });
+  // const fundMonthlyReturns = fundMonthlyPrices.map((item) => {
+  //   return calculateReturn(item[0], item[1]);
+  // });
 
-  const monthlyPerformance = calculateReturn(currentSharePrice, monthStartPrice);
+  // const monthlyPerformance =
+
   const performanceYTD = calculateReturn(currentSharePrice, yearStartPrice); // calculateReturn(currentSharePrice, yearStartSharePrice)
   const annualizedReturn = allTimeReturn.exponentiatedBy(1 / (ageInMonths / 12)).minus(1); // all time return calculateReturn(currentSharePrice, 1) raised to the (1/time) minus 1 where time is the years since fund inception as a decimal
   const monthlyVolatility = 890; // pass array with a month's worth of prices to standardDeviation()
@@ -79,34 +97,34 @@ export default function FundMetrics(props: FundMetricsProps) {
    *  - you now have an array of prices, map over it and call calculateReturn(item[0], item[1])
    *  - you now have an array of returns, over which you can reduce to find best month worst month, positive/negative ratio, etc
    */
-  const bestMonth = fundMonthlyReturns.reduce((carry, current) => {
-    if (current.isGreaterThan(carry)) {
-      return current;
-    }
-    return carry;
-  }, fundMonthlyReturns[0]);
+  // const bestMonth = fundMonthlyReturns.reduce((carry, current) => {
+  //   if (current.isGreaterThan(carry)) {
+  //     return current;
+  //   }
+  //   return carry;
+  // }, fundMonthlyReturns[0]);
 
-  const worstMonth = fundMonthlyReturns.reduce((carry, current) => {
-    if (current.isLessThan(carry)) {
-      return current;
-    }
-    return carry;
-  }, fundMonthlyReturns[0]);
+  // const worstMonth = fundMonthlyReturns.reduce((carry, current) => {
+  //   if (current.isLessThan(carry)) {
+  //     return current;
+  //   }
+  //   return carry;
+  // }, fundMonthlyReturns[0]);
 
-  const positiveMonthRatio = fundMonthlyReturns.reduce(
-    (carry, current) => {
-      if (current.isGreaterThanOrEqualTo(0)) {
-        carry.win++;
-        return carry;
-      }
+  // const positiveMonthRatio = fundMonthlyReturns.reduce(
+  //   (carry, current) => {
+  //     if (current.isGreaterThanOrEqualTo(0)) {
+  //       carry.win++;
+  //       return carry;
+  //     }
 
-      carry.lose++;
-      return carry;
-    },
-    { win: 0, lose: 0 }
-  );
+  //     carry.lose++;
+  //     return carry;
+  //   },
+  //   { win: 0, lose: 0 }
+  // );
 
-  const averageGain = average(fundMonthlyReturns);
+  // const averageGain = average(fundMonthlyReturns);
 
   const assumedRiskFreeRate = 0.5;
 
@@ -116,7 +134,7 @@ export default function FundMetrics(props: FundMetricsProps) {
       <DictionaryEntry>
         <DictionaryLabel>Monthly Performance</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} suffix={'%'} value={monthlyPerformance} colorize={true} />
+          {/* <FormattedNumber decimals={2} suffix={'%'} value={monthlyPerformance} colorize={true} /> */}
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
@@ -155,7 +173,7 @@ export default function FundMetrics(props: FundMetricsProps) {
           <FormattedNumber decimals={2} suffix={'%'} colorize={true} value={monthlyAverageReturn} />
         </DictionaryData>
       </DictionaryEntry>
-      <DictionaryEntry>
+      {/* <DictionaryEntry>
         <DictionaryLabel>Best Month</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
           <FormattedNumber decimals={2} suffix={'%'} colorize={true} value={bestMonth} />
@@ -178,7 +196,7 @@ export default function FundMetrics(props: FundMetricsProps) {
         <DictionaryData textAlign={'right'}>
           <FormattedNumber decimals={2} suffix={'%'} colorize={true} value={averageGain} />
         </DictionaryData>
-      </DictionaryEntry>
+      </DictionaryEntry> */}
       <DictionaryEntry>
         <DictionaryLabel>Assumed Risk Free Rate</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
