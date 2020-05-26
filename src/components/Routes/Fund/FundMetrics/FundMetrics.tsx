@@ -19,21 +19,11 @@ import { Spinner } from '~/storybook/Spinner/Spinner';
 import { DictionaryEntry, DictionaryLabel, DictionaryData, Dictionary } from '~/storybook/Dictionary/Dictionary';
 import { SectionTitle } from '~/storybook/Title/Title';
 
-export interface IFundMetricsProps {
+export interface FundMetricsProps {
   address: string;
 }
-/**
- * Monthly Performance - share price from beg of month vs share price today
- * Performance YTD - share price from beg of year vs share price today
- * Annualized Return - All time return (share price today vs 1) raised to (1/time) minus 1
- *  where time is the number of years since fund inception as a decimal
- * Volatility - (Monthly?) - prices passed to Standard Deviation function
- * 20 day VAR - skip for now
- * Sharpe Ratio - skip for now
- *
- */
 
-export default function FundMetrics(props: IFundMetricsProps) {
+export default function FundMetrics(props: FundMetricsProps) {
   const fund = useFund();
   const fundInception = fund.creationTime!;
   const today = new Date();
