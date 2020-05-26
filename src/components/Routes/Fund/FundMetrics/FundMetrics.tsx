@@ -54,7 +54,7 @@ function average(data: BigNumber[]) {
 export default function FundMetrics(props: FundMetricsProps) {
   const fund = useFund();
   const [depth, setDepth] = React.useState<Depth>('1m');
-  const { prices, error, isFetching } = useFetchedPrices(props.address, depth);
+  const { data, error, isFetching } = useFetchedPrices(props.address, depth);
   const fundInception = fund.creationTime!;
   const today = new Date();
   const ageInMonths = differenceInCalendarMonths(today, fundInception);
