@@ -12,7 +12,6 @@ const FundRedeemQuery = gql`
     account(address: $account) {
       participation(address: $fund) {
         address
-        hasInvested
         investmentRequestState
         canCancelRequest
       }

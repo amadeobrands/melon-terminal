@@ -183,7 +183,7 @@ export const RequestInvestment = React.forwardRef(
         } else if (before && value.value?.comparedTo(before.value ?? '')) {
           // if investment amount changes, we derive the number of shares
           const shares = value.value?.dividedBy(shareCostInAsset!.value!).dividedBy(multiplier);
-          const sharesRounded = shares.decimalPlaces(sharesToken.decimals, BigNumber.ROUND_UP);
+          const sharesRounded = shares.decimalPlaces(sharesToken.decimals, BigNumber.ROUND_DOWN);
           formik.setFieldValue('requestedShares', requestedShares.setValue(sharesRounded!));
         }
       },

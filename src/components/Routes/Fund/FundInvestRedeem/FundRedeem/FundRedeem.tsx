@@ -5,6 +5,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import * as Yup from 'yup';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
+import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 import { TransactionModal } from '~/components/Common/TransactionModal/TransactionModal';
 import { Button } from '~/components/Form/Button/Button';
@@ -21,11 +22,9 @@ import { Block, BlockActions } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { TokenValue } from '~/TokenValue';
-import { sharesToken } from '~/utils/sharesToken';
-import { toTokenBaseUnit } from '~/utils/toTokenBaseUnit';
-import { useFundRedeemQuery } from './FundRedeem.query';
 import { tokenValueSchema } from '~/utils/formValidation';
-import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
+import { sharesToken } from '~/utils/sharesToken';
+import { useFundRedeemQuery } from './FundRedeem.query';
 
 export interface FundRedeemProps {
   address: string;
@@ -51,7 +50,6 @@ export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
   const fund = useFund();
 
   const participationAddress = result?.account?.participation?.address;
-  const hasInvested = result?.account?.participation?.hasInvested;
   const shares = result?.account?.shares;
 
   const lockedAssets = result?.fund?.routes?.trading?.lockedAssets;
@@ -120,7 +118,7 @@ export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
     <Block>
       <SectionTitle>Redeem</SectionTitle>
 
-      {hasInvested && shares && !shares?.balanceOf?.isZero() && (
+      {shares && !shares?.balanceOf?.isZero() && (
         <>
           <p>
             You own <FormattedNumber value={shares?.balanceOf} /> shares
@@ -139,7 +137,7 @@ export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
           </Form>
         </>
       )}
-      {(!hasInvested || shares?.balanceOf?.isZero() || !shares?.balanceOf) && <>You don't own any shares.</>}
+      {(shares?.balanceOf?.isZero() || !shares?.balanceOf) && <>You don't own any shares.</>}
       <TransactionModal transaction={transaction}>
         <TransactionDescription title="Redeem shares">
           You are redeeming{' '}
