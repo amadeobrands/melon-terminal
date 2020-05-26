@@ -73,23 +73,22 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
   const { data, error, isFetching } = useFundHistory(props.address, depth);
 
   const primary = React.useMemo(() => {
-    return data
-      ? ([{ id: 'on-chain', name: 'Official price', type: 'area', data: data.onchain }] as Serie[])
-      : ([] as Serie[]);
+    return (data
+      ? [{ id: 'on-chain', name: 'On-chain share price', type: 'area', data: data.onchain }]
+      : []) as Serie[];
   }, [data]);
 
   const secondary = React.useMemo(() => {
     return (
-      data && ([{ id: 'off-chain', name: 'Interim price movements', type: 'line', data: data.offchain }] as Serie[])
+      data &&
+      ([{ id: 'off-chain', name: 'Interim share price movements', type: 'line', data: data.offchain }] as Serie[])
     );
   }, [data]);
 
   return (
     <Block>
-      <SectionTitle>Fund Share Price Over Time</SectionTitle>
-      {error ? (
-        <SectionTitle>Test</SectionTitle>
-      ) : data ? (
+      <SectionTitle>Share price</SectionTitle>
+      {data ? (
         <SimpleZoomControl
           setDepth={setDepth}
           depth={depth}

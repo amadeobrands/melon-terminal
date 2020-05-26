@@ -1,15 +1,11 @@
-import React from 'react';
-import { useTheme } from 'styled-components';
-import { Serie, ResponsiveLine, CustomLayer, Layer } from '@nivo/line';
-import * as S from './PriceChart.styles';
-import { Spinner } from '~/storybook/Spinner/Spinner';
-import { Depth } from './SimpleZoomControl';
+import { Serie } from '@nivo/line';
 import { TimeScale } from '@nivo/scales';
-import { subYears, subMonths, subWeeks } from 'date-fns';
-import { subDays, min } from 'date-fns/esm';
-import { StepPriceChart } from './StepPriceChart';
-
+import React from 'react';
 import ReactApexChart from 'react-apexcharts';
+import { useTheme } from 'styled-components';
+import { Spinner } from '~/storybook/Spinner/Spinner';
+import * as S from './PriceChart.styles';
+import { Depth } from './SimpleZoomControl';
 
 /**
  * A price chart can accept and display price data over time for multiple assets.
@@ -40,13 +36,6 @@ export interface BasicLineChartProps {
   depth: Depth;
 }
 
-interface DepthConfiguration {
-  precision: TimeScale['precision'];
-  tickValues: string;
-  format: string;
-  minDate: Date;
-}
-
 export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
   const theme = useTheme();
 
@@ -56,7 +45,7 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
     chart: {
       type: 'area',
       stacked: false,
-      height: 300,
+      height: 'auto',
       fontFamily: theme.fontFamilies,
       foreColor: theme.mainColors.textColor,
       zoom: {
@@ -77,6 +66,9 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
     },
     fill: {
       type: ['gradient', 'solid'],
+      gradient: {
+        shadeIntensity: 0.2,
+      },
     },
     legend: {
       showForSingleSeries: true,
@@ -88,13 +80,13 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
       title: {
         text: 'Share price',
       },
-      decimalsInFloat: 2,
+      decimalsInFloat: 4,
     },
     xaxis: {
       type: 'datetime',
     },
     stroke: {
-      width: [4, 2],
+      width: [3, 1],
       curve: ['stepline', 'smooth'],
     },
     tooltip: {

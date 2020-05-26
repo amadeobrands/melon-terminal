@@ -33,8 +33,6 @@ export const PriceLabel = styled.div`
 export const Chart = styled.div`
   display: flex;
   flex-direction: column;
-  height: 397px;
-  padding-bottom: ${(props) => props.theme.spaceUnits.xxxl};
 `;
 
 export const ChartButton = styled(Button)`

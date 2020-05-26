@@ -2,7 +2,6 @@ import React from 'react';
 import { Serie } from '@nivo/line';
 import { SimplePriceChart } from './SimplePriceChart';
 import * as S from './PriceChart.styles';
-import { StepPriceChart } from './StepPriceChart';
 
 /**
  * This component wraps a SimplePriceChart and controls the fetching and parsing of data that
