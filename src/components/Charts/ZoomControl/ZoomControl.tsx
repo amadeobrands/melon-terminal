@@ -41,7 +41,7 @@ interface ZoomOption {
   value: Depth;
   label: string;
   active?: boolean;
-  disabled?: boolean | 0 | undefined;
+  disabled?: boolean | undefined;
   timestamp: number;
 }
 
@@ -55,7 +55,8 @@ export interface LineChartProps {
 
 export const ZoomControl: React.FC<LineChartProps> = (props) => {
   const today = new Date();
-  const fundInceptionDate = props.fundInceptionDate && props.fundInceptionDate.getTime();
+  const fundInceptionDate: undefined | number = props.fundInceptionDate && props.fundInceptionDate.getTime();
+
   const options = React.useMemo<ZoomOption[]>(() => {
     const options: ZoomOption[] = [
       { label: '1d', value: '1d', timestamp: subDays(today, 1).getTime() },
@@ -69,7 +70,7 @@ export const ZoomControl: React.FC<LineChartProps> = (props) => {
     return options.map((item) => ({
       ...item,
       active: item.value === props.depth,
-      disabled: fundInceptionDate && item.timestamp < fundInceptionDate,
+      disabled: fundInceptionDate ? item.timestamp < fundInceptionDate : undefined,
     }));
   }, [props.depth]);
 
@@ -80,7 +81,7 @@ export const ZoomControl: React.FC<LineChartProps> = (props) => {
         {options.map((item, index) => (
           <S.ChartButton
             kind={item.active ? 'success' : 'secondary'}
-            disabled={item.disabled === 0 ? false : item.disabled}
+            disabled={item.disabled}
             size="small"
             key={index}
             onClick={() => props.setDepth(item.value)}
