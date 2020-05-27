@@ -3,7 +3,7 @@ import { FundHoldings } from '../FundHoldings/FundHoldings';
 import { FundPolicies } from '../FundPolicies/FundPolicies';
 import { FundContracts } from './FundContracts/FundContracts';
 import { FundFactSheet } from './FundFactSheet/FundFactSheet';
-import { NewFundPerformanceChart } from '../FundPerformanceChart/NewServiceChart';
+import { NewFundPerformanceChart } from '../FundPerformanceChart/FundPerformanceChart';
 import { Grid, GridRow, GridCol } from '~/storybook/Grid/Grid';
 import { FundPerformanceTable } from '~/components/Routes/Fund/FundPerfomanceTable/FundPerformanceTable';
 

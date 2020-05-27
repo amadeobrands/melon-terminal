@@ -1,7 +1,6 @@
 import React from 'react';
-import { Serie } from '@nivo/line';
-import { SimplePriceChart } from './SimplePriceChart';
-import * as S from './PriceChart.styles';
+import { PriceChart } from '../PriceChart/PriceChart';
+import * as S from '../PriceChart/PriceChart.styles';
 
 /**
  * This component wraps a SimplePriceChart and controls the fetching and parsing of data that
@@ -26,6 +25,18 @@ import * as S from './PriceChart.styles';
  *
  */
 
+export interface Serie {
+  id: string;
+  name?: string;
+  type?: string;
+  data: Datum[];
+}
+
+export interface Datum {
+  x: number | string | Date;
+  y: number | string;
+}
+
 interface ZoomOption {
   value: Depth;
   label: string;
@@ -42,7 +53,7 @@ export interface LineChartProps {
   setDepth: (depth: Depth) => void;
 }
 
-export const SimpleZoomControl: React.FC<LineChartProps> = (props) => {
+export const ZoomControl: React.FC<LineChartProps> = (props) => {
   const options = React.useMemo<ZoomOption[]>(() => {
     const options: ZoomOption[] = [
       { label: '1d', value: '1d' },
@@ -77,7 +88,7 @@ export const SimpleZoomControl: React.FC<LineChartProps> = (props) => {
         ))}
       </S.ControlBox>
 
-      <SimplePriceChart
+      <PriceChart
         area={false}
         loading={props.loading}
         data={props.data}

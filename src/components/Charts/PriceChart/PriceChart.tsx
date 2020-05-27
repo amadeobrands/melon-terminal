@@ -1,10 +1,9 @@
-import { Serie } from '@nivo/line';
 import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { useTheme } from 'styled-components';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import * as S from './PriceChart.styles';
-import { Depth } from './SimpleZoomControl';
+import { Depth, Serie } from '../ZoomControl/ZoomControl';
 
 /**
  * A price chart can accept and display price data over time for multiple assets.
@@ -27,7 +26,7 @@ import { Depth } from './SimpleZoomControl';
  *  button, this value is 0.
  */
 
-export interface BasicLineChartProps {
+export interface PriceChartProps {
   data: Serie[];
   secondaryData?: Serie[];
   loading?: boolean;
@@ -35,7 +34,7 @@ export interface BasicLineChartProps {
   depth: Depth;
 }
 
-export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
+export const PriceChart: React.FC<PriceChartProps> = (props) => {
   const theme = useTheme();
 
   let data = [...props.data, ...(props.secondaryData ? props.secondaryData : [])];
@@ -53,21 +52,26 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
         autoScaleYaxis: true,
       },
       toolbar: {
+        show: false,
         autoSelected: 'zoom',
         tools: {
           download: false,
         },
       },
     },
-    colors: [theme.otherColors.green, '#aaaaaa'],
+    colors: ['#238757', '#aaaaaa'],
     dataLabels: {
       enabled: false,
     },
     fill: {
       type: ['gradient', 'solid'],
       gradient: {
-        shadeIntensity: 0.2,
+        shadeIntensity: 0.5,
       },
+    },
+    grid: {
+      strokeDashArray: 4,
+      borderColor: '#90A4AE',
     },
     legend: {
       showForSingleSeries: true,
@@ -86,7 +90,7 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
     },
     stroke: {
       width: [3, 1],
-      curve: ['stepline', 'smooth'],
+      curve: ['smooth', 'smooth'],
     },
     tooltip: {
       shared: true,

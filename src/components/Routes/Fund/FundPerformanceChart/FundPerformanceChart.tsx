@@ -3,9 +3,8 @@ import BigNumber from 'bignumber.js';
 import { useQuery } from 'react-query';
 import { Block } from '~/storybook/Block/Block';
 import { SectionTitle } from '~/storybook/Title/Title';
-import { SimpleZoomControl } from '~/components/Charts/Nivo/SimpleZoomControl';
+import { ZoomControl, Serie, Datum } from '~/components/Charts/ZoomControl/ZoomControl';
 import { Spinner } from '~/storybook/Spinner/Spinner';
-import { Datum, Serie } from '@nivo/line';
 
 export interface NewFundPerformanceChartProps {
   address: string;
@@ -89,13 +88,7 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
     <Block>
       <SectionTitle>Share price</SectionTitle>
       {data ? (
-        <SimpleZoomControl
-          setDepth={setDepth}
-          depth={depth}
-          data={primary}
-          secondaryData={secondary}
-          loading={isFetching}
-        />
+        <ZoomControl setDepth={setDepth} depth={depth} data={primary} secondaryData={secondary} loading={isFetching} />
       ) : (
         <Spinner />
       )}
