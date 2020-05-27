@@ -7,10 +7,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/avantgardefinance/interface.git"
+    "url": "git+https://github.com/avantgardefinance/melon-terminal.git"
   },
   "bugs": {
-    "url": "https://github.com/avantgardefinance/interface/issues"
+    "url": "https://github.com/avantgardefinance/melon-terminal/issues"
   },
   "engines": {
     "node": ">=12.x"

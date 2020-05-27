@@ -46,10 +46,7 @@ interface ZoomOption {
 export type Depth = '1d' | '1w' | '1m' | '3m' | '6m' | '1y';
 
 export interface LineChartProps {
-  loading?: boolean;
   depth: Depth;
-  data: Serie[];
-  secondaryData?: Serie[];
   setDepth: (depth: Depth) => void;
 }
 
@@ -70,8 +67,6 @@ export const ZoomControl: React.FC<LineChartProps> = (props) => {
     }));
   }, [props.depth]);
 
-  const showSecondaryData = props.depth === '1d' || props.depth === '1w' ? true : false;
-
   return (
     <>
       <S.ControlBox>
@@ -87,14 +82,6 @@ export const ZoomControl: React.FC<LineChartProps> = (props) => {
           </S.ChartButton>
         ))}
       </S.ControlBox>
-
-      <PriceChart
-        area={false}
-        loading={props.loading}
-        data={props.data}
-        secondaryData={showSecondaryData ? props.secondaryData : []}
-        depth={props.depth}
-      />
     </>
   );
 };

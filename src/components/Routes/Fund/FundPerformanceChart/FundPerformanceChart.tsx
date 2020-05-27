@@ -5,6 +5,7 @@ import { Block } from '~/storybook/Block/Block';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { ZoomControl, Serie, Datum } from '~/components/Charts/ZoomControl/ZoomControl';
 import { Spinner } from '~/storybook/Spinner/Spinner';
+import { PriceChart } from '~/components/Charts/PriceChart/PriceChart';
 
 export interface NewFundPerformanceChartProps {
   address: string;
@@ -88,7 +89,7 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
     <Block>
       <SectionTitle>Share price</SectionTitle>
       {data ? (
-        <ZoomControl setDepth={setDepth} depth={depth} data={primary} secondaryData={secondary} loading={isFetching} />
+        <PriceChart setDepth={setDepth} depth={depth} data={primary} secondaryData={secondary} loading={isFetching} />
       ) : (
         <Spinner />
       )}

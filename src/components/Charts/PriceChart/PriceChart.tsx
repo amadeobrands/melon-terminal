@@ -3,7 +3,7 @@ import ReactApexChart from 'react-apexcharts';
 import { useTheme } from 'styled-components';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import * as S from './PriceChart.styles';
-import { Depth, Serie } from '../ZoomControl/ZoomControl';
+import { Depth, Serie, ZoomControl } from '../ZoomControl/ZoomControl';
 
 /**
  * A price chart can accept and display price data over time for multiple assets.
@@ -27,17 +27,18 @@ import { Depth, Serie } from '../ZoomControl/ZoomControl';
  */
 
 export interface PriceChartProps {
+  loading?: boolean;
+  depth: Depth;
   data: Serie[];
   secondaryData?: Serie[];
-  loading?: boolean;
-  area: boolean;
-  depth: Depth;
+  setDepth: (depth: Depth) => void;
 }
 
 export const PriceChart: React.FC<PriceChartProps> = (props) => {
   const theme = useTheme();
 
-  let data = [...props.data, ...(props.secondaryData ? props.secondaryData : [])];
+  const showSecondaryData = props.depth === '1d' || props.depth === '1w' ? true : false;
+  let data = [...props.data, ...(showSecondaryData && props.secondaryData ? props.secondaryData : [])];
 
   const options = {
     chart: {
@@ -102,8 +103,12 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
   };
 
   return (
-    <S.Chart>
-      <ReactApexChart options={options} series={data} type="area" height={350} />
-    </S.Chart>
+    <>
+      <ZoomControl depth={props.depth} setDepth={props.setDepth} />
+
+      <S.Chart>
+        <ReactApexChart options={options} series={data} type="area" height={350} />
+      </S.Chart>
+    </>
   );
 };
