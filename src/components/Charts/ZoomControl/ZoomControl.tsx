@@ -1,5 +1,6 @@
 import React from 'react';
 import * as S from './ZoomControl.styles';
+import { subDays, subWeeks, subMonths } from 'date-fns';
 
 /**
  * This component wraps a SimplePriceChart and controls the fetching and parsing of data that
@@ -40,6 +41,8 @@ interface ZoomOption {
   value: Depth;
   label: string;
   active?: boolean;
+  disabled?: boolean | 0 | undefined;
+  timestamp: number;
 }
 
 export type Depth = '1d' | '1w' | '1m' | '3m' | '6m' | '1y';
@@ -47,32 +50,37 @@ export type Depth = '1d' | '1w' | '1m' | '3m' | '6m' | '1y';
 export interface LineChartProps {
   depth: Depth;
   setDepth: (depth: Depth) => void;
+  fundInceptionDate: Date | undefined;
 }
 
 export const ZoomControl: React.FC<LineChartProps> = (props) => {
+  const today = new Date();
+  const fundInceptionDate = props.fundInceptionDate && props.fundInceptionDate.getTime();
   const options = React.useMemo<ZoomOption[]>(() => {
     const options: ZoomOption[] = [
-      { label: '1d', value: '1d' },
-      { label: '1w', value: '1w' },
-      { label: '1m', value: '1m' },
-      { label: '3m', value: '3m' },
-      { label: '6m', value: '6m' },
-      { label: '1y', value: '1y' },
+      { label: '1d', value: '1d', timestamp: subDays(today, 1).getTime() },
+      { label: '1w', value: '1w', timestamp: subWeeks(today, 1).getTime() },
+      { label: '1m', value: '1m', timestamp: subMonths(today, 1).getTime() },
+      { label: '3m', value: '3m', timestamp: subMonths(today, 3).getTime() },
+      { label: '6m', value: '6m', timestamp: subMonths(today, 6).getTime() },
+      { label: '1y', value: '1y', timestamp: subMonths(today, 12).getTime() },
     ];
 
     return options.map((item) => ({
       ...item,
       active: item.value === props.depth,
+      disabled: fundInceptionDate && item.timestamp < fundInceptionDate,
     }));
   }, [props.depth]);
 
   return (
     <>
       <S.ControlBox>
-        Zoom:
+        Zoom:<span></span>
         {options.map((item, index) => (
           <S.ChartButton
             kind={item.active ? 'success' : 'secondary'}
+            disabled={item.disabled === 0 ? false : item.disabled}
             size="small"
             key={index}
             onClick={() => props.setDepth(item.value)}

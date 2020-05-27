@@ -87,7 +87,7 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
 
   return (
     <Block>
-      <SectionTitle>Share price</SectionTitle>
+      <SectionTitle>Share Price</SectionTitle>
       {data ? (
         <PriceChart setDepth={setDepth} depth={depth} data={primary} secondaryData={secondary} loading={isFetching} />
       ) : (

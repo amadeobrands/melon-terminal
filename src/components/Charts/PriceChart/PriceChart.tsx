@@ -4,6 +4,7 @@ import { useTheme } from 'styled-components';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import * as S from './PriceChart.styles';
 import { Depth, Serie, ZoomControl } from '../ZoomControl/ZoomControl';
+import { useFund } from '~/hooks/useFund';
 
 /**
  * A price chart can accept and display price data over time for multiple assets.
@@ -36,6 +37,7 @@ export interface PriceChartProps {
 
 export const PriceChart: React.FC<PriceChartProps> = (props) => {
   const theme = useTheme();
+  const fund = useFund();
 
   const showSecondaryData = props.depth === '1d' || props.depth === '1w' ? true : false;
   let data = [...props.data, ...(showSecondaryData && props.secondaryData ? props.secondaryData : [])];
@@ -104,7 +106,7 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
 
   return (
     <>
-      <ZoomControl depth={props.depth} setDepth={props.setDepth} />
+      <ZoomControl fundInceptionDate={fund.creationTime} depth={props.depth} setDepth={props.setDepth} />
 
       <S.Chart>
         <ReactApexChart options={options} series={data} type="area" height={350} />
