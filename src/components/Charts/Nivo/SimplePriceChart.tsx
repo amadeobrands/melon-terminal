@@ -1,5 +1,4 @@
 import { Serie } from '@nivo/line';
-import { TimeScale } from '@nivo/scales';
 import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { useTheme } from 'styled-components';
@@ -39,7 +38,7 @@ export interface BasicLineChartProps {
 export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
   const theme = useTheme();
 
-  const data = [...props.data, ...(props.secondaryData ? props.secondaryData : [])];
+  let data = [...props.data, ...(props.secondaryData ? props.secondaryData : [])];
 
   const options = {
     chart: {
@@ -99,10 +98,8 @@ export const SimplePriceChart: React.FC<BasicLineChartProps> = (props) => {
   };
 
   return (
-    <>
-      <S.Chart>
-        {props.loading ? <Spinner /> : <ReactApexChart options={options} series={data} type="area" height={350} />}
-      </S.Chart>
-    </>
+    <S.Chart>
+      <ReactApexChart options={options} series={data} type="area" height={350} />
+    </S.Chart>
   );
 };
