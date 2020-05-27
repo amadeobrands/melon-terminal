@@ -1,6 +1,5 @@
 import React from 'react';
-import { PriceChart } from '../PriceChart/PriceChart';
-import * as S from '../PriceChart/PriceChart.styles';
+import * as S from './ZoomControl.styles';
 
 /**
  * This component wraps a SimplePriceChart and controls the fetching and parsing of data that
