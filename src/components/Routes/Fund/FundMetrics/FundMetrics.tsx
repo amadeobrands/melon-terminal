@@ -1,6 +1,7 @@
 import * as React from 'react';
+import axios from 'axios';
 import { useFund } from '~/hooks/useFund';
-import { standardDeviation, calculateReturn } from '~/utils/finance';
+import { calculateReturn } from '~/utils/finance';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { Block } from '~/storybook/Block/Block';
 import BigNumber from 'bignumber.js';
@@ -14,6 +15,7 @@ import {
   differenceInCalendarMonths,
   subMonths,
   endOfMonth,
+  endOfDay,
 } from 'date-fns';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { DictionaryEntry, DictionaryLabel, DictionaryData, Dictionary } from '~/storybook/Dictionary/Dictionary';
@@ -26,21 +28,56 @@ export interface FundMetricsProps {
 
 export type Depth = '1y' | '6m' | '3m' | '1m' | '1w' | '1d';
 
-async function fetchPrices(key: string, address: string, depth: Depth) {
+async function fetchFundPrices(key: string, address: string, depth: Depth) {
   const url = process.env.MELON_METRICS_API;
 
   const queryAddress = `https://metrics.avantgarde.finance/api/portfolio?address=${address}$depth=${depth}`;
   console.log(queryAddress);
-  const response = await fetch(queryAddress).then((response) => response.json());
-  console.log(response);
+  const response = await fetch(queryAddress)
+    .then((response) => response.json())
+    .catch((error) => console.log(error));
   return response;
 }
 
-export function useFetchedPrices(fund: string, depth: Depth) {
+export function useFetchFundPrices(fund: string, depth: Depth) {
   const address = React.useMemo(() => fund.toLowerCase(), [fund]);
-  return useQuery(['prices', address, depth], fetchPrices, {
+  return useQuery(['prices', address, depth], fetchFundPrices, {
     refetchOnWindowFocus: false,
   });
+}
+
+async function fetchIndexPrices(key: string, startDate: string, endDate: string) {
+  const apiKey = '007383bc-d3b7-4249-9a0d-b3a1d17113d9';
+  const urlWithParams = `https://api.bitwiseinvestments.com/api/v1/indexes/BITWISE10/history?apiKey=${apiKey}&start=${startDate}&end=${endDate}`;
+
+  const response = await fetch(urlWithParams)
+    .then((response) => response.json())
+    .catch((error) => console.log(error));
+
+  console.log(response, 'in the index query');
+  const prices = response.map((item) => new BigNumber(item[1]));
+  console.log(prices);
+  return prices;
+}
+
+function useFetchIndexPrices(startDate: string, endDate: string) {
+  return useQuery(['indices', startDate, endDate], fetchIndexPrices, {
+    refetchOnWindowFocus: false,
+  });
+}
+
+function standardDeviation(values: BigNumber[]) {
+  const avg = average(values);
+  const squareDiffs = values.map((value) => {
+    const diff = value.minus(avg);
+    const sqrDiff = diff.multipliedBy(diff);
+    return sqrDiff;
+  });
+
+  const avgSquareDiff = average(squareDiffs);
+
+  const stdDev = avgSquareDiff.sqrt();
+  return stdDev;
 }
 
 function average(data: BigNumber[]) {
@@ -52,12 +89,22 @@ function average(data: BigNumber[]) {
 }
 
 export default function FundMetrics(props: FundMetricsProps) {
-  const fund = useFund();
-  const [depth, setDepth] = React.useState<Depth>('1m');
-  const { data, error, isFetching } = useFetchedPrices(props.address, depth);
-  const fundInception = fund.creationTime!;
   const today = new Date();
+  const fund = useFund();
+
+  const [depth, setDepth] = React.useState<Depth>('1m');
+
+  const { data: fundData, error: fundError, isFetching: fundFetching } = useFetchFundPrices(props.address, depth);
+  const { data: indexData, error: indexError, isFetching: indexFetching } = useFetchIndexPrices(
+    startOfDay(subMonths(today, 1)).toISOString(),
+    endOfDay(today).toISOString()
+  );
+
+  const fundInception = fund.creationTime!;
   const ageInMonths = differenceInCalendarMonths(today, fundInception);
+
+  const indexVol = indexData && standardDeviation(indexData).toString();
+  console.log(indexVol, 'index vol');
 
   const currentSharePrice = new BigNumber(1.25); // sharePriceQuery(today)
   const monthStartPrice = new BigNumber(1.19); // sharePriceQuery(startOfMonth(today))
