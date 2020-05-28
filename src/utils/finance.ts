@@ -29,6 +29,6 @@ function average(data: number[]) {
  * @param currentPx a BigNumber representing the current price of the asset
  * @param historicalPx a BigNumber representing the historical price against which you're measuring
  */
-export function calculateReturn(currentPx: BigNumber, historicalPx: BigNumber) {
-  return historicalPx && currentPx && currentPx.dividedBy(historicalPx).minus(1).multipliedBy(100);
+export function calculateReturn(currentPx: BigNumber, historicalPx: BigNumber): BigNumber {
+  return currentPx.dividedBy(historicalPx).minus(1).multipliedBy(100);
 }

@@ -1,9 +1,8 @@
 import * as React from 'react';
-import axios from 'axios';
+
 import { useFund } from '~/hooks/useFund';
 import { calculateReturn } from '~/utils/finance';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
-import { Block } from '~/storybook/Block/Block';
 import BigNumber from 'bignumber.js';
 import {
   getUnixTime,
@@ -17,10 +16,11 @@ import {
   endOfMonth,
   endOfDay,
 } from 'date-fns';
-import { Spinner } from '~/storybook/Spinner/Spinner';
 import { DictionaryEntry, DictionaryLabel, DictionaryData, Dictionary } from '~/storybook/Dictionary/Dictionary';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { useQuery } from 'react-query';
+import { Block } from '~/storybook/Block/Block';
+import { Spinner } from '~/storybook/Spinner/Spinner.styles';
 
 export interface FundMetricsProps {
   address: string;
@@ -32,10 +32,11 @@ async function fetchFundPrices(key: string, address: string, depth: Depth) {
   const url = process.env.MELON_METRICS_API;
 
   const queryAddress = `https://metrics.avantgarde.finance/api/portfolio?address=${address}$depth=${depth}`;
-  console.log(queryAddress);
+
   const response = await fetch(queryAddress)
     .then((response) => response.json())
     .catch((error) => console.log(error));
+
   return response;
 }
 
@@ -54,10 +55,9 @@ async function fetchIndexPrices(key: string, startDate: string, endDate: string)
     .then((response) => response.json())
     .catch((error) => console.log(error));
 
-  console.log(response, 'in the index query');
-  const prices = response.map((item) => new BigNumber(item[1]));
+  const prices = response.map((item: number[]) => new BigNumber(item[1]));
   console.log(prices);
-  return prices;
+  return prices as BigNumber[];
 }
 
 function useFetchIndexPrices(startDate: string, endDate: string) {
@@ -67,16 +67,24 @@ function useFetchIndexPrices(startDate: string, endDate: string) {
 }
 
 function standardDeviation(values: BigNumber[]) {
+  console.log('in the std dev: ', values);
   const avg = average(values);
+
   const squareDiffs = values.map((value) => {
     const diff = value.minus(avg);
     const sqrDiff = diff.multipliedBy(diff);
     return sqrDiff;
   });
 
-  const avgSquareDiff = average(squareDiffs);
+  // console.log('squareDiffs: ')
+  // for (let i of squareDiffs){
+  //   console.log(i.decimalPlaces(8).toString())
+  // }
 
-  const stdDev = avgSquareDiff.sqrt();
+  const variance = average(squareDiffs);
+  console.log('variance: ', variance.toString());
+
+  const stdDev = variance.sqrt().multipliedBy(100).multipliedBy(Math.sqrt(30));
   return stdDev;
 }
 
@@ -84,6 +92,7 @@ function average(data: BigNumber[]) {
   const sum = data.reduce((s, value) => {
     return s.plus(value);
   }, new BigNumber(0));
+
   const avg = sum.dividedBy(data.length);
   return avg;
 }
@@ -92,31 +101,52 @@ export default function FundMetrics(props: FundMetricsProps) {
   const today = new Date();
   const fund = useFund();
 
-  const [depth, setDepth] = React.useState<Depth>('1m');
+  // const [depth, setDepth] = React.useState<Depth>('1m');
 
-  const { data: fundData, error: fundError, isFetching: fundFetching } = useFetchFundPrices(props.address, depth);
+  // const { data: fundData, error: fundError, isFetching: fundFetching } = useFetchFundPrices(props.address, depth);
+  // const fundInception = fund.creationTime!;
+  // const ageInMonths = differenceInCalendarMonths(today, fundInception);
+
   const { data: indexData, error: indexError, isFetching: indexFetching } = useFetchIndexPrices(
-    startOfDay(subMonths(today, 1)).toISOString(),
+    startOfDay(subDays(subMonths(today, 1), 1)).toISOString(),
     endOfDay(today).toISOString()
   );
 
-  const fundInception = fund.creationTime!;
-  const ageInMonths = differenceInCalendarMonths(today, fundInception);
+  if (!indexData && indexFetching) {
+    return (
+      <Block>
+        <Spinner />
+      </Block>
+    );
+  }
 
-  const indexVol = indexData && standardDeviation(indexData).toString();
-  console.log(indexVol, 'index vol');
+  const indexDailyReturns = indexData
+    ? indexData.map<BigNumber[]>((price, idx) => {
+        if (idx > 0) {
+          const logReturn = new BigNumber(Math.log(price.toNumber()) - Math.log(indexData[idx - 1].toNumber()));
 
-  const currentSharePrice = new BigNumber(1.25); // sharePriceQuery(today)
-  const monthStartPrice = new BigNumber(1.19); // sharePriceQuery(startOfMonth(today))
-  const yearStartPrice = new BigNumber(1.03); // sharePriceQuery(startOfYear(today))
-  const allTimeReturn = calculateReturn(currentSharePrice, new BigNumber(1));
+          console.log('log return', logReturn.toString());
+          return logReturn;
+        } else {
+          return new BigNumber(0);
+        }
+      })
+    : [new BigNumber('NaN')];
 
-  const fundMonthDates = new Array(ageInMonths)
-    .map((item, index) => {
-      const targetMonth = subMonths(today, index);
-      return [startOfMonth(targetMonth), endOfMonth(targetMonth)];
-    })
-    .reverse();
+  const indexVol = indexDailyReturns.length > 0 ? standardDeviation(indexDailyReturns).toString() : 'nada';
+  console.log('index volatility ==>', indexVol);
+
+  // const currentSharePrice = new BigNumber(1.25); // sharePriceQuery(today)
+  // const monthStartPrice = new BigNumber(1.19); // sharePriceQuery(startOfMonth(today))
+  // const yearStartPrice = new BigNumber(1.03); // sharePriceQuery(startOfYear(today))
+  // const allTimeReturn = calculateReturn(currentSharePrice, new BigNumber(1));
+
+  // const fundMonthDates = new Array(ageInMonths)
+  //   .map((item, index) => {
+  //     const targetMonth = subMonths(today, index);
+  //     return [startOfMonth(targetMonth), endOfMonth(targetMonth)];
+  //   })
+  //   .reverse();
 
   //
   // const fundMonthlyPrices = fundMonthDates.map((item) => {
@@ -129,12 +159,12 @@ export default function FundMetrics(props: FundMetricsProps) {
 
   // const monthlyPerformance =
 
-  const performanceYTD = calculateReturn(currentSharePrice, yearStartPrice); // calculateReturn(currentSharePrice, yearStartSharePrice)
-  const annualizedReturn = allTimeReturn.exponentiatedBy(1 / (ageInMonths / 12)).minus(1); // all time return calculateReturn(currentSharePrice, 1) raised to the (1/time) minus 1 where time is the years since fund inception as a decimal
-  const monthlyVolatility = 890; // pass array with a month's worth of prices to standardDeviation()
-  const monthlyVAR = 2390; // come back to this
-  const sharpeRatio = 212; // (monthlyReturns - assumedRiskFreeRate)/monthlyVolatility
-  const monthlyAverageReturn = 2390; //
+  // const performanceYTD = calculateReturn(currentSharePrice, yearStartPrice); // calculateReturn(currentSharePrice, yearStartSharePrice)
+  // const annualizedReturn = allTimeReturn.exponentiatedBy(1 / (ageInMonths / 12)).minus(1); // all time return calculateReturn(currentSharePrice, 1) raised to the (1/time) minus 1 where time is the years since fund inception as a decimal
+  // const monthlyVolatility = 890; // pass array with a month's worth of prices to standardDeviation()
+  // const monthlyVAR = 2390; // come back to this
+  // const sharpeRatio = 212; // (monthlyReturns - assumedRiskFreeRate)/monthlyVolatility
+  // const monthlyAverageReturn = 2390; //
   /**
    * need to get monthly returns for all months the fund's been in existence
    * need to identify which months those are
@@ -178,10 +208,10 @@ export default function FundMetrics(props: FundMetricsProps) {
   return (
     <Dictionary>
       <SectionTitle>Fund Performance Metrics</SectionTitle>
-      <DictionaryEntry>
+      {/* <DictionaryEntry>
         <DictionaryLabel>Monthly Performance</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          {/* <FormattedNumber decimals={2} suffix={'%'} value={monthlyPerformance} colorize={true} /> */}
+          <FormattedNumber decimals={2} suffix={'%'} value={monthlyPerformance} colorize={true} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
@@ -220,7 +250,7 @@ export default function FundMetrics(props: FundMetricsProps) {
           <FormattedNumber decimals={2} suffix={'%'} colorize={true} value={monthlyAverageReturn} />
         </DictionaryData>
       </DictionaryEntry>
-      {/* <DictionaryEntry>
+      <DictionaryEntry>
         <DictionaryLabel>Best Month</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
           <FormattedNumber decimals={2} suffix={'%'} colorize={true} value={bestMonth} />
@@ -243,13 +273,13 @@ export default function FundMetrics(props: FundMetricsProps) {
         <DictionaryData textAlign={'right'}>
           <FormattedNumber decimals={2} suffix={'%'} colorize={true} value={averageGain} />
         </DictionaryData>
-      </DictionaryEntry> */}
+      </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Assumed Risk Free Rate</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
           <FormattedNumber decimals={2} colorize={true} suffix={'%'} value={assumedRiskFreeRate} />
         </DictionaryData>
-      </DictionaryEntry>
+      </DictionaryEntry> */}
     </Dictionary>
   );
 }
