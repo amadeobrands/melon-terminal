@@ -6,6 +6,8 @@ import { SectionTitle } from '~/storybook/Title/Title';
 import { ZoomControl, Serie, Datum } from '~/components/Charts/ZoomControl/ZoomControl';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { PriceChart } from '~/components/Charts/PriceChart/PriceChart';
+import styled from 'styled-components';
+import { Chart } from '~/components/Charts/PriceChart/PriceChart.styles';
 
 export interface NewFundPerformanceChartProps {
   address: string;
@@ -37,10 +39,18 @@ interface TimelineItem {
 
 export type Depth = '1y' | '6m' | '3m' | '1m' | '1w' | '1d';
 
+const ChartDescription = styled.span`
+  text-align: right;
+  color: ${(props) => props.theme.mainColors.secondaryDark};
+  font-size: ${(props) => props.theme.fontSizes.s};
+  margin-bottom: ${(props) => props.theme.spaceUnits.m};
+  margin-left: 0;
+`;
+
 async function fetchFundHistory(key: string, fund: string, depth: Depth) {
   const api = process.env.MELON_METRICS_API;
-  const url = `${api}/api/portfolio?address=${fund}&depth=${depth}`;
-
+  const url = `https://metrics.avantgarde.finance/api/portfolio?address=${fund}&depth=${depth}`;
+  console.log(url);
   const response = await fetch(url).then((res) => res.json());
 
   const onChaindata = (response.data as TimelineItem[]).map<Datum>((item) => ({
@@ -57,7 +67,7 @@ async function fetchFundHistory(key: string, fund: string, depth: Depth) {
     onchain: onChaindata,
     offchain: offChainData,
   };
-
+  console.log(data);
   return data;
 }
 
@@ -89,7 +99,18 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
     <Block>
       <SectionTitle>Share Price</SectionTitle>
       {data ? (
-        <PriceChart setDepth={setDepth} depth={depth} data={primary} secondaryData={secondary} loading={isFetching} />
+        <>
+          <PriceChart setDepth={setDepth} depth={depth} data={primary} secondaryData={secondary} loading={isFetching} />
+          {depth === '1w' || '1d' ? (
+            <ChartDescription>
+              On-chain prices are updated once daily and used for all fund accounting functions. Offchain prices are
+              displayed here for descriptive purposes only to show intra-update fluctuations. Because of the way they're
+              observed, there may be small differences between onchain and offchain prices.
+            </ChartDescription>
+          ) : (
+            <></>
+          )}
+        </>
       ) : (
         <Spinner />
       )}

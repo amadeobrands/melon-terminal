@@ -39,7 +39,8 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
   const theme = useTheme();
   const fund = useFund();
 
-  const showSecondaryData = props.depth === '1d' || props.depth === '1w' ? true : false;
+  // const showSecondaryData = props.depth === '1d' || props.depth === '1w' ? true : false;
+  const showSecondaryData = true;
   let data = [...props.data, ...(showSecondaryData && props.secondaryData ? props.secondaryData : [])];
 
   const options = {
