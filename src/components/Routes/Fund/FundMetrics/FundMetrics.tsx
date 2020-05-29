@@ -47,16 +47,16 @@ export function useFetchFundPrices(fund: string, depth: Depth) {
   });
 }
 
-async function fetchIndexPrices(key: string, startDate: string, endDate: string) {
+async function fetchIndexPrices(key?: string, startDate: string, endDate: string) {
   const apiKey = '007383bc-d3b7-4249-9a0d-b3a1d17113d9';
   const urlWithParams = `https://api.bitwiseinvestments.com/api/v1/indexes/BITWISE10/history?apiKey=${apiKey}&start=${startDate}&end=${endDate}`;
-
+  console.log(urlWithParams);
   const response = await fetch(urlWithParams)
     .then((response) => response.json())
     .catch((error) => console.log(error));
 
   const prices = response.map((item: number[]) => new BigNumber(item[1]));
-  console.log(prices);
+
   return prices as BigNumber[];
 }
 
@@ -67,7 +67,6 @@ function useFetchIndexPrices(startDate: string, endDate: string) {
 }
 
 function standardDeviation(values: BigNumber[]) {
-  console.log('in the std dev: ', values);
   const avg = average(values);
 
   const squareDiffs = values.map((value) => {
@@ -75,15 +74,8 @@ function standardDeviation(values: BigNumber[]) {
     const sqrDiff = diff.multipliedBy(diff);
     return sqrDiff;
   });
-
-  // console.log('squareDiffs: ')
-  // for (let i of squareDiffs){
-  //   console.log(i.decimalPlaces(8).toString())
-  // }
-
   const variance = average(squareDiffs);
-  console.log('variance: ', variance.toString());
-
+  // TODO make the day count dynamic
   const stdDev = variance.sqrt().multipliedBy(100).multipliedBy(Math.sqrt(30));
   return stdDev;
 }
@@ -102,10 +94,10 @@ export default function FundMetrics(props: FundMetricsProps) {
   const fund = useFund();
 
   // const [depth, setDepth] = React.useState<Depth>('1m');
-
   // const { data: fundData, error: fundError, isFetching: fundFetching } = useFetchFundPrices(props.address, depth);
-  // const fundInception = fund.creationTime!;
-  // const ageInMonths = differenceInCalendarMonths(today, fundInception);
+
+  const fundInception = fund.creationTime!;
+  const ageInMonths = differenceInCalendarMonths(today, fundInception);
 
   const { data: indexData, error: indexError, isFetching: indexFetching } = useFetchIndexPrices(
     startOfDay(subDays(subMonths(today, 1), 1)).toISOString(),
@@ -124,8 +116,6 @@ export default function FundMetrics(props: FundMetricsProps) {
     ? indexData.map<BigNumber[]>((price, idx) => {
         if (idx > 0) {
           const logReturn = new BigNumber(Math.log(price.toNumber()) - Math.log(indexData[idx - 1].toNumber()));
-
-          console.log('log return', logReturn.toString());
           return logReturn;
         } else {
           return new BigNumber(0);
@@ -134,20 +124,28 @@ export default function FundMetrics(props: FundMetricsProps) {
     : [new BigNumber('NaN')];
 
   const indexVol = indexDailyReturns.length > 0 ? standardDeviation(indexDailyReturns).toString() : 'nada';
-  console.log('index volatility ==>', indexVol);
-
+  console.log(indexVol);
   // const currentSharePrice = new BigNumber(1.25); // sharePriceQuery(today)
   // const monthStartPrice = new BigNumber(1.19); // sharePriceQuery(startOfMonth(today))
   // const yearStartPrice = new BigNumber(1.03); // sharePriceQuery(startOfYear(today))
   // const allTimeReturn = calculateReturn(currentSharePrice, new BigNumber(1));
 
-  // const fundMonthDates = new Array(ageInMonths)
-  //   .map((item, index) => {
-  //     const targetMonth = subMonths(today, index);
-  //     return [startOfMonth(targetMonth), endOfMonth(targetMonth)];
-  //   })
-  //   .reverse();
+  const fundMonthDates: [Date, Date][] = new Array(ageInMonths)
+    .map((item, index) => {
+      const targetMonth = subMonths(today, index);
+      return [startOfMonth(targetMonth), endOfMonth(targetMonth)];
+    })
+    .reverse();
 
+  const indexMonthlyPrices = Promise.all(
+    fundMonthDates.map((item) => {
+      return fetchIndexPrices('blank', item[0].toISOString(), item[1].toISOString());
+    })
+  ).then((res) => {
+    return res;
+  });
+
+  console.log('here', indexMonthlyPrices);
   //
   // const fundMonthlyPrices = fundMonthDates.map((item) => {
   //   Promise.all(item.map((date) => mockPriceQuery(date)));
@@ -208,6 +206,12 @@ export default function FundMetrics(props: FundMetricsProps) {
   return (
     <Dictionary>
       <SectionTitle>Fund Performance Metrics</SectionTitle>
+      <DictionaryEntry>
+        <DictionaryLabel>Index Vol</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          <FormattedNumber decimals={2} colorize={true} value={indexVol} suffix={'%'} />
+        </DictionaryData>
+      </DictionaryEntry>
       {/* <DictionaryEntry>
         <DictionaryLabel>Monthly Performance</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
