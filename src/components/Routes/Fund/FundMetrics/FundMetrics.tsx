@@ -30,9 +30,7 @@ export type Depth = '1y' | '6m' | '3m' | '1m' | '1w' | '1d';
 
 async function fetchFundPrices(key: string, address: string, depth: Depth) {
   const url = process.env.MELON_METRICS_API;
-
   const queryAddress = `https://metrics.avantgarde.finance/api/portfolio?address=${address}$depth=${depth}`;
-
   const response = await fetch(queryAddress)
     .then((response) => response.json())
     .catch((error) => console.log(error));
@@ -54,7 +52,6 @@ async function fetchIndexPrices(key?: string, startDate: string, endDate: string
   const response = await fetch(urlWithParams)
     .then((response) => response.json())
     .catch((error) => console.log(error));
-
   const prices = response.map((item: number[]) => new BigNumber(item[1]));
 
   return prices as BigNumber[];
@@ -93,12 +90,13 @@ export default function FundMetrics(props: FundMetricsProps) {
   const today = new Date();
   const fund = useFund();
 
-  // const [depth, setDepth] = React.useState<Depth>('1m');
-  // const { data: fundData, error: fundError, isFetching: fundFetching } = useFetchFundPrices(props.address, depth);
+  const [historicalIndexPrices, setHistoricalIndexPrices] = React.useState([]);
+  const [depth, setDepth] = React.useState<Depth>('1m');
+  const { data: fundData, error: fundError, isFetching: fundFetching } = useFetchFundPrices(props.address, depth);
 
   const fundInception = fund.creationTime!;
   const ageInMonths = differenceInCalendarMonths(today, fundInception);
-
+  console.log('AGE IN MONTHS: ', ageInMonths);
   const { data: indexData, error: indexError, isFetching: indexFetching } = useFetchIndexPrices(
     startOfDay(subDays(subMonths(today, 1), 1)).toISOString(),
     endOfDay(today).toISOString()
@@ -113,7 +111,7 @@ export default function FundMetrics(props: FundMetricsProps) {
   }
 
   const indexDailyReturns = indexData
-    ? indexData.map<BigNumber[]>((price, idx) => {
+    ? indexData.map<BigNumber[]>((price, idx: number) => {
         if (idx > 0) {
           const logReturn = new BigNumber(Math.log(price.toNumber()) - Math.log(indexData[idx - 1].toNumber()));
           return logReturn;
@@ -124,29 +122,29 @@ export default function FundMetrics(props: FundMetricsProps) {
     : [new BigNumber('NaN')];
 
   const indexVol = indexDailyReturns.length > 0 ? standardDeviation(indexDailyReturns).toString() : 'nada';
-  console.log(indexVol);
+
   // const currentSharePrice = new BigNumber(1.25); // sharePriceQuery(today)
   // const monthStartPrice = new BigNumber(1.19); // sharePriceQuery(startOfMonth(today))
   // const yearStartPrice = new BigNumber(1.03); // sharePriceQuery(startOfYear(today))
   // const allTimeReturn = calculateReturn(currentSharePrice, new BigNumber(1));
 
-  const fundMonthDates: [Date, Date][] = new Array(ageInMonths)
-    .map((item, index) => {
+  const fundMonthDates = new Array(ageInMonths + 1)
+    .fill(null)
+    .map((item, index: number) => {
       const targetMonth = subMonths(today, index);
-      return [startOfMonth(targetMonth), endOfMonth(targetMonth)];
+      return [startOfMonth(targetMonth), endOfMonth(targetMonth)] as [Date, Date];
     })
     .reverse();
 
-  const indexMonthlyPrices = Promise.all(
-    fundMonthDates.map((item) => {
-      return fetchIndexPrices('blank', item[0].toISOString(), item[1].toISOString());
-    })
-  ).then((res) => {
-    return res;
-  });
+  const indexMonthlyPrices = (async () => {
+    await Promise.all(
+      fundMonthDates.map((item) => {
+        return fetchIndexPrices('blank', item[0].toISOString(), item[1].toISOString());
+      })
+    );
+  })();
 
-  console.log('here', indexMonthlyPrices);
-  //
+  console.log(indexMonthlyPrices, '<<did it work?');
   // const fundMonthlyPrices = fundMonthDates.map((item) => {
   //   Promise.all(item.map((date) => mockPriceQuery(date)));
   // });
