@@ -79,6 +79,15 @@ async function fetchIndexPrices(key: string, startDate: string, endDate: string)
   return prices as BigNumber[];
 }
 
+async function fetchMultipleIndexPrices(dates: [Date, Date][]) {
+  const prices = await Promise.all(
+    dates.map((item) => {
+      return fetchIndexPrices('blank', item[0].toISOString(), item[1].toISOString());
+    })
+  );
+  return prices;
+}
+
 function useFetchIndexPrices(startDate: string, endDate: string) {
   return useQuery(['indices', startDate, endDate], fetchIndexPrices, {
     refetchOnWindowFocus: false,
@@ -105,6 +114,21 @@ function average(data: BigNumber[]) {
   return avg;
 }
 
+function calculateDailyLogReturns(arr: BigNumber[]) {
+  return arr.map((price, idx: number) => {
+    if (idx > 0) {
+      const logReturn = new BigNumber(Math.log(price.toNumber()) - Math.log(arr[idx - 1].toNumber()));
+      return logReturn;
+    } else {
+      return new BigNumber(0);
+    }
+  });
+}
+
+function calculatePeriodReturns(periodPrices: BigNumber[]) {
+  return calculateReturn(periodPrices[0], periodPrices[periodPrices.length - 1]);
+}
+
 function stripDuplicateOnchainPrices(timelineArray: TimelineItem[]) {
   return timelineArray
     .filter((item: TimelineItem, index: number, arr: TimelineItem[]) => {
@@ -123,6 +147,13 @@ export default function FundMetrics(props: FundMetricsProps) {
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
   const [depth, setDepth] = React.useState<Depth>('1m');
+  const [historicalMonthlyIndexPrices, setHistoricalMonthlyIndexPrices] = React.useState<BigNumber[][] | undefined>(
+    undefined
+  );
+
+  const fundInception = fund.creationTime!;
+  const ageInMonths = differenceInCalendarMonths(today, fundInception);
+
   const indexQueryStartDate = React.useMemo(() => {
     if (depth === '1w') {
       return startOfDay(subDays(subWeeks(today, 1), 1)).toISOString();
@@ -136,46 +167,13 @@ export default function FundMetrics(props: FundMetricsProps) {
       return startOfDay(subDays(subMonths(today, 12), 1)).toISOString();
     }
   }, [depth]);
+
   const { data: fundData, error: fundError, isFetching: fundFetching } = useFetchFundPrices(props.address, depth);
+
   const { data: indexData, error: indexError, isFetching: indexFetching } = useFetchIndexPrices(
     indexQueryStartDate,
     endOfDay(today).toISOString()
   );
-
-  if (!indexData && indexFetching) {
-    return (
-      <Block>
-        <Spinner />
-      </Block>
-    );
-  }
-
-  const fundInception = fund.creationTime!;
-  const ageInMonths = differenceInCalendarMonths(today, fundInception);
-
-  const indexDailyReturns = indexData
-    ? indexData.map((price, idx: number) => {
-        if (idx > 0) {
-          const logReturn = new BigNumber(Math.log(price.toNumber()) - Math.log(indexData[idx - 1].toNumber()));
-          return logReturn;
-        } else {
-          return new BigNumber(0);
-        }
-      })
-    : [new BigNumber('NaN')];
-
-  const indexVol = indexDailyReturns.length > 0 ? standardDeviation(indexDailyReturns).toString() : 'nada';
-
-  const onChainUpdates = fundData && stripDuplicateOnchainPrices(fundData.data);
-  const fundVol = onChainUpdates && standardDeviation(onChainUpdates).toString();
-  console.log(fundVol);
-
-  const currentSharePrice = onChainUpdates[onChainUpdates.length - 1]; // sharePriceQuery(today)
-  const monthStartPrice = onChainUpdates[0];
-
-  // const monthStartPrice = new BigNumber(1.19); // sharePriceQuery(startOfMonth(today))
-  // const yearStartPrice = new BigNumber(1.03); // sharePriceQuery(startOfYear(today))
-  // const allTimeReturn = calculateReturn(currentSharePrice, new BigNumber(1));
 
   const fundMonthDates = new Array(ageInMonths + 1)
     .fill(null)
@@ -185,23 +183,39 @@ export default function FundMetrics(props: FundMetricsProps) {
     })
     .reverse();
 
-  const indexMonthlyPrices = (async () => {
-    await Promise.all(
-      fundMonthDates.map((item) => {
-        return fetchIndexPrices('blank', item[0].toISOString(), item[1].toISOString());
-      })
+  React.useMemo(async () => {
+    const prices = await fetchMultipleIndexPrices(fundMonthDates);
+    setHistoricalMonthlyIndexPrices(prices);
+  }, [fund]);
+
+  if (!indexData && indexFetching) {
+    return (
+      <Block>
+        <Spinner />
+      </Block>
     );
-  })();
+  }
+
+  // currently hard coded to 1m
+  const indexDailyReturns = indexData ? calculateDailyLogReturns(indexData) : [new BigNumber('NaN')];
+  const monthlyIndexVol = indexDailyReturns.length > 0 ?? standardDeviation(indexDailyReturns).toString();
+  const monthlyIndexReturn = indexData && calculatePeriodReturns(indexData);
+
+  // currently hard coded to 1m
+  const onChainPriceUpdates = fundData && stripDuplicateOnchainPrices(fundData.data);
+  const monthlyFundVol = onChainPriceUpdates && standardDeviation(onChainPriceUpdates).toString();
+  const monthlyFundReturn = onChainPriceUpdates && calculatePeriodReturns(onChainPriceUpdates);
+
+  // const yearStartPrice = new BigNumber(1.03); // sharePriceQuery(startOfYear(today))
+  // const allTimeReturn = calculateReturn(currentSharePrice, new BigNumber(1));
 
   // const fundMonthlyPrices = fundMonthDates.map((item) => {
   //   Promise.all(item.map((date) => mockPriceQuery(date)));
   // });
 
   // const fundMonthlyReturns = fundMonthlyPrices.map((item) => {
-  //   return calculateReturn(item[0], item[1]);
+  //   return calculatePeriodReturn(item);
   // });
-
-  // const monthlyPerformance =
 
   // const performanceYTD = calculateReturn(currentSharePrice, yearStartPrice); // calculateReturn(currentSharePrice, yearStartSharePrice)
   // const annualizedReturn = allTimeReturn.exponentiatedBy(1 / (ageInMonths / 12)).minus(1); // all time return calculateReturn(currentSharePrice, 1) raised to the (1/time) minus 1 where time is the years since fund inception as a decimal
@@ -253,15 +267,27 @@ export default function FundMetrics(props: FundMetricsProps) {
     <Dictionary>
       <SectionTitle>Fund Performance Metrics</SectionTitle>
       <DictionaryEntry>
-        <DictionaryLabel>Fund Vol</DictionaryLabel>
+        <DictionaryLabel>Monthly Fund Vol</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} value={fundVol} suffix={'%'} />
+          <FormattedNumber decimals={2} value={monthlyFundVol} suffix={'%'} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
-        <DictionaryLabel>BitWise 10 Index Vol</DictionaryLabel>
+        <DictionaryLabel>MonthlyBitWise 10 Index Vol</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} value={indexVol} suffix={'%'} />
+          <FormattedNumber decimals={2} value={monthlyIndexVol} suffix={'%'} />
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>Monthly Fund Return</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          <FormattedNumber decimals={2} value={monthlyFundReturn} colorize={true} suffix={'%'} />
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>BitWise 10 Index Return</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          <FormattedNumber decimals={2} value={monthlyIndexReturn} colorize={true} suffix={'%'} />
         </DictionaryData>
       </DictionaryEntry>
       {/* <DictionaryEntry>
