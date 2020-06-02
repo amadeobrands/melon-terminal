@@ -22,6 +22,8 @@ import { SectionTitle } from '~/storybook/Title/Title';
 import { useQuery } from 'react-query';
 import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
+import { SelectWidget } from '~/components/Form/Select/Select';
+import { Button } from '~/components/Form/Button/Button';
 
 export interface FundMetricsProps {
   address: string;
@@ -53,6 +55,8 @@ interface TimelineItem {
 
 export type Depth = '1y' | '6m' | '3m' | '1m' | '1w' | '1d';
 
+const depths: Depth[] = ['1w', '1m', '3m', '6m', '1y'];
+
 async function fetchFundPrices(key: string, address: string, depth: Depth) {
   const url = process.env.MELON_METRICS_API;
   const queryAddress = `https://metrics.avantgarde.finance/api/portfolio?address=${address}&depth=${depth}`;
@@ -62,11 +66,25 @@ async function fetchFundPrices(key: string, address: string, depth: Depth) {
   return response;
 }
 
-export function useFetchFundPrices(fund: string, depth: Depth) {
+function useFetchFundPrices(fund: string, depth: Depth) {
   const address = React.useMemo(() => fund.toLowerCase(), [fund]);
   return useQuery(['prices', address, depth], fetchFundPrices, {
     refetchOnWindowFocus: false,
   });
+}
+
+function stripDuplicateOnchainPrices(timelineArray: TimelineItem[]) {
+  return timelineArray
+    .filter((item: TimelineItem, index: number, arr: TimelineItem[]) => {
+      if (index === 0) {
+        return item;
+      } else {
+        if (item.onchain.price != arr[index - 1].onchain.price) {
+          return item;
+        }
+      }
+    })
+    .map((item) => new BigNumber(item.onchain.price));
 }
 
 async function fetchIndexPrices(key: string, startDate: string, endDate: string) {
@@ -94,7 +112,7 @@ function useFetchIndexPrices(startDate: string, endDate: string) {
   });
 }
 
-function standardDeviation(values: BigNumber[]) {
+function calculateStdDev(values: BigNumber[]) {
   const avg = average(values);
   const squareDiffs = values.map((value) => {
     const diff = value.minus(avg);
@@ -102,8 +120,34 @@ function standardDeviation(values: BigNumber[]) {
     return sqrDiff;
   });
   const variance = average(squareDiffs);
-  const stdDev = variance.sqrt().multipliedBy(100).multipliedBy(Math.sqrt(values.length));
+  const stdDev = variance.sqrt().multipliedBy(Math.sqrt(values.length));
   return stdDev;
+}
+
+function calculateVAR(values: BigNumber[] | undefined) {
+  if (typeof values == 'undefined') {
+    return {
+      lowZ: 'Fetching Data',
+      highZ: 'Fetching Data',
+    };
+  } else {
+    const avg = average(values);
+    const squareDiffs = values.map((value) => {
+      const diff = value.minus(avg);
+      const sqrDiff = diff.multipliedBy(diff);
+      return sqrDiff;
+    });
+    const variance = average(squareDiffs);
+    const stdDev = variance.sqrt();
+    return {
+      lowZ: stdDev.multipliedBy(1.645).multipliedBy(100),
+      highZ: stdDev.multipliedBy(2.33).multipliedBy(100),
+    };
+  }
+}
+
+function calculateVolatility(stdDev: BigNumber, observations: number) {
+  return stdDev.multipliedBy(Math.sqrt(observations)).multipliedBy(100);
 }
 
 function average(data: BigNumber[]) {
@@ -127,20 +171,6 @@ function calculateDailyLogReturns(arr: BigNumber[]) {
 
 function calculatePeriodReturns(periodPrices: BigNumber[]) {
   return calculateReturn(periodPrices[0], periodPrices[periodPrices.length - 1]);
-}
-
-function stripDuplicateOnchainPrices(timelineArray: TimelineItem[]) {
-  return timelineArray
-    .filter((item: TimelineItem, index: number, arr: TimelineItem[]) => {
-      if (index === 0) {
-        return item;
-      } else {
-        if (item.onchain.price != arr[index - 1].onchain.price) {
-          return item;
-        }
-      }
-    })
-    .map((item) => new BigNumber(item.onchain.price));
 }
 
 export default function FundMetrics(props: FundMetricsProps) {
@@ -196,15 +226,31 @@ export default function FundMetrics(props: FundMetricsProps) {
     );
   }
 
-  // currently hard coded to 1m
+  // indexData is an array of bignumbers, every index price since the date that's passed
+  // indexDailyReturns is an array of bignumbers, with index 0 being the return on day 0 and index(len-1) the return yesterday
+  // periodIndexVol takes the daily returns as a parameter and returns a bignumber == the volatility of those returns
+  // periodIndexVar takes the daily returns as a parameter and returns an object where lowZ == 95% CI and highZ = 99% CI
   const indexDailyReturns = indexData ? calculateDailyLogReturns(indexData) : [new BigNumber('NaN')];
-  const monthlyIndexVol = indexDailyReturns.length > 0 ?? standardDeviation(indexDailyReturns).toString();
-  const monthlyIndexReturn = indexData && calculatePeriodReturns(indexData);
+  const periodIndexVol = indexData
+    ? calculateVolatility(calculateStdDev(indexDailyReturns), indexDailyReturns.length)
+    : new BigNumber('Nan');
+  const periodIndexReturn = indexData ? calculatePeriodReturns(indexData) : new BigNumber('Nan');
+  const periodIndexVAR = indexDailyReturns && calculateVAR(indexDailyReturns);
 
-  // currently hard coded to 1m
+  // fundData.data is an array of price objects with onchain and offchain prices as well as fund holdings data
+  // onChainPriceUpdates is an array of BigNumbers with the duplicate onchain prices stripped out (would otherwise remain constant for a day)
   const onChainPriceUpdates = fundData && stripDuplicateOnchainPrices(fundData.data);
-  const monthlyFundVol = onChainPriceUpdates && standardDeviation(onChainPriceUpdates).toString();
-  const monthlyFundReturn = onChainPriceUpdates && calculatePeriodReturns(onChainPriceUpdates);
+  // onChainDailyReturns is an array of BigNumbers showing the inter-day returns starting with day 1's return  and ending with yesterday's
+  const onChainDailyReturns = onChainPriceUpdates
+    ? calculateDailyLogReturns(onChainPriceUpdates)
+    : [new BigNumber('Nan')];
+  // periodFundVol takes the onChainDailyReturns as a parameter and returns a bignumber === the volatility of those returns
+  const periodFundVol =
+    onChainDailyReturns && calculateVolatility(calculateStdDev(onChainDailyReturns), onChainDailyReturns.length);
+  // periodFundReturn takes the onChainPriceUpdates as a parameter and returns a bignumner
+  const periodFundReturn = onChainPriceUpdates ? calculatePeriodReturns(onChainPriceUpdates) : new BigNumber('Nan');
+  // periodFundVar takes the daily returns as a parameter and returns an object where lowZ = 95% CI and highZ = 9% CI
+  const periodFundVAR = onChainDailyReturns && calculateVAR(onChainDailyReturns);
 
   // const yearStartPrice = new BigNumber(1.03); // sharePriceQuery(startOfYear(today))
   // const allTimeReturn = calculateReturn(currentSharePrice, new BigNumber(1));
@@ -231,6 +277,15 @@ export default function FundMetrics(props: FundMetricsProps) {
    *  - you now have an array of date arrays. call the historicalSharePrice query on both dates
    *  - you now have an array of prices, map over it and call calculateReturn(item[0], item[1])
    *  - you now have an array of returns, over which you can reduce to find best month worst month, positive/negative ratio, etc
+   *
+   * VAR has three components - time period, confidence level, and loss amount (percentage)
+   * "What's the most I can, with a 95% level of confidence, expect to lose in dollars over the next month"
+   * - manual/historical method:
+   *  - aggregate daily returns over the time period
+   *  - create a sorted array of those returns
+   *  - find the top 95% of returns
+   *  - VAR says that you are 95% confident that over X time period your returns will be > the best of the rest
+   *
    */
   // const bestMonth = fundMonthlyReturns.reduce((carry, current) => {
   //   if (current.isGreaterThan(carry)) {
@@ -262,34 +317,66 @@ export default function FundMetrics(props: FundMetricsProps) {
   // const averageGain = average(fundMonthlyReturns);
 
   const assumedRiskFreeRate = 0.5;
-
+  /**
+ *             <tbody>
+              {policies.map((policy) => (
+                <BodyRow key={policy.address}>
+                  <BodyCell>{policy.identifier}</BodyCell>
+                  <FundPoliciesParameters policy={policy} environment={environment} />
+                </BodyRow>
+              ))}
+            </tbody>
+ */
   return (
     <Dictionary>
       <SectionTitle>Fund Performance Metrics</SectionTitle>
+      {depths.map((depth, index) => (
+        <Button
+          key={index}
+          onClick={() => {
+            setDepth(depth);
+          }}
+        >
+          {depth}
+        </Button>
+      ))}
       <DictionaryEntry>
-        <DictionaryLabel>Monthly Fund Vol</DictionaryLabel>
+        <DictionaryLabel>{depth} Fund Volatility </DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} value={monthlyFundVol} suffix={'%'} />
+          <FormattedNumber decimals={2} value={periodFundVol} suffix={'%'} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
-        <DictionaryLabel>MonthlyBitWise 10 Index Vol</DictionaryLabel>
+        <DictionaryLabel>{depth} BitWise 10 Index Vol</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} value={monthlyIndexVol} suffix={'%'} />
+          <FormattedNumber decimals={2} value={periodIndexVol} suffix={'%'} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
-        <DictionaryLabel>Monthly Fund Return</DictionaryLabel>
+        <DictionaryLabel>{depth} Fund Return</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} value={monthlyFundReturn} colorize={true} suffix={'%'} />
+          <FormattedNumber decimals={2} value={periodFundReturn} colorize={true} suffix={'%'} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
-        <DictionaryLabel>BitWise 10 Index Return</DictionaryLabel>
+        <DictionaryLabel>{depth} BitWise 10 Index Return</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} value={monthlyIndexReturn} colorize={true} suffix={'%'} />
+          <FormattedNumber decimals={2} value={periodIndexReturn} colorize={true} suffix={'%'} />
         </DictionaryData>
       </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>{depth} Fund VAR</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          <FormattedNumber decimals={2} value={periodFundVAR?.lowZ} colorize={false} suffix={'%'} />
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>{depth} BitWise 10 Index VAR</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          <FormattedNumber decimals={2} value={periodIndexVAR?.lowZ} colorize={false} suffix={'%'} />
+        </DictionaryData>
+      </DictionaryEntry>
+
       {/* <DictionaryEntry>
         <DictionaryLabel>Monthly Performance</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
