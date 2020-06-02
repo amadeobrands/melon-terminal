@@ -180,7 +180,7 @@ function calculatePeriodReturns(periodPrices: BigNumber[]) {
   return calculateReturn(periodPrices[0], periodPrices[periodPrices.length - 1]);
 }
 
-export default function FundMetrics(props: FundMetricsProps) {
+export default function FundPerformanceMetrics(props: FundMetricsProps) {
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
   const [depth, setDepth] = React.useState<Depth>('1m');

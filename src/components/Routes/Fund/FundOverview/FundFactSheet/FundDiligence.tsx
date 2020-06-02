@@ -23,8 +23,6 @@ import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenVa
 import { range } from 'ramda';
 import { useFundSlug } from '../../FundHeader/FundSlug.query';
 import { NetworkEnum } from '~/types';
-import { FundMetrics } from '~/components/Routes/Home/FundMetrics/FundMetrics';
-import FundPerformanceMetrics from './FundPerformanceMetrics';
 
 export interface NormalizedCalculation {
   sharePrice: BigNumber;
@@ -43,7 +41,7 @@ export const numberPadding = (digits: number, maxDigits: number) => {
     .join('');
 };
 
-export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
+export const FundDiligence: React.FC<FundFactSheetProps> = ({ address }) => {
   const [fund, fundQuery] = useFundDetailsQuery(address);
   const environment = useEnvironment()!;
   const account = useAccount();
@@ -62,12 +60,6 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
   if (!fund) {
     return null;
   }
-
-  const isManager = sameAddress(fund.manager, account.address);
-
-  const slugUrl =
-    slug &&
-    slug + (environment.network > 1 ? `.${NetworkEnum[environment.network].toLowerCase()}.melon.fund` : '.melon.fund');
 
   const routes = fund.routes;
   const creation = fund.creationTime;
@@ -132,24 +124,6 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
     normalizedCalculations &&
     standardDeviation(normalizedCalculations.map((item) => item.logReturn)) * 100 * Math.sqrt(365.25);
 
-  const exchanges = routes?.trading?.exchanges
-    ?.map((exchange) => environment?.getExchange(exchange as any))
-    .filter((item) => !!item)
-    .sort((a, b) => {
-      if (a.historic === b.historic) {
-        return 0;
-      }
-
-      return a.historic ? 1 : -1;
-    })
-    .filter((item, index, array) => {
-      const found = array.findIndex((inner) => sameAddress(item.exchange, inner.exchange));
-      return found >= index;
-    });
-
-  const allowedAssets = routes?.participation?.allowedAssets;
-  const allowedAssetsSymbols = allowedAssets?.map((asset) => asset?.token?.symbol);
-
   return (
     <Dictionary>
       <SectionTitle>
@@ -205,49 +179,10 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
       </DictionaryEntry>
 
       <DictionaryDivider />
-      <FundPerformanceMetrics address={address} />
+      <SectionTitle>Fund Performance</SectionTitle>
+
       <DictionaryDivider />
       <SectionTitle>Due Diligence</SectionTitle>
-      <DictionaryEntry>
-        <DictionaryLabel>Protocol version</DictionaryLabel>
-        <DictionaryData>{version?.name ? version.name : 'N/A'}</DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Fund address</DictionaryLabel>
-        <DictionaryData>
-          <EtherscanLink address={address} />
-        </DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Manager address</DictionaryLabel>
-        <DictionaryData>
-          <EtherscanLink address={fund.manager} />
-        </DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Management fee</DictionaryLabel>
-        <DictionaryData>{managementFee?.rate}%</DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Performance fee</DictionaryLabel>
-        <DictionaryData>{performanceFee?.rate}%</DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Performance fee period</DictionaryLabel>
-        <DictionaryData>{performanceFee?.period} days</DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Start of next performance fee period</DictionaryLabel>
-        <DictionaryData>
-          <FormattedDate timestamp={nextPeriodStart} />
-        </DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Return since inception</DictionaryLabel>
-        <DictionaryData>
-          <FormattedNumber value={returnSinceInception} colorize={true} decimals={2} suffix="%" />
-        </DictionaryData>
-      </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Annualized return</DictionaryLabel>
         <DictionaryData>
@@ -267,23 +202,6 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
             <>Too early to tell</>
           )}
         </DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Authorized exchanges</DictionaryLabel>
-        <DictionaryData>
-          {exchanges?.map((item, index) => (
-            <Fragment key={item.id}>
-              <EtherscanLink key={index} inline={true} address={item.adapter}>
-                {item.name}
-              </EtherscanLink>
-              {index + 1 < exchanges.length && ', '}
-            </Fragment>
-          ))}
-        </DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Investable assets</DictionaryLabel>
-        <DictionaryData>{allowedAssetsSymbols ? allowedAssetsSymbols.sort().join(', ') : 'N/A'}</DictionaryData>
       </DictionaryEntry>
     </Dictionary>
   );
