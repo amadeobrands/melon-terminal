@@ -3,6 +3,7 @@ import { FundHoldings } from '../FundHoldings/FundHoldings';
 import { FundPolicies } from '../FundPolicies/FundPolicies';
 import { FundContracts } from './FundContracts/FundContracts';
 import { FundFactSheet } from './FundFactSheet/FundFactSheet';
+import { NewFundPerformanceChart } from '../FundPerformanceChart/FundPerformanceChart';
 import { Grid, GridRow, GridCol } from '~/storybook/Grid/Grid';
 import { FundPerformanceTable } from '~/components/Routes/Fund/FundPerfomanceTable/FundPerformanceTable';
 import FundMetrics from '../FundMetrics/FundMetrics';
@@ -13,6 +14,11 @@ export interface FundOverviewProps {
 
 export const FundOverview: React.FC<FundOverviewProps> = ({ address }) => (
   <Grid>
+    <GridRow>
+      <GridCol xs={12} sm={12}>
+        <NewFundPerformanceChart address={address} />
+      </GridCol>
+    </GridRow>
     <GridRow>
       <GridCol xs={12} sm={5}>
         <FundFactSheet address={address} />
@@ -36,5 +42,9 @@ export const FundOverview: React.FC<FundOverviewProps> = ({ address }) => (
     </GridRow>
   </Grid>
 );
+
+// pass it the query object and a function that it can apply to the query object
+// post processing function prop, nivo calls refetch,
+// uselazyquery
 
 export default FundOverview;

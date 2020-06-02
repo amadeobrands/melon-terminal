@@ -37,6 +37,5 @@ export const Default = () => (
     label={text('label', "I'm a label")}
     baseTokens={tokens}
     quoteTokens={tokens}
-    onChange={(after, before) => console.log({ after, before })}
   />
 );

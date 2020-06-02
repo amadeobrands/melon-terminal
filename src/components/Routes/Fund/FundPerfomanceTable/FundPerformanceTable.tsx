@@ -17,7 +17,7 @@ import { SectionTitle } from '~/storybook/Title/Title';
 import { useFundPerformanceQuery } from './FundPerformance.query';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { SelectWidget } from '~/components/Form/Select/Select';
-import { Button } from '~/components/Form/Button/Button.styles';
+import { Button } from '~/components/Form/Button/Button';
 
 export interface FundPerformanceTableProps {
   address: string;
@@ -51,7 +51,6 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
   }, [selectedTokens]);
 
   const [fund, assets, query] = useFundPerformanceQuery(address, selectedTokens);
-
   function toggleTokenSelection(symbol: string) {
     if (!symbol) {
       return;
@@ -172,5 +171,4 @@ export const FundPerformanceTable: React.FC<FundPerformanceTableProps> = ({ addr
       <TableDescription>Fund share price and assets benchmarked against ETH</TableDescription>
     </Block>
   );
-  // }
 };
