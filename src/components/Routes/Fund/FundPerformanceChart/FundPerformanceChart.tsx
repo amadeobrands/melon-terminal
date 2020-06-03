@@ -3,11 +3,10 @@ import BigNumber from 'bignumber.js';
 import { useQuery } from 'react-query';
 import { Block } from '~/storybook/Block/Block';
 import { SectionTitle } from '~/storybook/Title/Title';
-import { ZoomControl, Serie, Datum } from '~/components/Charts/ZoomControl/ZoomControl';
+import { Serie, Datum } from '~/components/Charts/ZoomControl/ZoomControl';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { PriceChart } from '~/components/Charts/PriceChart/PriceChart';
 import styled from 'styled-components';
-import { Chart } from '~/components/Charts/PriceChart/PriceChart.styles';
 import { findCorrectToTime } from '~/utils/priceServiceDates';
 
 export interface NewFundPerformanceChartProps {
@@ -99,7 +98,7 @@ async function fetchFundHistoryByDate(key: string, fund: string, from: number, t
   const api = process.env.MELON_METRICS_API;
   const url = `${api}/api/range?address=${fund}&from=${from}&to=${to}`;
   const response = await fetch(url).then((res) => res.json());
-  console.log(response);
+
   const priceData = (response.data as RangeTimelineItem[]).map<Datum>((item) => ({
     x: new Date(item.timestamp * 1000),
     y: new BigNumber(item.onchain.price).toPrecision(8),
@@ -149,7 +148,6 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
       ? [{ id: 'on-chain', name: 'On-chain share price', type: 'area', data: byDateData }]
       : []) as Serie[];
   }, [byDateData]);
-  console.log(dataByDate);
 
   return (
     <Block>
@@ -161,6 +159,7 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
             setDate={setFromDate}
             setQueryType={setQueryType}
             queryType={queryType}
+            queryFromDate={fromDate}
             depth={depth}
             data={queryType === 'depth' ? primary : dataByDate}
             secondaryData={queryType === 'depth' ? secondary : undefined}

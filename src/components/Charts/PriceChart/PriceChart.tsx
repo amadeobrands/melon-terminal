@@ -36,6 +36,7 @@ export interface PriceChartProps {
   setDate: (date: number) => void;
   setQueryType: (type: string) => 'depth' | 'date';
   queryType: 'depth' | 'date';
+  queryFromDate: number;
 }
 
 export const PriceChart: React.FC<PriceChartProps> = (props) => {
@@ -116,6 +117,8 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
         setDepth={props.setDepth}
         setDate={props.setDate}
         setQueryType={props.setQueryType}
+        queryFromDate={props.queryFromDate}
+        queryType={props.queryType}
       />
 
       <S.Chart>

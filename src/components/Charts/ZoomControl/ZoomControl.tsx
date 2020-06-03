@@ -43,7 +43,7 @@ interface ZoomOption {
   label: string;
   active?: boolean;
   disabled?: boolean | undefined;
-  timestamp: number;
+  timestamp?: number;
   type: 'depth' | 'date';
 }
 
@@ -55,6 +55,7 @@ export interface ZoomControlProps {
   setDate: (date: number) => void;
   setQueryType: (queryType: string) => void;
   queryType: 'depth' | 'date';
+  queryFromDate: number;
   fundInceptionDate: Date | undefined;
 }
 
@@ -73,21 +74,25 @@ export const ZoomControl: React.FC<ZoomControlProps> = (props) => {
       {
         label: 'YTD',
         value: findCorrectFromTime(startOfYear(today)),
-        timestamp: subMonths(today, 12).getTime(),
         type: 'date',
       },
       {
         label: 'All Time',
         value: findCorrectFromTime(props.fundInceptionDate!),
-        timestamp: subMonths(today, 12).getTime(),
         type: 'date',
       },
     ];
 
     return options.map((item) => ({
       ...item,
-      active: item.value === props.depth,
-      disabled: fundInceptionDate && item.type === 'depth' ? item.timestamp < fundInceptionDate : undefined,
+      // if the props.queryType is the same as the item type - i.e. a depth query has been called and the button
+      // controls a depth query, if that depth query that's been called is the same as the buttons, display true
+      // if the a date query has been called, if the da
+      active: props.queryType === 'depth' ? item.value === props.depth : item.value === props.queryFromDate,
+      // active:
+      //   (props.queryType === item.type && item.value === props.depth) ||
+      //   (props.queryType === item.type && item.value === props.queryFromDate),
+      disabled: fundInceptionDate && item.timestamp ? item.timestamp < fundInceptionDate : undefined,
     }));
   }, [props.depth]);
 
