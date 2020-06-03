@@ -1,6 +1,7 @@
 import React from 'react';
 import * as S from './ZoomControl.styles';
-import { subDays, subWeeks, subMonths } from 'date-fns';
+import { subDays, subWeeks, subMonths, startOfYear } from 'date-fns';
+import { findCorrectFromTime } from '~/utils/priceServiceDates';
 
 /**
  * This component wraps a SimplePriceChart and controls the fetching and parsing of data that
@@ -38,41 +39,68 @@ export interface Datum {
 }
 
 interface ZoomOption {
-  value: Depth;
+  value: Depth | number;
   label: string;
   active?: boolean;
   disabled?: boolean | undefined;
   timestamp: number;
+  type: 'depth' | 'date';
 }
 
 export type Depth = '1d' | '1w' | '1m' | '3m' | '6m' | '1y';
 
-export interface LineChartProps {
+export interface ZoomControlProps {
   depth: Depth;
   setDepth: (depth: Depth) => void;
+  setDate: (date: number) => void;
+  setQueryType: (queryType: string) => void;
+  queryType: 'depth' | 'date';
   fundInceptionDate: Date | undefined;
 }
 
-export const ZoomControl: React.FC<LineChartProps> = (props) => {
+export const ZoomControl: React.FC<ZoomControlProps> = (props) => {
   const today = new Date();
   const fundInceptionDate: undefined | number = props.fundInceptionDate && props.fundInceptionDate.getTime();
 
   const options = React.useMemo<ZoomOption[]>(() => {
     const options: ZoomOption[] = [
-      { label: '1d', value: '1d', timestamp: subDays(today, 1).getTime() },
-      { label: '1w', value: '1w', timestamp: subWeeks(today, 1).getTime() },
-      { label: '1m', value: '1m', timestamp: subMonths(today, 1).getTime() },
-      { label: '3m', value: '3m', timestamp: subMonths(today, 3).getTime() },
-      { label: '6m', value: '6m', timestamp: subMonths(today, 6).getTime() },
-      { label: '1y', value: '1y', timestamp: subMonths(today, 12).getTime() },
+      { label: '1d', value: '1d', timestamp: subDays(today, 1).getTime(), type: 'depth' },
+      { label: '1w', value: '1w', timestamp: subWeeks(today, 1).getTime(), type: 'depth' },
+      { label: '1m', value: '1m', timestamp: subMonths(today, 1).getTime(), type: 'depth' },
+      { label: '3m', value: '3m', timestamp: subMonths(today, 3).getTime(), type: 'depth' },
+      { label: '6m', value: '6m', timestamp: subMonths(today, 6).getTime(), type: 'depth' },
+      { label: '1y', value: '1y', timestamp: subMonths(today, 12).getTime(), type: 'depth' },
+      {
+        label: 'YTD',
+        value: findCorrectFromTime(startOfYear(today)),
+        timestamp: subMonths(today, 12).getTime(),
+        type: 'date',
+      },
+      {
+        label: 'All Time',
+        value: findCorrectFromTime(props.fundInceptionDate!),
+        timestamp: subMonths(today, 12).getTime(),
+        type: 'date',
+      },
     ];
 
     return options.map((item) => ({
       ...item,
       active: item.value === props.depth,
-      disabled: fundInceptionDate ? item.timestamp < fundInceptionDate : undefined,
+      disabled: fundInceptionDate && item.type === 'depth' ? item.timestamp < fundInceptionDate : undefined,
     }));
   }, [props.depth]);
+
+  function clickHandler(queryType: string, queryValue: Depth | number) {
+    if (queryType === 'depth') {
+      props.setDepth(queryValue);
+    } else {
+      props.setDate(queryValue);
+    }
+    if (queryType != props.queryType) {
+      props.setQueryType(queryType);
+    }
+  }
 
   return (
     <>
@@ -84,7 +112,7 @@ export const ZoomControl: React.FC<LineChartProps> = (props) => {
             disabled={item.disabled}
             size="small"
             key={index}
-            onClick={() => props.setDepth(item.value)}
+            onClick={() => clickHandler(item.type, item.value)}
           >
             {item.label}
           </S.ChartButton>

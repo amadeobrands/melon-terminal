@@ -33,6 +33,9 @@ export interface PriceChartProps {
   data: Serie[];
   secondaryData?: Serie[];
   setDepth: (depth: Depth) => void;
+  setDate: (date: number) => void;
+  setQueryType: (type: string) => 'depth' | 'date';
+  queryType: 'depth' | 'date';
 }
 
 export const PriceChart: React.FC<PriceChartProps> = (props) => {
@@ -107,7 +110,13 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
 
   return (
     <>
-      <ZoomControl fundInceptionDate={fund.creationTime} depth={props.depth} setDepth={props.setDepth} />
+      <ZoomControl
+        fundInceptionDate={fund.creationTime}
+        depth={props.depth}
+        setDepth={props.setDepth}
+        setDate={props.setDate}
+        setQueryType={props.setQueryType}
+      />
 
       <S.Chart>
         <ReactApexChart options={options} series={data} type="area" height={350} />
