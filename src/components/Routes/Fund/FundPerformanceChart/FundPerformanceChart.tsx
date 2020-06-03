@@ -49,7 +49,7 @@ const ChartDescription = styled.span`
 
 async function fetchFundHistory(key: string, fund: string, depth: Depth) {
   const api = process.env.MELON_METRICS_API;
-  const url = `${api}/api/portfolio?address=${fund}&depth=${depth}`;
+  const url = `${api}/api/depth?address=${fund}&depth=${depth}`;
   const response = await fetch(url).then((res) => res.json());
 
   const onChaindata = (response.data as TimelineItem[]).map<Datum>((item) => ({
@@ -66,7 +66,7 @@ async function fetchFundHistory(key: string, fund: string, depth: Depth) {
     onchain: onChaindata,
     offchain: offChainData,
   };
-
+  console.log(data);
   return data;
 }
 

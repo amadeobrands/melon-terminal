@@ -128,13 +128,6 @@ export const FundDiligence: React.FC<FundFactSheetProps> = ({ address }) => {
     <Dictionary>
       <SectionTitle>
         <span>Fund Factsheet</span>
-        <TwitterLink
-          text={
-            isManager
-              ? `Check out my on-chain fund on Melon "${fund.name}" deployed to @ethereum and powered by @melonprotocol on https://${slugUrl}.`
-              : `Check out this interesting on-chain fund on Melon "${fund.name}" deployed to @ethereum and powered by @melonprotocol on https://${slugUrl}.`
-          }
-        />
       </SectionTitle>
       <DictionaryEntry>
         <DictionaryLabel>Fund name</DictionaryLabel>
