@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import * as S from './ZoomControl.styles';
 import { subDays, subWeeks, subMonths, startOfYear } from 'date-fns';
 import { findCorrectFromTime } from '~/utils/priceServiceDates';
@@ -38,10 +38,16 @@ export interface Datum {
   y: number | string;
 }
 
+interface clickHandlerParams {
+  queryType: 'depth' | 'date';
+  depthQueryValue?: Depth;
+  dateQueryValue?: number;
+  buttonLabel: string;
+}
+
 interface ZoomOption {
   value: Depth | number;
   label: string;
-  active?: boolean;
   disabled?: boolean | undefined;
   timestamp?: number;
   type: 'depth' | 'date';
@@ -53,7 +59,7 @@ export interface ZoomControlProps {
   depth: Depth;
   setDepth: (depth: Depth) => void;
   setDate: (date: number) => void;
-  setQueryType: (queryType: string) => void;
+  setQueryType: Dispatch<SetStateAction<'depth' | 'date'>>;
   queryType: 'depth' | 'date';
   queryFromDate: number;
   fundInceptionDate: Date | undefined;
@@ -62,7 +68,7 @@ export interface ZoomControlProps {
 export const ZoomControl: React.FC<ZoomControlProps> = (props) => {
   const today = new Date();
   const fundInceptionDate: undefined | number = props.fundInceptionDate && props.fundInceptionDate.getTime();
-
+  const [activeButton, setActiveButton] = React.useState('1m');
   const options = React.useMemo<ZoomOption[]>(() => {
     const options: ZoomOption[] = [
       { label: '1d', value: '1d', timestamp: subDays(today, 1).getTime(), type: 'depth' },
@@ -85,25 +91,20 @@ export const ZoomControl: React.FC<ZoomControlProps> = (props) => {
 
     return options.map((item) => ({
       ...item,
-      // if the props.queryType is the same as the item type - i.e. a depth query has been called and the button
-      // controls a depth query, if that depth query that's been called is the same as the buttons, display true
-      // if the a date query has been called, if the da
-      active: props.queryType === 'depth' ? item.value === props.depth : item.value === props.queryFromDate,
-      // active:
-      //   (props.queryType === item.type && item.value === props.depth) ||
-      //   (props.queryType === item.type && item.value === props.queryFromDate),
       disabled: fundInceptionDate && item.timestamp ? item.timestamp < fundInceptionDate : undefined,
     }));
   }, [props.depth]);
 
-  function clickHandler(queryType: string, queryValue: Depth | number) {
-    if (queryType === 'depth') {
-      props.setDepth(queryValue);
+  function clickHandler(params: clickHandlerParams) {
+    setActiveButton(params.buttonLabel);
+
+    if (params.queryType === 'depth' && params.depthQueryValue) {
+      props.setDepth(params.depthQueryValue);
     } else {
-      props.setDate(queryValue);
+      props.setDate(params.dateQueryValue!);
     }
-    if (queryType != props.queryType) {
-      props.setQueryType(queryType);
+    if (params.queryType != props.queryType) {
+      props.setQueryType(params.queryType);
     }
   }
 
@@ -111,18 +112,39 @@ export const ZoomControl: React.FC<ZoomControlProps> = (props) => {
     <>
       <S.ControlBox>
         Zoom:<span></span>
-        {options.map((item, index) => (
-          <S.ChartButton
-            kind={item.active ? 'success' : 'secondary'}
-            disabled={item.disabled}
-            size="small"
-            key={index}
-            onClick={() => clickHandler(item.type, item.value)}
-          >
-            {item.label}
-          </S.ChartButton>
-        ))}
+        {options.map((item, index) => {
+          const queryValue = item.type === 'depth' ? 'depthQueryValue' : 'dateQueryValue';
+          const clickParams: clickHandlerParams = {
+            queryType: item.type,
+            [queryValue]: item.value,
+            buttonLabel: item.label,
+          };
+
+          return (
+            <S.ChartButton
+              kind={item.label === activeButton ? 'success' : 'secondary'}
+              disabled={item.disabled}
+              size="small"
+              key={index}
+              onClick={() => clickHandler(clickParams)}
+            >
+              {item.label}
+            </S.ChartButton>
+          );
+        })}
       </S.ControlBox>
     </>
   );
 };
+
+/**
+ *         {loading ? (
+          ''
+        ) : valid ? (
+          <>
+            Buy <FormattedNumber value={value} suffix={state.maker.symbol} />
+          </>
+        ) : (
+          'No Offer'
+        )}
+ */

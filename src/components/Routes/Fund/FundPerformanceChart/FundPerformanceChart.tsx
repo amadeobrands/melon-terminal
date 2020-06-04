@@ -118,6 +118,7 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
   const [depth, setDepth] = React.useState<Depth>('1m');
   const [queryType, setQueryType] = React.useState<'depth' | 'date'>('depth');
   const [fromDate, setFromDate] = React.useState<number>(1577750400);
+
   const { data: byDepthData, error: byDepthError, isFetching: byDepthFetching } = useFundHistoryByDepth(
     props.address,
     depth
@@ -165,15 +166,6 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
             secondaryData={queryType === 'depth' ? secondary : undefined}
             loading={byDepthFetching || byDateFetching}
           />
-          {depth === '1w' || '1d' ? (
-            <ChartDescription>
-              On-chain prices are updated once daily and used for all fund accounting functions. Offchain prices are
-              displayed here for descriptive purposes only to show intra-update fluctuations. Because of the way they're
-              observed, there may be small differences between onchain and offchain prices.
-            </ChartDescription>
-          ) : (
-            <></>
-          )}
         </>
       ) : (
         <Spinner />
