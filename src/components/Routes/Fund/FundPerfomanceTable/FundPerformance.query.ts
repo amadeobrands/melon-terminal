@@ -27,6 +27,7 @@ const FundPerformanceQuery = gql`
 
   fragment FundCalculationsHistoryFragment on FundCalculationsHistory {
     sharePrice
+    timestamp
     validPrices
   }
 
@@ -198,7 +199,9 @@ export const useFundPerformanceQuery = (address: string, symbols: string[]) => {
   }, [result.data?.fund, context.name]);
 
   const assets = useMemo(() => {
-    return result.data?.assets ? assembleAssetReturnObject(result.data?.assets) : undefined;
+    return result.data?.assets
+      ? assembleAssetReturnObject(result.data?.assets, context.creationTime!.getTime() / 1000)
+      : undefined;
   }, [result.data?.assets]);
 
   return [fund, assets, result] as [typeof fund, typeof assets, typeof result];
@@ -223,8 +226,14 @@ function computeFundBenchmarkData(input: FundPerformance, name: string): FundCal
 
   return {
     name,
-    qtdReturn: calculateReturn(data.currentPx, data.quarterStartPx),
-    ytdReturn: calculateReturn(data.currentPx, data.yearStartPx),
+    qtdReturn: calculateReturn(
+      data.currentPx,
+      data.quarterStartPx === nan ? fromTokenBaseUnit(1000000000000000000, 8) : data.quarterStartPx
+    ),
+    ytdReturn: calculateReturn(
+      data.currentPx,
+      data.yearStartPx === nan ? fromTokenBaseUnit(1000000000000000000, 8) : data.yearStartPx
+    ),
     oneMonthReturn: calculateReturn(data.currentPx, data.oneMonthBackPx),
     sixMonthReturn: calculateReturn(data.currentPx, data.sixMonthsBackPx),
     oneYearReturn: calculateReturn(data.currentPx, data.oneYearBackPx),
@@ -232,7 +241,7 @@ function computeFundBenchmarkData(input: FundPerformance, name: string): FundCal
   };
 }
 
-function computeAssetBenchmarkData(input: AssetPerformance): AssetCalculatedReturns {
+function computeAssetBenchmarkData(input: AssetPerformance, fundAge: number): AssetCalculatedReturns {
   const nan = new BigNumber('NaN');
   const keys = [
     'currentPx',
@@ -247,7 +256,14 @@ function computeAssetBenchmarkData(input: AssetPerformance): AssetCalculatedRetu
   const data = keys.reduce((carry, key) => {
     const value = input[key] && input[key][0];
     const valid = value?.priceValid;
-    return { ...carry, [key]: valid ? fromTokenBaseUnit(value?.price ?? nan, 8) : nan };
+    const ageCheck = input[key][0].timestamp > fundAge;
+    return {
+      ...carry,
+      [key]:
+        valid && ageCheck
+          ? fromTokenBaseUnit(value?.price ?? nan, 8)
+          : fromTokenBaseUnit(input['inceptionDatePx'][0].price, 8),
+    };
   }, {} as AssetPerformanceParsed);
 
   return {
@@ -261,9 +277,9 @@ function computeAssetBenchmarkData(input: AssetPerformance): AssetCalculatedRetu
   };
 }
 
-function assembleAssetReturnObject(input: AssetPerformance[]): AssetReturnObject {
+function assembleAssetReturnObject(input: AssetPerformance[], fundAge: number): AssetReturnObject {
   const returnObject: AssetReturnObject = input.reduce((carry, asset) => {
-    return { ...carry, [asset.symbol]: computeAssetBenchmarkData(asset) };
+    return { ...carry, [asset.symbol]: computeAssetBenchmarkData(asset, fundAge) };
   }, {});
 
   return returnObject as AssetReturnObject;
