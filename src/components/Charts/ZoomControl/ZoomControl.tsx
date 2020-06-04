@@ -3,29 +3,6 @@ import * as S from './ZoomControl.styles';
 import { subDays, subWeeks, subMonths, startOfYear } from 'date-fns';
 import { findCorrectFromTime } from '~/utils/priceServiceDates';
 
-/**
- * This component wraps a SimplePriceChart and controls the fetching and parsing of data that
- * gets passed to it.
- *
- * The query that feeds data to the this control component should return a trigger function
- * along with the query data. The trigger function accepts a timestamp as a number and updates
- * the query and results accordingly (used on the zoom buttons).
- *
- * Its recommended to wrap this chart component in a parent component that will handle managing
- * a fund's context, the chart's state, and calling the hooks that query the price service API.
- * This implementation has been mocked in storybook.
- *
- * Notes on how to prepare data for the SimplePriceChart below:
- *
- * - Price data must be strictly positive in order to display logarithmic charts, and so as not to
- * screw up the display on linear charts.
- * - Linear charts may have gaps in the data, with the x value passed as a date and the y value
- * passed as null
- * - Dates should be passed as the x value as a native javascript date object. If your data isn't showing
- * up on the chart, dates should be the first place you look.
- *
- */
-
 export interface Serie {
   id: string;
   name?: string;
@@ -136,15 +113,3 @@ export const ZoomControl: React.FC<ZoomControlProps> = (props) => {
     </>
   );
 };
-
-/**
- *         {loading ? (
-          ''
-        ) : valid ? (
-          <>
-            Buy <FormattedNumber value={value} suffix={state.maker.symbol} />
-          </>
-        ) : (
-          'No Offer'
-        )}
- */
