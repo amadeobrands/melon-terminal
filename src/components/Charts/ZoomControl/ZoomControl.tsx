@@ -28,6 +28,7 @@ interface ZoomOption {
   disabled?: boolean | undefined;
   timestamp?: number;
   type: 'depth' | 'date';
+  active?: boolean;
 }
 
 export type Depth = '1d' | '1w' | '1m' | '3m' | '6m' | '1y';
@@ -45,7 +46,6 @@ export interface ZoomControlProps {
 export const ZoomControl: React.FC<ZoomControlProps> = (props) => {
   const today = new Date();
   const fundInceptionDate: undefined | number = props.fundInceptionDate && props.fundInceptionDate.getTime();
-  const [activeButton, setActiveButton] = React.useState('1m');
   const options = React.useMemo<ZoomOption[]>(() => {
     const options: ZoomOption[] = [
       { label: '1d', value: '1d', timestamp: subDays(today, 1).getTime(), type: 'depth' },
@@ -66,15 +66,30 @@ export const ZoomControl: React.FC<ZoomControlProps> = (props) => {
       },
     ];
 
+    const checkActive = (item: ZoomOption) => {
+      if (props.queryType == item.type) {
+        if (props.queryType === 'depth') {
+          if (item.value == props.depth) {
+            return true;
+          }
+        }
+        if (props.queryType === 'date') {
+          if (item.value == props.queryFromDate) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+
     return options.map((item) => ({
       ...item,
       disabled: fundInceptionDate && item.timestamp ? item.timestamp < fundInceptionDate : undefined,
+      active: checkActive(item),
     }));
-  }, [props.depth]);
+  }, [props.depth, props.queryFromDate]);
 
   function clickHandler(params: clickHandlerParams) {
-    setActiveButton(params.buttonLabel);
-
     if (params.queryType === 'depth' && params.depthQueryValue) {
       props.setDepth(params.depthQueryValue);
     } else {
@@ -99,7 +114,7 @@ export const ZoomControl: React.FC<ZoomControlProps> = (props) => {
 
           return (
             <S.ChartButton
-              kind={item.label === activeButton ? 'success' : 'secondary'}
+              kind={item.active ? 'success' : 'secondary'}
               disabled={item.disabled}
               size="small"
               key={index}
