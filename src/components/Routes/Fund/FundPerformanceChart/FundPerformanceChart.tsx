@@ -84,7 +84,7 @@ async function fetchOffchainHistoryByDepth(key: string, fund: string, depth: Dep
 function useOffchainFundHistoryByDepth(fund: string, depth: Depth) {
   const address = React.useMemo(() => fund.toLowerCase(), [fund]);
   const key = 'prices' + fund;
-  console.log('this is working');
+
   return useQuery([key, address, depth], fetchOffchainHistoryByDepth, {
     refetchOnWindowFocus: false,
   });
@@ -153,7 +153,7 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
       ? [{ id: 'on-chain', name: 'On-chain share price', type: 'area', data: onchainDataByDate }]
       : []) as Serie[];
   }, [onchainDataByDate]);
-  console.log(parsedOnchainDataByDepth, parsedOffchainDataByDepth, parsedOnchainDataByDate);
+
   return (
     <Block>
       <SectionTitle>Share Price</SectionTitle>
