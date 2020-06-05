@@ -153,7 +153,7 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
   return (
     <Block>
       <SectionTitle>Share Price</SectionTitle>
-      {byDepthData || byDateData ? (
+      {!byDepthFetching && !byDateFetching && !byDepthError && !byDateError ? (
         <>
           <PriceChart
             setDepth={setDepth}
