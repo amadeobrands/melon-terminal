@@ -97,6 +97,7 @@ export function useFundHistoryByDepth(fund: string, depth: Depth) {
 async function fetchFundHistoryByDate(key: string, fund: string, from: number, to: number) {
   const api = process.env.MELON_METRICS_API;
   const url = `${api}/api/range?address=${fund}&from=${from}&to=${to}`;
+
   const response = await fetch(url).then((res) => res.json());
 
   const priceData = (response.data as RangeTimelineItem[]).map<Datum>((item) => ({
@@ -153,7 +154,7 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
   return (
     <Block>
       <SectionTitle>Share Price</SectionTitle>
-      {!byDepthFetching && !byDateFetching && !byDepthError && !byDateError ? (
+      {(byDepthData || byDateData) && !byDepthError && !byDateError ? (
         <>
           <PriceChart
             setDepth={setDepth}
