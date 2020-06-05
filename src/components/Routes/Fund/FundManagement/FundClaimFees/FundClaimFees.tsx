@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { useTransaction } from '~/hooks/useTransaction';
 import { Accounting, FeeManager } from '@melonproject/melonjs';
@@ -15,6 +15,8 @@ import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenVa
 import { TransactionDescription } from '~/components/Common/TransactionModal/TransactionDescription';
 import BigNumber from 'bignumber.js';
 import { fromTokenBaseUnit } from '~/utils/fromTokenBaseUnit';
+import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
+import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 
 export interface ClaimFeesProps {
   address: string;
@@ -32,6 +34,28 @@ export const ClaimFees: React.FC<ClaimFeesProps> = ({ address }) => {
   const feeManager = new FeeManager(environment, feeManagerAddress);
 
   const transaction = useTransaction(environment);
+
+  const [claimPeriodStart, claimPeriodEnd, inClaimPeriod] = useMemo(() => {
+    const now = Date.now() / 1000;
+
+    const initializeTime = new Date(feeManagerInfo?.performanceFee?.initializeTime || 0).getTime() / 1000;
+    const performanceFeePeriod = (feeManagerInfo?.performanceFee?.period || 0) * 24 * 60 * 60;
+    const secondsSinceInit = now - initializeTime;
+    const secondsSinceLastPeriod = secondsSinceInit % performanceFeePeriod;
+    const lastPeriodEnd = now - secondsSinceLastPeriod;
+    const lastPayoutTime = new Date(feeManagerInfo?.performanceFee?.lastPayoutTime || 0).getTime() / 1000;
+    const redeemPeriodLength = 7 * 24 * 60 * 60;
+
+    if (secondsSinceLastPeriod < redeemPeriodLength && lastPayoutTime < lastPeriodEnd) {
+      return [new Date((lastPeriodEnd + 1) * 1000), new Date((lastPeriodEnd + redeemPeriodLength) * 1000), true];
+    }
+
+    return [
+      new Date((lastPeriodEnd + performanceFeePeriod + 1) * 1000),
+      new Date((lastPeriodEnd + performanceFeePeriod + redeemPeriodLength) * 1000),
+      false,
+    ];
+  }, [feeManagerInfo]);
 
   const submitAllFees = () => {
     const tx = accounting.triggerRewardAllFees(account.address!);
@@ -70,6 +94,29 @@ export const ClaimFees: React.FC<ClaimFeesProps> = ({ address }) => {
           <TokenValueDisplay value={feeManagerInfo!.performanceFeeAmount} />
         </DictionaryData>
       </DictionaryEntry>
+
+      <NotificationBar kind="neutral">
+        <NotificationContent>
+          Management fees can be claimed at any time.
+          <br />
+          <br />
+          Performance fees can be claimed within a window of one week after the end of a performance fee period.
+          <br />
+          <br />
+          {inClaimPeriod ? (
+            <>
+              You can currently claim your performance fees. The window ends at{' '}
+              <FormattedDate timestamp={claimPeriodEnd} />{' '}
+            </>
+          ) : (
+            <>
+              You cannot currently claim your performance fees. The current performance fee period ends on{' '}
+              <FormattedDate timestamp={claimPeriodStart} />, and you will have to claim your performance fees before{' '}
+              <FormattedDate timestamp={claimPeriodEnd} />.
+            </>
+          )}
+        </NotificationContent>
+      </NotificationBar>
 
       <BlockActions>
         <Button type="submit" onClick={() => submitAllFees()} disabled={!feeManagerInfo?.performanceFee?.canUpdate}>

@@ -26,6 +26,7 @@ export interface FundDetails {
         period: number;
         canUpdate: boolean;
         initializeTime: Date;
+        lastPayoutTime: Date;
       };
     };
     participation?: {
@@ -106,6 +107,7 @@ const FundDetailsQuery = gql`
             period
             canUpdate
             initializeTime
+            lastPayoutTime
           }
         }
         participation {
