@@ -85,7 +85,7 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
     },
     stroke: {
       width: [3, 1],
-      curve: ['smooth', 'smooth'],
+      curve: ['stepline', 'smooth'],
     },
     tooltip: {
       shared: true,
