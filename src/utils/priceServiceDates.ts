@@ -1,7 +1,7 @@
 export function findCorrectFromTime(date: Date) {
   const fromYear = date.getUTCFullYear();
   const fromMonth = date.getUTCMonth();
-  const fromDay = date.getUTCDay();
+  const fromDay = date.getUTCDate();
   const beginningOfDay = Date.UTC(fromYear, fromMonth, fromDay, 0, 0, 0, 0) / 1000;
   return beginningOfDay;
 }

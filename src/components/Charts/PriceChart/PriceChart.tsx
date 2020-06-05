@@ -76,7 +76,7 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
     },
     yaxis: {
       title: {
-        text: 'Share price',
+        text: 'Share Price',
       },
       decimalsInFloat: 4,
     },

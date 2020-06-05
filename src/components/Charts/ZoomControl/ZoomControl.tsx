@@ -52,7 +52,7 @@ export const ZoomControl: React.FC<ZoomControlProps> = (props) => {
       { label: '1w', value: '1w', timestamp: subWeeks(today, 1).getTime(), type: 'depth' },
       { label: '1m', value: '1m', timestamp: subMonths(today, 1).getTime(), type: 'depth' },
       { label: '3m', value: '3m', timestamp: subMonths(today, 3).getTime(), type: 'depth' },
-      { label: '6m', value: '6m', timestamp: subMonths(today, 6).getTime(), type: 'depth' },
+      // { label: '6m', value: '6m', timestamp: subMonths(today, 6).getTime(), type: 'depth' },
       { label: '1y', value: '1y', timestamp: subMonths(today, 12).getTime(), type: 'depth' },
       {
         label: 'YTD',
