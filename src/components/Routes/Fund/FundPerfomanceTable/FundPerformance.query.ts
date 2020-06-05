@@ -209,6 +209,7 @@ export const useFundPerformanceQuery = (address: string, symbols: string[]) => {
 
 function computeFundBenchmarkData(input: FundPerformance, name: string): FundCalculatedReturns {
   const nan = new BigNumber('NaN');
+  const inceptionPrice = fromTokenBaseUnit(1000000000000000000, 8);
   const keys = [
     'currentPx',
     'quarterStartPx',
@@ -226,18 +227,12 @@ function computeFundBenchmarkData(input: FundPerformance, name: string): FundCal
 
   return {
     name,
-    qtdReturn: calculateReturn(
-      data.currentPx,
-      data.quarterStartPx === nan ? fromTokenBaseUnit(1000000000000000000, 8) : data.quarterStartPx
-    ),
-    ytdReturn: calculateReturn(
-      data.currentPx,
-      data.yearStartPx === nan ? fromTokenBaseUnit(1000000000000000000, 8) : data.yearStartPx
-    ),
+    qtdReturn: calculateReturn(data.currentPx, data.quarterStartPx === nan ? inceptionPrice : data.quarterStartPx),
+    ytdReturn: calculateReturn(data.currentPx, data.yearStartPx === nan ? inceptionPrice : data.yearStartPx),
     oneMonthReturn: calculateReturn(data.currentPx, data.oneMonthBackPx),
     sixMonthReturn: calculateReturn(data.currentPx, data.sixMonthsBackPx),
     oneYearReturn: calculateReturn(data.currentPx, data.oneYearBackPx),
-    returnSinceInception: calculateReturn(data.currentPx, fromTokenBaseUnit(1000000000000000000, 8)),
+    returnSinceInception: calculateReturn(data.currentPx, inceptionPrice),
   };
 }
 
