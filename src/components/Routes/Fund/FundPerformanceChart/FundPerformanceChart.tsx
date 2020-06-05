@@ -50,7 +50,6 @@ export type Depth = '1y' | '6m' | '3m' | '1m' | '1w' | '1d';
 
 async function fetchOnchainHistoryByDepth(key: string, fund: string, depth: Depth) {
   const api = process.env.MELON_METRICS_API;
-  console.log(api);
   const url = `${api}/api/depth/onchain?address=${fund}&depth=${depth}`;
   const response = await fetch(url).then((res) => res.json());
   const prices = (response.data as DepthTimelineItem[]).map<Datum>((item) => ({
@@ -63,7 +62,7 @@ async function fetchOnchainHistoryByDepth(key: string, fund: string, depth: Dept
 
 function useOnchainFundHistoryByDepth(fund: string, depth: Depth) {
   const address = React.useMemo(() => fund.toLowerCase(), [fund]);
-  const key = 'prices' + fund;
+  const key = 'onchainPrices' + fund;
   return useQuery([key, address, depth], fetchOnchainHistoryByDepth, {
     refetchOnWindowFocus: false,
   });
@@ -77,13 +76,12 @@ async function fetchOffchainHistoryByDepth(key: string, fund: string, depth: Dep
     x: new Date(item.timestamp * 1000),
     y: new BigNumber(item.calculations.price).toPrecision(8),
   }));
-
   return prices;
 }
 
 function useOffchainFundHistoryByDepth(fund: string, depth: Depth) {
   const address = React.useMemo(() => fund.toLowerCase(), [fund]);
-  const key = 'prices' + fund;
+  const key = 'offchainPrices' + fund;
 
   return useQuery([key, address, depth], fetchOffchainHistoryByDepth, {
     refetchOnWindowFocus: false,
@@ -94,17 +92,17 @@ async function fetchOnchainHistoryByDate(key: string, fund: string, from: number
   const api = process.env.MELON_METRICS_API;
   const url = `${api}/api/range?address=${fund}&from=${from}&to=${to}`;
   const response = await fetch(url).then((res) => res.json());
-  const priceData = (response.data as RangeTimelineItem[]).map<Datum>((item) => ({
+  const prices = (response.data as DepthTimelineItem[]).map<Datum>((item) => ({
     x: new Date(item.timestamp * 1000),
-    y: new BigNumber(item.onchain.price).toPrecision(8),
+    y: new BigNumber(item.calculations.price).toPrecision(8),
   }));
 
-  return priceData;
+  return prices;
 }
 
 function useOnchainFundHistoryByDate(fund: string, from: number, to: number) {
   const address = React.useMemo(() => fund.toLowerCase(), [fund]);
-  const key = 'prices' + fund;
+  const key = 'pricesByDate' + fund;
 
   return useQuery([key, address, from, to], fetchOnchainHistoryByDate, {
     refetchOnWindowFocus: false,
@@ -136,7 +134,7 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
   } = useOnchainFundHistoryByDate(props.address, fromDate, findCorrectToTime(today));
 
   const parsedOnchainDataByDepth = React.useMemo(() => {
-    return (offchainDataByDepth
+    return (onchainDataByDepth
       ? [{ id: 'on-chain', name: 'On-chain share price', type: 'area', data: onchainDataByDepth }]
       : []) as Serie[];
   }, [onchainDataByDepth]);

@@ -69,7 +69,7 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
       borderColor: '#90A4AE',
     },
     legend: {
-      showForSingleSeries: true,
+      showForSingleSeries: false,
     },
     markers: {
       size: 0,
@@ -85,7 +85,7 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
     },
     stroke: {
       width: [3, 1],
-      curve: ['stepline', 'smooth'],
+      curve: ['stepline', 'straight'],
     },
     tooltip: {
       shared: true,
