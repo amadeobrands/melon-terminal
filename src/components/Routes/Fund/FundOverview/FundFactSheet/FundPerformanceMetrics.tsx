@@ -40,30 +40,21 @@ export interface FundMetricsProps {
   address: string;
 }
 
-interface TimelineItem {
+interface DepthTimelineItem {
   timestamp: number;
   rates: {
-    [symbol: string]: number;
-  };
-  prices: {
     [symbol: string]: number;
   };
   holdings: {
     [symbol: string]: number;
   };
   shares: number;
-  onchain: {
-    price: number;
-    gav: number;
-    nav: number;
-  };
-  offchain: {
+  calculations: {
     price: number;
     gav: number;
     nav: number;
   };
 }
-
 export type Depth = '1y' | '6m' | '3m' | '1m' | '1w' | '1d';
 
 const depths: Depth[] = ['1w', '1m', '3m', '6m', '1y'];
@@ -84,26 +75,9 @@ function useFetchMonthlyFundPrices(fund: string) {
   });
 }
 
-async function fetchFundPricesByDepth(key: string, address: string, depth: Depth) {
-  const url = process.env.MELON_METRICS_API;
-  const queryAddress = `${url}/api/depth?address=${address}&depth=${depth}`;
-  const response = await fetch(queryAddress)
-    .then((response) => response.json())
-    .catch((error) => console.log(error));
-  return response;
-}
-
-function useFetchFundPricesByDepth(fund: string, depth: Depth) {
-  const address = fund.toLowerCase();
-  return useQuery(['prices', address, depth], fetchFundPricesByDepth, {
-    refetchOnWindowFocus: false,
-  });
-}
-
 async function fetchFundPricesByDate(key: string, address: string, from: number, to: number) {
   const url = process.env.MELON_METRICS_API;
   const queryAddress = `${url}/api/range?address=${address}&from=${from}&to=${to}`;
-  console.log('queryaddress: ', queryAddress);
   const response = await fetch(queryAddress)
     .then((response) => response.json())
     .catch((error) => console.log(error));
@@ -117,18 +91,8 @@ function useFetchFundPricesByDate(fund: string, from: number, to: number) {
   });
 }
 
-function stripDuplicateOnchainPrices(timelineArray: TimelineItem[]) {
-  return timelineArray
-    .filter((item: TimelineItem, index: number, arr: TimelineItem[]) => {
-      if (index === 0) {
-        return item;
-      } else {
-        if (item.onchain.price != arr[index - 1].onchain.price) {
-          return item;
-        }
-      }
-    })
-    .map((item) => new BigNumber(item.onchain.price));
+function stripDuplicateOnchainPrices(timelineArray: DepthTimelineItem[]) {
+  return timelineArray.map((item) => new BigNumber(item.calculations.price));
 }
 
 async function fetchIndexPrices(key: string, startDate: string, endDate: string) {
@@ -245,10 +209,6 @@ export default function FundPerformanceMetrics(props: FundMetricsProps) {
   const yearStartDate = findCorrectFromTime(startOfYear(today));
   const toToday = findCorrectToTime(today);
 
-  const { data: fundData, error: fundError, isFetching: fundFetching } = useFetchFundPricesByDepth(
-    props.address,
-    depth
-  );
   // fundMonthlyData is Only the the month-end prices for every month the fund's been in existence
   const { data: fundMonthlyData, error: fundMonthlyError, isFetching: fundMonthlyFetching } = useFetchMonthlyFundPrices(
     props.address
@@ -271,7 +231,7 @@ export default function FundPerformanceMetrics(props: FundMetricsProps) {
     error: fundLastYearsError,
     isFetching: fundLastYearsFetching,
   } = useFetchFundPricesByDate(props.address, yearStartDate, toToday);
-  console.log(fundLastQuartersData);
+
   const { data: indexData, error: indexError, isFetching: indexFetching } = useFetchIndexPrices(
     indexQueryStartDate,
     endOfDay(today).toISOString()
@@ -295,8 +255,6 @@ export default function FundPerformanceMetrics(props: FundMetricsProps) {
     indexFetching ||
     !fundMonthlyData ||
     fundMonthlyFetching ||
-    !fundData ||
-    fundFetching ||
     !fundLastQuartersData ||
     fundLastQuartersFetching ||
     !fundLastYearsData ||
@@ -309,54 +267,26 @@ export default function FundPerformanceMetrics(props: FundMetricsProps) {
     );
   }
 
-  /**
-   * RETURN MATH FOR VOLATILITY AND VAR CALS
-   */
-  // // indexData is an array of bignumbers, every index price since the date that's passed
-  // // indexDailyReturns is an array of bignumbers, with index 0 being the return on day 0 and index(len-1) the return yesterday
-  // const indexDailyReturns = indexData ? calculateDailyLogReturns(indexData) : [new BigNumber('NaN')];
-  // // periodIndexVol takes the daily returns as a parameter and returns a bignumber == the volatility of those returns
-  // const periodIndexVol = indexData
-  //   ? calculateVolatility(calculateStdDev(indexDailyReturns), indexDailyReturns.length)
-  //   : new BigNumber('Nan');
-  // // periodIndexReturn shows the return if one were to hold an index for the time period
-  // const periodIndexReturn = indexData ? calculatePeriodReturns(indexData) : new BigNumber('Nan');
-  // // periodIndexVar takes the daily returns as a parameter and returns an object where lowZ == 95% CI and highZ = 99% CI
-  // const periodIndexVAR = indexDailyReturns && calculateVAR(indexDailyReturns);
+  const mostRecentPrice =
+    fundLastMonthsData && fundLastMonthsData.data[fundLastMonthsData.data.length - 1].calculations.price;
 
-  // // fundData.data is an array of price objects with onchain and offchain prices as well as fund holdings data
-  // // onChainPriceUpdates is an array of BigNumbers with the duplicate onchain prices stripped out (would otherwise remain constant for a day)
-  // const onChainPriceUpdates = fundData && stripDuplicateOnchainPrices(fundData.data);
-  // // onChainDailyReturns is an array of BigNumbers showing the inter-day returns starting with day 1's return  and ending with yesterday's
-  // const onChainDailyReturns = onChainPriceUpdates
-  //   ? calculateDailyLogReturns(onChainPriceUpdates)
-  //   : [new BigNumber('Nan')];
-  // // periodFundVol takes the onChainDailyReturns as a parameter and returns a bignumber === the volatility of those returns
-  // const periodFundVol =
-  //   onChainDailyReturns && calculateVolatility(calculateStdDev(onChainDailyReturns), onChainDailyReturns.length);
-  // // periodFundReturn takes the onChainPriceUpdates as a parameter and returns a bignumner
-  // const periodFundReturn = onChainPriceUpdates ? calculatePeriodReturns(onChainPriceUpdates) : new BigNumber('Nan');
-  // // periodFundVar takes the daily returns as a parameter and returns an object where lowZ = 95% CI and highZ = 9% CI
-  // const periodFundVAR = onChainDailyReturns && calculateVAR(onChainDailyReturns);
+  const monthStartPrice = fundMonthlyData && fundMonthlyData.data[fundMonthlyData.data.length - 1].calculations.price;
 
-  const mostRecentPrice = fundData && fundData.data[fundData.data.length - 1].onchain.price;
-
-  const monthStartPrice = fundMonthlyData && fundMonthlyData.data[fundMonthlyData.data.length - 1].onchain.price;
-
-  const quarterStartPrice = fundLastQuartersData && fundLastQuartersData.data[0].onchain.price;
+  const quarterStartPrice = fundLastQuartersData && fundLastQuartersData.data[0].calculations.price;
   const yearStartPrice = isBefore(fundInception, yearStartDate)
-    ? fundLastYearsData && fundLastYearsData.data[0].onchain.price
+    ? fundLastYearsData && fundLastYearsData.data[0].calculations.price
     : 1;
   const mtdReturn = calculateReturn(mostRecentPrice, monthStartPrice);
+  console.log(mtdReturn.toPrecision(8));
   const qtdReturn = calculateReturn(mostRecentPrice, quarterStartPrice);
   const ytdReturn = calculateReturn(mostRecentPrice, 1);
 
   const fundMonthlyReturns: BigNumber[] = fundMonthlyData.data.map(
-    (item: TimelineItem, index: number, arr: TimelineItem[]) => {
+    (item: DepthTimelineItem, index: number, arr: DepthTimelineItem[]) => {
       if (index === 0) {
-        return calculateReturn(new BigNumber(1), new BigNumber(item.onchain.price));
+        return calculateReturn(new BigNumber(1), new BigNumber(item.calculations.price));
       }
-      return calculateReturn(new BigNumber(item.onchain.price), new BigNumber(arr[index - 1].onchain.price));
+      return calculateReturn(new BigNumber(item.calculations.price), new BigNumber(arr[index - 1].calculations.price));
     }
   );
 
@@ -395,17 +325,7 @@ export default function FundPerformanceMetrics(props: FundMetricsProps) {
   return (
     <>
       <SectionTitle>Fund Performance Metrics</SectionTitle>
-      {depths.map((depth, index) => (
-        <Button
-          key={index}
-          onClick={() => {
-            setDepth(depth);
-          }}
-        >
-          {depth}
-        </Button>
-      ))}
-      <DictionaryDivider />
+
       {/* <DictionaryEntry>
         <DictionaryLabel>{depth} Fund Volatility </DictionaryLabel>
         <DictionaryData textAlign={'right'}>
@@ -442,11 +362,15 @@ export default function FundPerformanceMetrics(props: FundMetricsProps) {
           <FormattedNumber decimals={2} value={periodIndexVAR?.lowZ} colorize={false} suffix={'%'} />
         </DictionaryData>
       </DictionaryEntry> */}
-      <DictionaryDivider />
       <DictionaryEntry>
         <DictionaryLabel>MTD Return</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} suffix={'%'} colorize={true} value={mtdReturn} />
+          <FormattedNumber
+            decimals={mtdReturn.toNumber() >= 0.005 ? 2 : 4}
+            suffix={'%'}
+            colorize={true}
+            value={mtdReturn}
+          />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
@@ -489,3 +413,33 @@ export default function FundPerformanceMetrics(props: FundMetricsProps) {
     </>
   );
 }
+
+/**
+ * RETURN MATH FOR VOLATILITY AND VAR CALS
+ */
+// // indexData is an array of bignumbers, every index price since the date that's passed
+// // indexDailyReturns is an array of bignumbers, with index 0 being the return on day 0 and index(len-1) the return yesterday
+// const indexDailyReturns = indexData ? calculateDailyLogReturns(indexData) : [new BigNumber('NaN')];
+// // periodIndexVol takes the daily returns as a parameter and returns a bignumber == the volatility of those returns
+// const periodIndexVol = indexData
+//   ? calculateVolatility(calculateStdDev(indexDailyReturns), indexDailyReturns.length)
+//   : new BigNumber('Nan');
+// // periodIndexReturn shows the return if one were to hold an index for the time period
+// const periodIndexReturn = indexData ? calculatePeriodReturns(indexData) : new BigNumber('Nan');
+// // periodIndexVar takes the daily returns as a parameter and returns an object where lowZ == 95% CI and highZ = 99% CI
+// const periodIndexVAR = indexDailyReturns && calculateVAR(indexDailyReturns);
+
+// // fundData.data is an array of price objects with onchain and offchain prices as well as fund holdings data
+// // onChainPriceUpdates is an array of BigNumbers with the duplicate onchain prices stripped out (would otherwise remain constant for a day)
+// const onChainPriceUpdates = fundData && stripDuplicateOnchainPrices(fundData.data);
+// // onChainDailyReturns is an array of BigNumbers showing the inter-day returns starting with day 1's return  and ending with yesterday's
+// const onChainDailyReturns = onChainPriceUpdates
+//   ? calculateDailyLogReturns(onChainPriceUpdates)
+//   : [new BigNumber('Nan')];
+// // periodFundVol takes the onChainDailyReturns as a parameter and returns a bignumber === the volatility of those returns
+// const periodFundVol =
+//   onChainDailyReturns && calculateVolatility(calculateStdDev(onChainDailyReturns), onChainDailyReturns.length);
+// // periodFundReturn takes the onChainPriceUpdates as a parameter and returns a bignumner
+// const periodFundReturn = onChainPriceUpdates ? calculatePeriodReturns(onChainPriceUpdates) : new BigNumber('Nan');
+// // periodFundVar takes the daily returns as a parameter and returns an object where lowZ = 95% CI and highZ = 9% CI
+// const periodFundVAR = onChainDailyReturns && calculateVAR(onChainDailyReturns);

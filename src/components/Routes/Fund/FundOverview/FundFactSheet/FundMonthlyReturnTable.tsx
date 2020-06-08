@@ -17,18 +17,20 @@ export default function MonthlyReturnTable(props: MonthlyReturnTableProps) {
     .reverse();
   return (
     <Table>
-      <HeaderRow>
-        {months.map((item, index) => (
-          <HeaderCell key={index}>{item}</HeaderCell>
-        ))}
-      </HeaderRow>
-      <BodyRow>
-        {props.prices.map((item, index) => (
-          <BodyCell key={index}>
-            <FormattedNumber suffix={'%'} value={item} decimals={2} />
-          </BodyCell>
-        ))}
-      </BodyRow>
+      <tbody>
+        <HeaderRow>
+          {months.map((item, index) => (
+            <HeaderCell key={index}>{item}</HeaderCell>
+          ))}
+        </HeaderRow>
+        <BodyRow>
+          {props.prices.map((item, index) => (
+            <BodyCell key={index}>
+              <FormattedNumber suffix={'%'} value={item} decimals={2} />
+            </BodyCell>
+          ))}
+        </BodyRow>
+      </tbody>
     </Table>
   );
 }
