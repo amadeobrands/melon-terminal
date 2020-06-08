@@ -8,6 +8,7 @@ import { Spinner } from '~/storybook/Spinner/Spinner';
 import { PriceChart } from '~/components/Charts/PriceChart/PriceChart';
 import styled from 'styled-components';
 import { findCorrectToTime } from '~/utils/priceServiceDates';
+import { async } from 'rxjs/internal/scheduler/async';
 
 export interface NewFundPerformanceChartProps {
   address: string;
@@ -18,19 +19,11 @@ interface DepthTimelineItem {
   rates: {
     [symbol: string]: number;
   };
-  prices: {
-    [symbol: string]: number;
-  };
   holdings: {
     [symbol: string]: number;
   };
   shares: number;
-  onchain: {
-    price: number;
-    gav: number;
-    nav: number;
-  };
-  offchain: {
+  calculations: {
     price: number;
     gav: number;
     nav: number;
@@ -39,7 +32,6 @@ interface DepthTimelineItem {
 
 interface RangeTimelineItem {
   timestamp: number;
-
   prices: {
     [symbol: string]: number;
   };
@@ -56,60 +48,63 @@ interface RangeTimelineItem {
 
 export type Depth = '1y' | '6m' | '3m' | '1m' | '1w' | '1d';
 
-const ChartDescription = styled.span`
-  text-align: right;
-  color: ${(props) => props.theme.mainColors.secondaryDark};
-  font-size: ${(props) => props.theme.fontSizes.s};
-  margin-bottom: ${(props) => props.theme.spaceUnits.m};
-  margin-left: 0;
-`;
-
-async function fetchFundHistoryByDepth(key: string, fund: string, depth: Depth) {
+async function fetchOnchainHistoryByDepth(key: string, fund: string, depth: Depth) {
   const api = process.env.MELON_METRICS_API;
-  const url = `${api}/api/depth?address=${fund}&depth=${depth}`;
+  const url = `${api}/api/depth/onchain?address=${fund}&depth=${depth}`;
   const response = await fetch(url).then((res) => res.json());
-
-  const onChaindata = (response.data as DepthTimelineItem[]).map<Datum>((item) => ({
+  const prices = (response.data as DepthTimelineItem[]).map<Datum>((item) => ({
     x: new Date(item.timestamp * 1000),
-    y: new BigNumber(item.onchain.price!).toPrecision(8),
+    y: new BigNumber(item.calculations.price).toPrecision(8),
   }));
 
-  const offChainData = (response.data as DepthTimelineItem[]).map<Datum>((item) => ({
-    x: new Date(item.timestamp * 1000),
-    y: new BigNumber(item.offchain.price!).toPrecision(8),
-  }));
-
-  const data = {
-    onchain: onChaindata,
-    offchain: offChainData,
-  };
-  console.log(data);
-  return data;
+  return prices;
 }
 
-export function useFundHistoryByDepth(fund: string, depth: Depth) {
+function useOnchainFundHistoryByDepth(fund: string, depth: Depth) {
   const address = React.useMemo(() => fund.toLowerCase(), [fund]);
-  return useQuery(['prices', address, depth], fetchFundHistoryByDepth, {
+  const key = 'onchainPrices' + fund;
+  return useQuery([key, address, depth], fetchOnchainHistoryByDepth, {
     refetchOnWindowFocus: false,
   });
 }
 
-async function fetchFundHistoryByDate(key: string, fund: string, from: number, to: number) {
+async function fetchOffchainHistoryByDepth(key: string, fund: string, depth: Depth) {
+  const api = process.env.MELON_METRICS_API;
+  const url = `${api}/api/depth/offchain?address=${fund}&depth=${depth}`;
+  const response = await fetch(url).then((res) => res.json());
+  const prices = (response.data as DepthTimelineItem[]).map<Datum>((item) => ({
+    x: new Date(item.timestamp * 1000),
+    y: new BigNumber(item.calculations.price).toPrecision(8),
+  }));
+  return prices;
+}
+
+function useOffchainFundHistoryByDepth(fund: string, depth: Depth) {
+  const address = React.useMemo(() => fund.toLowerCase(), [fund]);
+  const key = 'offchainPrices' + fund;
+
+  return useQuery([key, address, depth], fetchOffchainHistoryByDepth, {
+    refetchOnWindowFocus: false,
+  });
+}
+
+async function fetchOnchainHistoryByDate(key: string, fund: string, from: number, to: number) {
   const api = process.env.MELON_METRICS_API;
   const url = `${api}/api/range?address=${fund}&from=${from}&to=${to}`;
   const response = await fetch(url).then((res) => res.json());
-
-  const priceData = (response.data as RangeTimelineItem[]).map<Datum>((item) => ({
+  const prices = (response.data as DepthTimelineItem[]).map<Datum>((item) => ({
     x: new Date(item.timestamp * 1000),
-    y: new BigNumber(item.onchain.price).toPrecision(8),
+    y: new BigNumber(item.calculations.price).toPrecision(8),
   }));
 
-  return priceData;
+  return prices;
 }
 
-export function useFundHistoryByDate(fund: string, from: number, to: number) {
+function useOnchainFundHistoryByDate(fund: string, from: number, to: number) {
   const address = React.useMemo(() => fund.toLowerCase(), [fund]);
-  return useQuery(['prices', address, from, to], fetchFundHistoryByDate, {
+  const key = 'pricesByDate' + fund;
+
+  return useQuery([key, address, from, to], fetchOnchainHistoryByDate, {
     refetchOnWindowFocus: false,
   });
 }
@@ -118,42 +113,55 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
   const [depth, setDepth] = React.useState<Depth>('1m');
   const [queryType, setQueryType] = React.useState<'depth' | 'date'>('depth');
   const [fromDate, setFromDate] = React.useState<number>(1577750400);
+  const today = React.useMemo(() => new Date(), []);
 
-  const { data: byDepthData, error: byDepthError, isFetching: byDepthFetching } = useFundHistoryByDepth(
-    props.address,
-    depth
-  );
-  const { data: byDateData, error: byDateError, isFetching: byDateFetching } = useFundHistoryByDate(
-    props.address,
-    fromDate,
-    findCorrectToTime(new Date())
-  );
+  const {
+    data: onchainDataByDepth,
+    error: onchainDataByDepthError,
+    isFetching: onchainDataByDepthFetching,
+  } = useOnchainFundHistoryByDepth(props.address, depth);
 
-  const primary = React.useMemo(() => {
-    return (byDepthData
-      ? [{ id: 'on-chain', name: 'On-chain share price', type: 'area', data: byDepthData.onchain }]
+  const {
+    data: offchainDataByDepth,
+    error: offchainDataByDepthError,
+    isFetching: offchainDataByDepthFetching,
+  } = useOffchainFundHistoryByDepth(props.address, depth);
+
+  const {
+    data: onchainDataByDate,
+    error: onchainDataByDateError,
+    isFetching: onchainDataByDateFetching,
+  } = useOnchainFundHistoryByDate(props.address, fromDate, findCorrectToTime(today));
+
+  const parsedOnchainDataByDepth = React.useMemo(() => {
+    return (onchainDataByDepth
+      ? [{ id: 'on-chain', name: 'On-chain share price', type: 'area', data: onchainDataByDepth }]
       : []) as Serie[];
-  }, [byDepthData]);
+  }, [onchainDataByDepth]);
 
-  const secondary = React.useMemo(() => {
+  const parsedOffchainDataByDepth = React.useMemo(() => {
     return (
-      byDepthData &&
-      ([
-        { id: 'off-chain', name: 'Interim share price movements', type: 'line', data: byDepthData.offchain },
-      ] as Serie[])
+      offchainDataByDepth &&
+      ([{ id: 'off-chain', name: 'Interim share price movements', type: 'line', data: offchainDataByDepth }] as Serie[])
     );
-  }, [byDepthData]);
+  }, [offchainDataByDepth]);
 
-  const dataByDate = React.useMemo(() => {
-    return (byDateData
-      ? [{ id: 'on-chain', name: 'On-chain share price', type: 'area', data: byDateData }]
+  const parsedOnchainDataByDate = React.useMemo(() => {
+    return (onchainDataByDate
+      ? [{ id: 'on-chain', name: 'On-chain share price', type: 'area', data: onchainDataByDate }]
       : []) as Serie[];
-  }, [byDateData]);
+  }, [onchainDataByDate]);
 
   return (
     <Block>
       <SectionTitle>Share Price</SectionTitle>
-      {!byDepthFetching && !byDateFetching && !byDepthError && !byDateError ? (
+      {(onchainDataByDate || offchainDataByDepth || onchainDataByDate) &&
+      !offchainDataByDepthFetching &&
+      !offchainDataByDepthFetching &&
+      !onchainDataByDateFetching &&
+      !onchainDataByDepthError &&
+      !offchainDataByDepthError &&
+      !onchainDataByDateError ? (
         <>
           <PriceChart
             setDepth={setDepth}
@@ -162,9 +170,9 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
             queryType={queryType}
             queryFromDate={fromDate}
             depth={depth}
-            data={queryType === 'depth' ? primary : dataByDate}
-            secondaryData={queryType === 'depth' ? secondary : undefined}
-            loading={byDepthFetching || byDateFetching}
+            data={queryType === 'depth' ? parsedOnchainDataByDepth : parsedOnchainDataByDate}
+            secondaryData={queryType === 'depth' ? parsedOffchainDataByDepth : undefined}
+            loading={onchainDataByDepthFetching || offchainDataByDepthFetching || onchainDataByDateFetching}
           />
         </>
       ) : (

@@ -29,11 +29,10 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
   const theme = useTheme();
   const fund = useFund();
 
-  const showSecondaryData =
-    props.queryType == 'depth' && (props.depth === '1d' || props.depth === '1w' || props.depth === '1m') ? true : false;
+  const showSecondaryData = props.queryType == 'depth' && (props.depth === '1d' || props.depth === '1w') ? true : false;
 
   let data = [...props.data, ...(showSecondaryData && props.secondaryData ? props.secondaryData : [])];
-
+  const curveType = data.length === 1 ? ['smooth'] : ['stepline', 'smooth'];
   const options = {
     chart: {
       type: 'area',
@@ -42,9 +41,7 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
       fontFamily: theme.fontFamilies,
       foreColor: theme.mainColors.textColor,
       zoom: {
-        type: 'x',
-        enabled: true,
-        autoScaleYaxis: true,
+        enabled: false,
       },
       toolbar: {
         show: false,
@@ -54,6 +51,7 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
         },
       },
     },
+
     colors: ['#238757', '#aaaaaa'],
     dataLabels: {
       enabled: false,
@@ -69,10 +67,11 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
       borderColor: '#90A4AE',
     },
     legend: {
-      showForSingleSeries: true,
+      showForSingleSeries: false,
     },
     markers: {
-      size: 0,
+      size: [2, 0],
+      colors: ['#238757', '#aaaaaa'],
     },
     yaxis: {
       title: {
@@ -85,7 +84,7 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
     },
     stroke: {
       width: [3, 1],
-      curve: ['smooth', 'smooth'],
+      curve: curveType,
     },
     tooltip: {
       shared: true,
