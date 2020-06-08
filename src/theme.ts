@@ -152,43 +152,6 @@ export const light = {
     orderbookLight: 'limegreen',
     hover: 'rgba(0, 0, 0, 0.2)',
   },
-  chartColors: {
-    fontFamily: theme.fontFamilies,
-    textColor: 'rgb(0, 0, 0)', // mainColors.textColor
-    axis: {
-      domain: {
-        line: {
-          stroke: 'rgb(29,29,29)', // primaryDark
-        },
-      },
-      ticks: {
-        line: {
-          stroke: 'rgb(29,29,29)', // primaryDark
-          strokeWidth: 1, //changes width of tick
-          strokeOpacity: 0.5, // changes opacity of tick
-        },
-        text: {
-          fill: 'rgb(0,0,0)', // overrides the top level textColor property for tick text
-        },
-      },
-    },
-    grid: {
-      line: {
-        stroke: 'rgb(29,29,29)', // primaryDark
-        strokeWidth: 1, // stroke width of grid lines
-        strokeOpacity: 0.1,
-        // strokeDasharray: '4 4', // makes dashed lines, pass in '4 4' (pixel of dash width and gap width) ------
-      },
-    },
-    crosshair: {
-      line: {
-        stroke: 'rgb(29,29,29)', // primaryDark
-        strokeWidth: 1,
-        strokeOpacity: 0.75,
-        strokeDasharray: '6 6',
-      },
-    },
-  },
   logoColors: logoColorsLightMode,
   ...theme,
 };
@@ -236,43 +199,6 @@ export const dark = {
     orderbook: 'darkgreen',
     orderbookLight: 'limegreen',
     hover: 'rgba(0, 0, 0, 0.2)',
-  },
-  chartColors: {
-    fontFamily: theme.fontFamilies,
-    textColor: '#e5dfdf', // mainColors.textColor
-    axis: {
-      domain: {
-        line: {
-          stroke: '#e5dfdf', // primaryDark
-        },
-      },
-      ticks: {
-        line: {
-          stroke: '#e5dfdf', // primaryDark
-          strokeWidth: 1, //changes width of tick along the axis
-          strokeOpacity: 0.5, // changes opacity of tick
-        },
-        text: {
-          fill: '#e5dfdf', // overrides the top level textColor property for tick text
-        },
-      },
-    },
-    grid: {
-      line: {
-        stroke: '#e5dfdf', // primaryDark
-        strokeWidth: 1, // stroke width of grid lines
-        strokeOpacity: 0.1,
-        // strokeDasharray: '', // makes dashed lines, pass in '4 4' (pixel of dash width and gap width) ------
-      },
-    },
-    crosshair: {
-      line: {
-        stroke: '#e5dfdf', // primaryDark
-        strokeWidth: 1,
-        strokeOpacity: 0.75,
-        strokeDasharray: '6 6',
-      },
-    },
   },
 
   logoColors: logoColorsDarkMode,

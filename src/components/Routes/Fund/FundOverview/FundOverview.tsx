@@ -42,8 +42,4 @@ export const FundOverview: React.FC<FundOverviewProps> = ({ address }) => (
   </Grid>
 );
 
-// pass it the query object and a function that it can apply to the query object
-// post processing function prop, nivo calls refetch,
-// uselazyquery
-
 export default FundOverview;

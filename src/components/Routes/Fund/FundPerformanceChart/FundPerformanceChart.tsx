@@ -156,6 +156,9 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
     <Block>
       <SectionTitle>Share Price</SectionTitle>
       {(onchainDataByDate || offchainDataByDepth || onchainDataByDate) &&
+      !offchainDataByDepthFetching &&
+      !offchainDataByDepthFetching &&
+      !onchainDataByDateFetching &&
       !onchainDataByDepthError &&
       !offchainDataByDepthError &&
       !onchainDataByDateError ? (
