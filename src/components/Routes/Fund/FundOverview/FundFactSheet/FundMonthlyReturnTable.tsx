@@ -4,7 +4,6 @@ import { Table, HeaderCell, HeaderRow, BodyRow, BodyCell } from '~/storybook/Tab
 import { subMonths, format, differenceInCalendarMonths, startOfYear } from 'date-fns';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { useFund } from '~/hooks/useFund';
-import { useQuery } from 'react-query';
 import { calculateReturn } from '~/utils/finance';
 import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';

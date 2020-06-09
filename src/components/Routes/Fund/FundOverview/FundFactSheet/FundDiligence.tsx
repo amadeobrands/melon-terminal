@@ -1,5 +1,4 @@
-import React, { Fragment } from 'react';
-import { sameAddress } from '@melonproject/melonjs';
+import React from 'react';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { useFundDetailsQuery } from '../FundDetails.query';
 import { SectionTitle } from '~/storybook/Title/Title';
@@ -10,19 +9,16 @@ import {
   DictionaryLabel,
   DictionaryDivider,
 } from '~/storybook/Dictionary/Dictionary';
-import { EtherscanLink } from '~/components/Common/EtherscanLink/EtherscanLink';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { useFundCalculationHistoryQuery } from '~/components/Routes/Fund/FundOverview/FundFactSheet/FundCalculationHistory.query';
 import BigNumber from 'bignumber.js';
 import { standardDeviation } from '~/utils/finance';
-import { TwitterLink } from '~/components/Common/TwitterLink/TwitterLink';
 import { useAccount } from '~/hooks/useAccount';
 import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { range } from 'ramda';
 import { useFundSlug } from '../../FundHeader/FundSlug.query';
-import { NetworkEnum } from '~/types';
 
 export interface NormalizedCalculation {
   sharePrice: BigNumber;

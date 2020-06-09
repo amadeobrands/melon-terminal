@@ -6,8 +6,6 @@ import { FundFactSheet } from './FundFactSheet/FundFactSheet';
 import { NewFundPerformanceChart } from '../FundPerformanceChart/FundPerformanceChart';
 import { Grid, GridRow, GridCol } from '~/storybook/Grid/Grid';
 import { FundPerformanceTable } from '~/components/Routes/Fund/FundPerfomanceTable/FundPerformanceTable';
-import FundMetrics from '../FundMetrics/FundMetrics';
-import FundMonthlyReturnTable from './FundFactSheet/FundMonthlyReturnTable';
 import { FundPerformanceMetrics } from './FundFactSheet/FundPerformanceMetrics';
 
 export interface FundOverviewProps {

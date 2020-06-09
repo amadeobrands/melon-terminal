@@ -23,8 +23,6 @@ import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenVa
 import { range } from 'ramda';
 import { useFundSlug } from '../../FundHeader/FundSlug.query';
 import { NetworkEnum } from '~/types';
-import { FundMetrics } from '~/components/Routes/Home/FundMetrics/FundMetrics';
-import FundPerformanceMetrics from './FundPerformanceMetrics';
 
 export interface NormalizedCalculation {
   sharePrice: BigNumber;
