@@ -96,11 +96,19 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
     };
   });
 
-  const gavDigits = accounting?.grossAssetValue.integerValue().toString().length;
-  const navDigits = accounting?.netAssetValue.integerValue().toString().length;
-  const sharesDigits = shares?.totalSupply.integerValue().toString().length;
-  const sharePriceDigits = accounting?.sharePrice.integerValue().toString().length;
-  const maxDigits = Math.max(gavDigits || 0, navDigits || 0, sharesDigits || 0, sharePriceDigits || 0);
+  const gavDigitsRaw = accounting?.grossAssetValue.integerValue().toString().length || 0;
+  const gavDigits = gavDigitsRaw + Math.floor(gavDigitsRaw / 3);
+
+  const navDigitsRaw = accounting?.netAssetValue.integerValue().toString().length || 0;
+  const navDigits = navDigitsRaw + Math.floor(navDigitsRaw / 3);
+
+  const sharesDigitsRaw = shares?.totalSupply.integerValue().toString().length || 0;
+  const sharesDigits = sharesDigitsRaw + Math.floor(sharesDigitsRaw / 3);
+
+  const sharePriceDigitsRaw = accounting?.sharePrice.integerValue().toString().length || 0;
+  const sharePriceDigits = sharePriceDigitsRaw + Math.floor(sharePriceDigitsRaw / 3);
+
+  const maxDigits = Math.max(gavDigits, navDigits, sharesDigits, sharePriceDigits);
 
   const numbersLength = normalizedCalculations.length;
   const firstChange = (normalizedCalculations?.[0] || []) as NormalizedCalculation;

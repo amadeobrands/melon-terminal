@@ -234,7 +234,7 @@ export const FundOverview: React.FC = () => {
       </SectionTitle>
       <Grid>
         <GridRow>
-          <GridCol>
+          <GridCol xs={12} sm={6}>
             <InputWidget
               name="search"
               type="text"
@@ -251,12 +251,16 @@ export const FundOverview: React.FC = () => {
               checked={filter.active}
               onChange={() => setFilter({ ...filter, active: !filter.active })}
             />
+          </GridCol>
+          <GridCol>
             <ToggleCheckbox
               name="funded"
               label="Funded"
               checked={filter.funded}
               onChange={() => setFilter({ ...filter, funded: !filter.funded })}
             />
+          </GridCol>
+          <GridCol>
             <ToggleCheckbox
               name="version"
               label="Current protocol version"
