@@ -59,22 +59,6 @@ export type Depth = '1y' | '6m' | '3m' | '1m' | '1w' | '1d';
 
 const depths: Depth[] = ['1w', '1m', '3m', '6m', '1y'];
 
-async function fetchMonthlyFundPrices(key: string, address: string) {
-  const url = process.env.MELON_METRICS_API;
-  const queryAddress = `${url}/api/monthend?address=${address}`;
-  const response = await fetch(queryAddress)
-    .then((response) => response.json())
-    .catch((error) => console.log(error));
-  return response;
-}
-
-function useFetchMonthlyFundPrices(fund: string) {
-  const address = React.useMemo(() => fund.toLowerCase(), [fund]);
-  return useQuery(['prices', address], fetchMonthlyFundPrices, {
-    refetchOnWindowFocus: false,
-  });
-}
-
 async function fetchFundPricesByDate(key: string, address: string, from: number, to: number) {
   const url = process.env.MELON_METRICS_API;
   const queryAddress = `${url}/api/range?address=${address}&from=${from}&to=${to}`;
@@ -204,15 +188,11 @@ export default function FundPerformanceMetrics(props: FundMetricsProps) {
       return startOfDay(subDays(subMonths(today, 12), 1)).toISOString();
     }
   }, [depth]);
+
   const monthStartDate = findCorrectFromTime(startOfMonth(today));
   const quarterStartDate = findCorrectFromTime(startOfQuarter(today));
   const yearStartDate = findCorrectFromTime(startOfYear(today));
   const toToday = findCorrectToTime(today);
-
-  // fundMonthlyData is Only the the month-end prices for every month the fund's been in existence
-  const { data: fundMonthlyData, error: fundMonthlyError, isFetching: fundMonthlyFetching } = useFetchMonthlyFundPrices(
-    props.address
-  );
 
   const {
     data: fundLastMonthsData,
@@ -253,8 +233,6 @@ export default function FundPerformanceMetrics(props: FundMetricsProps) {
   if (
     !indexData ||
     indexFetching ||
-    !fundMonthlyData ||
-    fundMonthlyFetching ||
     !fundLastQuartersData ||
     fundLastQuartersFetching ||
     !fundLastYearsData ||
@@ -270,26 +248,16 @@ export default function FundPerformanceMetrics(props: FundMetricsProps) {
   const mostRecentPrice =
     fundLastMonthsData && fundLastMonthsData.data[fundLastMonthsData.data.length - 1].calculations.price;
 
-  const monthStartPrice = fundMonthlyData && fundMonthlyData.data[fundMonthlyData.data.length - 1].calculations.price;
-
   const quarterStartPrice = fundLastQuartersData && fundLastQuartersData.data[0].calculations.price;
   const yearStartPrice = isBefore(fundInception, yearStartDate)
     ? fundLastYearsData && fundLastYearsData.data[0].calculations.price
     : 1;
-  const mtdReturn = calculateReturn(mostRecentPrice, monthStartPrice);
-  console.log(mtdReturn.toPrecision(8));
+
   const qtdReturn = calculateReturn(mostRecentPrice, quarterStartPrice);
   const ytdReturn = calculateReturn(mostRecentPrice, 1);
 
-  const fundMonthlyReturns: BigNumber[] = fundMonthlyData.data.map(
-    (item: DepthTimelineItem, index: number, arr: DepthTimelineItem[]) => {
-      if (index === 0) {
-        return calculateReturn(new BigNumber(1), new BigNumber(item.calculations.price));
-      }
-      return calculateReturn(new BigNumber(item.calculations.price), new BigNumber(arr[index - 1].calculations.price));
-    }
-  );
-
+  const mtdReturn = calculateReturn(mostRecentPrice, fundMonthlyData[fundMonthlyData.length - 1].calculations.price);
+  console.log(mtdReturn.toPrecision(8));
   const bestMonth = fundMonthlyReturns.reduce((carry: BigNumber, current: BigNumber) => {
     if (current.isGreaterThan(carry)) {
       return current;

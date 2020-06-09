@@ -205,7 +205,7 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
       </DictionaryEntry>
 
       <DictionaryDivider />
-      <FundPerformanceMetrics address={address} />
+      {/* <FundPerformanceMetrics address={address} /> */}
       <DictionaryDivider />
       <SectionTitle>Due Diligence</SectionTitle>
       <DictionaryEntry>
