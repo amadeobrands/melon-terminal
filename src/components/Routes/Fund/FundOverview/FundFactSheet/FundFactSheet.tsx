@@ -188,6 +188,19 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
+        <DictionaryLabel>Reserved Management Fees (% of NAV)</DictionaryLabel>
+        <DictionaryData>
+          <FormattedNumber
+            value={accounting?.grossAssetValue
+              .minus(accounting?.netAssetValue)
+              .dividedBy(accounting?.netAssetValue)
+              .multipliedBy(100)}
+            decimals={2}
+            suffix={'%'}
+          />
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
         <DictionaryLabel>Total number of shares</DictionaryLabel>
         <DictionaryData>
           <span>{numberPadding(sharesDigits || 0, maxDigits)}</span>
@@ -197,7 +210,7 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
       <DictionaryEntry>
         <DictionaryLabel>Share price</DictionaryLabel>
         <DictionaryData>
-          <span>{numberPadding(sharePriceDigits || 0, maxDigits)}</span>
+          {/* <span>{numberPadding(sharePriceDigits || 0, maxDigits)}</span> */}
           <TokenValueDisplay value={accounting?.sharePrice} symbol="WETH" decimals={0} />
         </DictionaryData>
       </DictionaryEntry>
