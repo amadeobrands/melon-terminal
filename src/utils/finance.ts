@@ -39,7 +39,7 @@ export function calculateReturn(currentPx: BigNumber | number, historicalPx: Big
 
 /**
  *
- * @param values is an array of BigNumbers that in most cases will represent asset prices over time
+ * @param values is an array of BigNumbers that in most cases will represent an asset's price over time.
  * @returns a BigNumber equal to the standard deviation of those values
  */
 export function calculateStdDev(values: BigNumber[]) {
@@ -50,35 +50,33 @@ export function calculateStdDev(values: BigNumber[]) {
     return sqrDiff;
   });
   const variance = average(squareDiffs);
-  const stdDev = variance.sqrt().multipliedBy(Math.sqrt(values.length));
+  const stdDev = variance.sqrt();
   return stdDev;
 }
 
-// export function calculateVAR(values: BigNumber[] | undefined) {
-//   if (typeof values == 'undefined') {
-//     return {
-//       lowZ: 'Fetching Data',
-//       highZ: 'Fetching Data',
-//     };
-//   } else {
-//     const avg = average(values);
-//     const squareDiffs = values.map((value) => {
-//       const diff = value.minus(avg);
-//       const sqrDiff = diff.multipliedBy(diff);
-//       return sqrDiff;
-//     });
-//     const variance = average(squareDiffs);
-//     const stdDev = variance.sqrt();
-//     return {
-//       lowZ: stdDev.multipliedBy(1.645).multipliedBy(100),
-//       highZ: stdDev.multipliedBy(2.33).multipliedBy(100),
-//     };
-//   }
-// }
+/**
+ * @param values is an array of BigNumbers that most cases will represent an asset's price over time.
+ * @returns an object with two properties - lowZ and highZ - which are both BigNumbers. LowZ represents the
+ * maximum expected drawdown per period one can expect in 95% of outcomes. HighZ is 99%.
+ */
+export function calculateVAR(values: BigNumber[] | undefined) {
+  if (typeof values == 'undefined') {
+    return {
+      lowZ: 'Fetching Data',
+      highZ: 'Fetching Data',
+    };
+  } else {
+    const stdDev = calculateStdDev(values);
+    return {
+      lowZ: stdDev.multipliedBy(1.645).multipliedBy(100),
+      highZ: stdDev.multipliedBy(2.33).multipliedBy(100),
+    };
+  }
+}
 
-// export function calculateVolatility(stdDev: BigNumber, observations: number) {
-//   return stdDev.multipliedBy(Math.sqrt(observations)).multipliedBy(100);
-// }
+export function calculateVolatility(values: BigNumber[]) {
+  return calculateStdDev(values).multipliedBy(Math.sqrt(values.length)).multipliedBy(100);
+}
 
 // export function calculateDailyLogReturns(arr: BigNumber[]) {
 //   return arr.map((price, idx: number) => {
