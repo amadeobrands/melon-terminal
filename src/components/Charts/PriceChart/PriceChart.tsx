@@ -31,8 +31,15 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
 
   const showSecondaryData = props.queryType == 'depth' && (props.depth === '1d' || props.depth === '1w') ? true : false;
 
-  let data = [...props.data, ...(showSecondaryData && props.secondaryData ? props.secondaryData : [])];
+  const data = React.useMemo(() => {
+    if (props.secondaryData && showSecondaryData) {
+      return [...props.data, ...props.secondaryData];
+    }
+    return [...props.data];
+  }, [props.queryType, props.depth]);
+
   const curveType = data.length === 1 ? ['smooth'] : ['stepline', 'smooth'];
+
   const options = {
     chart: {
       type: 'area',

@@ -62,7 +62,7 @@ async function fetchOnchainHistoryByDepth(key: string, fund: string, depth: Dept
 
 function useOnchainFundHistoryByDepth(fund: string, depth: Depth) {
   const address = React.useMemo(() => fund.toLowerCase(), [fund]);
-  const key = 'onchainPrices' + fund;
+  const key = 'onchainPrices';
   return useQuery([key, address, depth], fetchOnchainHistoryByDepth, {
     refetchOnWindowFocus: false,
   });
@@ -81,8 +81,7 @@ async function fetchOffchainHistoryByDepth(key: string, fund: string, depth: Dep
 
 function useOffchainFundHistoryByDepth(fund: string, depth: Depth) {
   const address = React.useMemo(() => fund.toLowerCase(), [fund]);
-  const key = 'offchainPrices' + fund;
-
+  const key = 'offchainPrices';
   return useQuery([key, address, depth], fetchOffchainHistoryByDepth, {
     refetchOnWindowFocus: false,
   });
@@ -102,7 +101,7 @@ async function fetchOnchainHistoryByDate(key: string, fund: string, from: number
 
 function useOnchainFundHistoryByDate(fund: string, from: number, to: number) {
   const address = React.useMemo(() => fund.toLowerCase(), [fund]);
-  const key = 'pricesByDate' + fund;
+  const key = 'pricesByDate';
 
   return useQuery([key, address, from, to], fetchOnchainHistoryByDate, {
     refetchOnWindowFocus: false,
@@ -133,20 +132,20 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
     isFetching: onchainDataByDateFetching,
   } = useOnchainFundHistoryByDate(props.address, fromDate, findCorrectToTime(today));
 
-  const parsedOnchainDataByDepth = React.useMemo(() => {
+  const formattedOnchainDataByDepth = React.useMemo(() => {
     return (onchainDataByDepth
       ? [{ id: 'on-chain', name: 'On-chain share price', type: 'area', data: onchainDataByDepth }]
       : []) as Serie[];
   }, [onchainDataByDepth]);
 
-  const parsedOffchainDataByDepth = React.useMemo(() => {
+  const formattedOffchainDataByDepth = React.useMemo(() => {
     return (
       offchainDataByDepth &&
       ([{ id: 'off-chain', name: 'Interim share price movements', type: 'line', data: offchainDataByDepth }] as Serie[])
     );
   }, [offchainDataByDepth]);
 
-  const parsedOnchainDataByDate = React.useMemo(() => {
+  const formattedOnchainDataByDate = React.useMemo(() => {
     return (onchainDataByDate
       ? [{ id: 'on-chain', name: 'On-chain share price', type: 'area', data: onchainDataByDate }]
       : []) as Serie[];
@@ -170,8 +169,8 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
             queryType={queryType}
             queryFromDate={fromDate}
             depth={depth}
-            data={queryType === 'depth' ? parsedOnchainDataByDepth : parsedOnchainDataByDate}
-            secondaryData={queryType === 'depth' ? parsedOffchainDataByDepth : undefined}
+            data={queryType === 'depth' ? formattedOnchainDataByDepth : formattedOnchainDataByDate}
+            secondaryData={queryType === 'depth' ? formattedOffchainDataByDepth : undefined}
             loading={onchainDataByDepthFetching || offchainDataByDepthFetching || onchainDataByDateFetching}
           />
         </>
