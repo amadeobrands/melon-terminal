@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import { isBigNumber } from '../../../melon-js/node_modules/web3-utils/types';
 
 export function standardDeviation(values: number[]) {
   const avg = average(values);
@@ -8,19 +9,19 @@ export function standardDeviation(values: number[]) {
     const sqrDiff = diff * diff;
     return sqrDiff;
   });
-
   const avgSquareDiff = average(squareDiffs);
-
   const stdDev = Math.sqrt(avgSquareDiff);
   return stdDev;
 }
 
-function average(data: number[]) {
-  const sum = data.reduce((s, value) => {
-    return s + value;
-  }, 0);
-
-  const avg = sum / data.length;
+function average(data: number[] | BigNumber[]) {
+  const sum = (data as any[]).reduce((s: BigNumber, value: number | BigNumber) => {
+    if (BigNumber.isBigNumber(value)) {
+      return s.plus(value);
+    }
+    return s.plus(new BigNumber(value));
+  }, new BigNumber(0));
+  const avg = sum.dividedBy(data.length);
   return avg;
 }
 
@@ -36,26 +37,22 @@ export function calculateReturn(currentPx: BigNumber | number, historicalPx: Big
   return current.dividedBy(historical).minus(1).multipliedBy(100);
 }
 
-// function average(input: BigNumber[] | number[]) {
-//   const data = typeof input[0] === 'number' ? input.map((item) => new BigNumber(item)) : input;
-//   const sum = data.reduce((s, value) => {
-//     return toBigNumber(s).plus(toBigNumber(value));
-//   }, new BigNumber(0));
-//   const avg = sum.dividedBy(data.length);
-//   return avg;
-// }
-
-// export function calculateStdDev(values: BigNumber[]) {
-//   const avg = average(values);
-//   const squareDiffs = values.map((value) => {
-//     const diff = value.minus(avg);
-//     const sqrDiff = diff.multipliedBy(diff);
-//     return sqrDiff;
-//   });
-//   const variance = average(squareDiffs);
-//   const stdDev = variance.sqrt().multipliedBy(Math.sqrt(values.length));
-//   return stdDev;
-// }
+/**
+ *
+ * @param values is an array of BigNumbers that in most cases will represent asset prices over time
+ * @returns a BigNumber equal to the standard deviation of those values
+ */
+export function calculateStdDev(values: BigNumber[]) {
+  const avg = average(values);
+  const squareDiffs = values.map((value) => {
+    const diff = value.minus(avg);
+    const sqrDiff = diff.multipliedBy(diff);
+    return sqrDiff;
+  });
+  const variance = average(squareDiffs);
+  const stdDev = variance.sqrt().multipliedBy(Math.sqrt(values.length));
+  return stdDev;
+}
 
 // export function calculateVAR(values: BigNumber[] | undefined) {
 //   if (typeof values == 'undefined') {

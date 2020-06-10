@@ -105,18 +105,20 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
       return carry;
     }, fundMonthlyReturns[0]);
 
-  const monthlyWinLoss = fundMonthlyReturns.reduce(
-    (carry: { win: number; lose: number }, current: BigNumber) => {
-      if (current.isGreaterThanOrEqualTo(0)) {
-        carry.win++;
-        return carry;
-      }
+  const monthlyWinLoss =
+    fundMonthlyData &&
+    fundMonthlyReturns.reduce(
+      (carry: { win: number; lose: number }, current: BigNumber) => {
+        if (current.isGreaterThanOrEqualTo(0)) {
+          carry.win++;
+          return carry;
+        }
 
-      carry.lose++;
-      return carry;
-    },
-    { win: 0, lose: 0 }
-  );
+        carry.lose++;
+        return carry;
+      },
+      { win: 0, lose: 0 }
+    );
 
   const positiveMonthRatio = (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
 
