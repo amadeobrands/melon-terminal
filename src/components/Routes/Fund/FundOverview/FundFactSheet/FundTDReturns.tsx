@@ -120,7 +120,7 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
       { win: 0, lose: 0 }
     );
 
-  const positiveMonthRatio = (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
+  const positiveMonthRatio = fundMonthlyData && (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
 
   return (
     <Dictionary>

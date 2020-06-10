@@ -1,7 +1,15 @@
 import * as React from 'react';
 import BigNumber from 'bignumber.js';
-import { Table, HeaderCell, HeaderRow, BodyRow, BodyCell } from '~/storybook/Table/Table';
-import { subMonths, format, differenceInCalendarMonths, startOfYear } from 'date-fns';
+import { Table, HeaderCell, HeaderRow, BodyRow, BodyCell, ScrollableTable } from '~/storybook/Table/Table';
+import {
+  subMonths,
+  subYears,
+  format,
+  differenceInCalendarMonths,
+  startOfYear,
+  isBefore,
+  differenceInCalendarYears,
+} from 'date-fns';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { useFund } from '~/hooks/useFund';
 import { calculateReturn } from '~/utils/finance';
@@ -9,6 +17,9 @@ import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { useFetchMonthlyFundPrices } from './FundMetricsQueries';
+import { InputWidget } from '~/components/Form/Input/Input';
+import { CheckboxGroup } from '~/components/Form/CheckboxGroup/CheckboxGroup';
+import { Button } from '~/components/Form/Button/Button';
 
 export interface MonthlyReturnTableProps {
   address: string;
@@ -31,7 +42,7 @@ interface DepthTimelineItem {
 }
 
 interface DisplayData {
-  date: string;
+  date: Date;
   price: BigNumber;
 }
 
@@ -39,8 +50,17 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
   const fundInception = fund.creationTime!;
-  const activeMonths = differenceInCalendarMonths(today, fundInception);
-  const inactiveMonths = differenceInCalendarMonths(fundInception, startOfYear(today));
+  const activeYears =
+    fund &&
+    new Array(differenceInCalendarYears(today, fundInception) + 1)
+      .fill(null)
+      .map((item, index) => subYears(today, index))
+      .reverse();
+
+  const [selectedYear, setSelectedYear] = React.useState(2020);
+
+  const activeMonths = fund && differenceInCalendarMonths(today, fundInception) + 1;
+  const inactiveMonths = differenceInCalendarMonths(fundInception, startOfYear(activeYears[0]));
 
   const { data: fundMonthlyData, error: fundMonthlyError, isFetching: fundMonthlyFetching } = useFetchMonthlyFundPrices(
     address
@@ -54,12 +74,13 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     );
   }
 
-  const activeMonthReturns: DisplayData[] = fundMonthlyData.data.map(
-    (item: DepthTimelineItem, index: number, arr: DepthTimelineItem[]) => {
+  const activeMonthReturns: DisplayData[] =
+    fund &&
+    fundMonthlyData.data.map((item: DepthTimelineItem, index: number, arr: DepthTimelineItem[]) => {
       if (index === 0) {
         return {
           price: calculateReturn(new BigNumber(item.calculations.price), new BigNumber(1)),
-          date: format(item.timestamp * 1000, 'MMM yyy'),
+          date: new Date(item.timestamp * 1000),
         };
       }
       return {
@@ -67,44 +88,60 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
           new BigNumber(item.calculations.price),
           new BigNumber(arr[index - 1].calculations.price)
         ),
-        date: format(item.timestamp * 1000, 'MMM yyy'),
+        date: new Date(item.timestamp * 1000),
       };
+    });
+  // shows the months in a year before the fund was created
+  const inactiveMonthReturns: DisplayData[] =
+    fund &&
+    new Array(inactiveMonths)
+      .fill(null)
+      .map((item, index: number) => {
+        return { date: subMonths(today, index + activeMonths), price: new BigNumber('n/a') };
+      })
+      .reverse();
+
+  function toggleYear() {
+    if (selectedYear === 2020) {
+      setSelectedYear(2019);
+    } else {
+      setSelectedYear(2020);
     }
-  );
-
-  const inactiveMonthReturns: DisplayData[] = new Array(inactiveMonths)
-    .fill(null)
-    .map((item, index: number) => {
-      return { date: format(subMonths(today, index + activeMonths + 1), 'MMM yyy'), price: new BigNumber('n/a') };
-    })
-    .reverse();
-
+  }
   const displayDataset = inactiveMonthReturns.concat(activeMonthReturns);
-
+  //
   return (
     <Block>
-      <SectionTitle>Monthly Returns (Share Price)</SectionTitle>
-      <Table>
-        <tbody>
-          <HeaderRow>
-            {displayDataset.map((item, index) => (
-              <HeaderCell key={index}>{item.date}</HeaderCell>
-            ))}
-          </HeaderRow>
-          <BodyRow>
-            {displayDataset.map((item, index) => (
-              <BodyCell key={index}>
-                <FormattedNumber suffix={'%'} value={item.price} decimals={2} colorize={true} />
-              </BodyCell>
-            ))}
-          </BodyRow>
-        </tbody>
-      </Table>
+      <SectionTitle>{selectedYear} Monthly Returns (Share Price)</SectionTitle>
+      {activeYears.length > 1 ? <Button onClick={toggleYear}>Switch Year</Button> : null}
+      <ScrollableTable>
+        <Table>
+          <tbody>
+            <HeaderRow>
+              {displayDataset
+                .filter((item) => item.date.getFullYear() === selectedYear)
+                .map((item, index) => (
+                  <HeaderCell key={index}>{format(item.date, 'MMM yyy')}</HeaderCell>
+                ))}
+            </HeaderRow>
+            <BodyRow>
+              {displayDataset
+                .filter((item) => item.date.getFullYear() === selectedYear)
+                .map((item, index) => (
+                  <BodyCell key={index}>
+                    <FormattedNumber suffix={'%'} value={item.price} decimals={2} colorize={true} />
+                  </BodyCell>
+                ))}
+            </BodyRow>
+          </tbody>
+        </Table>
+      </ScrollableTable>
     </Block>
   );
 };
 
 /**
+ *
  *  Index query logic that we'll need later:
  *
  *   const [historicalMonthlyIndexPrices, setHistoricalMonthlyIndexPrices] = React.useState<BigNUmber[][] | undefined>(undefined)
