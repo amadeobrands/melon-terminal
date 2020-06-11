@@ -23,6 +23,7 @@ import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenVa
 import { range } from 'ramda';
 import { useFundSlug } from '../../FundHeader/FundSlug.query';
 import { NetworkEnum } from '~/types';
+import { format } from 'date-fns';
 
 export interface NormalizedCalculation {
   sharePrice: BigNumber;
@@ -75,13 +76,17 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
   const feeManager = routes?.feeManager;
   const managementFee = feeManager?.managementFee;
   const performanceFee = feeManager?.performanceFee;
-
+  const reservedFees = accounting?.grossAssetValue
+    .minus(accounting?.netAssetValue)
+    .dividedBy(accounting?.netAssetValue)
+    .multipliedBy(100);
   const initializeSeconds = (fund?.routes?.feeManager?.performanceFee?.initializeTime.getTime() || Date.now()) / 1000;
   const secondsNow = Date.now() / 1000;
   const secondsSinceInit = secondsNow - initializeSeconds;
   const performanceFeePeriodInSeconds = (performanceFee?.period || 1) * 24 * 60 * 60;
   const secondsSinceLastPeriod = secondsSinceInit % performanceFeePeriodInSeconds;
   const nextPeriodStart = secondsNow + (performanceFeePeriodInSeconds - secondsSinceLastPeriod);
+  const lastPriceUpdate = calculations && calculations[calculations.length - 1].timestamp;
 
   const normalizedCalculations = calculations.map((item, index, array) => {
     const returnSinceLastPriceUpdate =
@@ -126,6 +131,7 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
       : null;
 
   const oneYear = 60 * 60 * 24 * 365.25;
+  5;
   const annualizedReturn =
     returnSinceInception &&
     (Math.pow(1 + returnSinceInception / 100, oneYear / (afterChange.timestamp - firstChange.timestamp)) - 1) * 100;
@@ -187,6 +193,7 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
           <TokenValueDisplay value={accounting?.netAssetValue} symbol="WETH" decimals={0} />
         </DictionaryData>
       </DictionaryEntry>
+
       <DictionaryEntry>
         <DictionaryLabel>Reserved Management Fees (% of NAV)</DictionaryLabel>
         <DictionaryData>
@@ -215,33 +222,14 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
-        <DictionaryLabel>Inception</DictionaryLabel>
-        <DictionaryData>{creation ? <FormattedDate timestamp={creation} /> : 'N/A'}</DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Status</DictionaryLabel>
-        <DictionaryData>{fund.isShutDown ? 'Inactive' : 'Active'}</DictionaryData>
-      </DictionaryEntry>
-
-      <DictionaryDivider />
-      {/* <FundPerformanceMetrics address={address} /> */}
-      <DictionaryDivider />
-      <SectionTitle>Due Diligence</SectionTitle>
-      <DictionaryEntry>
-        <DictionaryLabel>Protocol version</DictionaryLabel>
-        <DictionaryData>{version?.name ? version.name : 'N/A'}</DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Fund address</DictionaryLabel>
+        <DictionaryLabel>Last price update</DictionaryLabel>
         <DictionaryData>
-          <EtherscanLink address={address} />
+          <FormattedDate timestamp={lastPriceUpdate} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
-        <DictionaryLabel>Manager address</DictionaryLabel>
-        <DictionaryData>
-          <EtherscanLink address={fund.manager} />
-        </DictionaryData>
+        <DictionaryLabel>&nbsp;</DictionaryLabel>
+        <DictionaryData />
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Management fee</DictionaryLabel>
@@ -254,6 +242,12 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
       <DictionaryEntry>
         <DictionaryLabel>Performance fee period</DictionaryLabel>
         <DictionaryData>{performanceFee?.period} days</DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>Reserved fees (% of NAV)</DictionaryLabel>
+        <DictionaryData>
+          <FormattedNumber value={reservedFees} decimals={4} suffix={'%'} />
+        </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Start of next performance fee period</DictionaryLabel>

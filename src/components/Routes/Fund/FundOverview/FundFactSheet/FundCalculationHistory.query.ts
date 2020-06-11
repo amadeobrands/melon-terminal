@@ -21,8 +21,6 @@ export interface FundTradingHistoryQueryVariables {
   // add an optional timestamp value
 }
 
-// can i pass an optional parameter to a graphql query?
-// return first history where timestamp is > timestamp passed
 const FundCalculationHistoryQuery = gql`
   query FundCalculationHistoryQuery($address: String!) {
     fundCalculationsHistories(where: { fund: $address }, orderBy: timestamp, first: 1000) {
