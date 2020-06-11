@@ -125,6 +125,7 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
       : null;
 
   const oneYear = 60 * 60 * 24 * 365.25;
+  5;
   const annualizedReturn =
     returnSinceInception &&
     (Math.pow(1 + returnSinceInception / 100, oneYear / (afterChange.timestamp - firstChange.timestamp)) - 1) * 100;
@@ -251,7 +252,7 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
         <DictionaryData>{performanceFee?.period} days</DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
-        <DictionaryLabel>Reserved Fees (% of NAV)</DictionaryLabel>
+        <DictionaryLabel>Reserved fees (% of NAV)</DictionaryLabel>
         <DictionaryData>
           <FormattedNumber value={reservedFees} decimals={4} suffix={'%'} />
         </DictionaryData>
