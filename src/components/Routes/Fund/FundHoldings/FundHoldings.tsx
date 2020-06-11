@@ -27,8 +27,6 @@ export const FundHoldings: React.FC<FundHoldingsProps> = ({ address }) => {
   const [holdings, query] = useFundHoldingsQuery(address);
   const [assetDailyChange] = useAssetsDailyChange();
 
-  console.log(assetDailyChange);
-
   if (query.loading) {
     return (
       <Block>
