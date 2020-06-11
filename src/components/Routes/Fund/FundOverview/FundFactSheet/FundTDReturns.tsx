@@ -66,8 +66,7 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
     );
   }
 
-  const mostRecentPrice =
-    fundLastMonthsData && fundLastMonthsData.data[fundLastMonthsData.data.length - 1].calculations.price;
+  const mostRecentPrice = fundMonthlyData && fundMonthlyData.data[fundMonthlyData.data.length - 1].calculations.price;
   const quarterStartPrice = fundLastQuartersData && fundLastQuartersData.data[0].calculations.price;
   const yearStartPrice = isBefore(fundInception, yearStartDate)
     ? fundLastYearsData && fundLastYearsData.data[0].calculations.price
