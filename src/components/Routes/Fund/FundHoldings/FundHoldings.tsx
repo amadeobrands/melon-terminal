@@ -1,6 +1,6 @@
 import React from 'react';
 import { Spinner } from '~/storybook/Spinner/Spinner';
-import { useFundHoldingsQuery } from './FundHoldings.query';
+import { useFundHoldingsQuery, useAssetsDailyChange } from './FundHoldings.query';
 import * as S from './FundHoldings.styles';
 import BigNumber from 'bignumber.js';
 import {
@@ -25,6 +25,9 @@ export interface FundHoldingsProps {
 
 export const FundHoldings: React.FC<FundHoldingsProps> = ({ address }) => {
   const [holdings, query] = useFundHoldingsQuery(address);
+  const [assetDailyChange] = useAssetsDailyChange();
+
+  console.log(assetDailyChange);
 
   if (query.loading) {
     return (
@@ -58,7 +61,11 @@ export const FundHoldings: React.FC<FundHoldingsProps> = ({ address }) => {
           <thead>
             <HeaderRow>
               <HeaderCell>Asset</HeaderCell>
-              <HeaderCellRightAlign>Price</HeaderCellRightAlign>
+              <HeaderCellRightAlign>
+                Price
+                <br />
+                Daily change
+              </HeaderCellRightAlign>
               <HeaderCellRightAlign>Balance</HeaderCellRightAlign>
               <HeaderCellRightAlign>Value [ETH]</HeaderCellRightAlign>
               <HeaderCellRightAlign>Allocation</HeaderCellRightAlign>
@@ -79,6 +86,15 @@ export const FundHoldings: React.FC<FundHoldingsProps> = ({ address }) => {
                 </BodyCell>
                 <BodyCellRightAlign>
                   <FormattedNumber value={holding.token?.price} />
+                  <br />
+                  {holding.token?.symbol && (
+                    <FormattedNumber
+                      value={assetDailyChange[holding.token.symbol]}
+                      colorize={true}
+                      decimals={2}
+                      suffix="%"
+                    />
+                  )}
                 </BodyCellRightAlign>
                 <BodyCellRightAlign>
                   <TokenValueDisplay value={holding.amount!} decimals={holding.token!.decimals!} />
