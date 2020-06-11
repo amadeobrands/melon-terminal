@@ -17,6 +17,7 @@ import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenVa
 import { range } from 'ramda';
 import { useFundSlug } from '../../FundHeader/FundSlug.query';
 import { NetworkEnum } from '~/types';
+import { format } from 'date-fns';
 
 export interface NormalizedCalculation {
   sharePrice: BigNumber;
@@ -69,13 +70,17 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
   const feeManager = routes?.feeManager;
   const managementFee = feeManager?.managementFee;
   const performanceFee = feeManager?.performanceFee;
-
+  const reservedFees = accounting?.grossAssetValue
+    .minus(accounting?.netAssetValue)
+    .dividedBy(accounting?.netAssetValue)
+    .multipliedBy(100);
   const initializeSeconds = (fund?.routes?.feeManager?.performanceFee?.initializeTime.getTime() || Date.now()) / 1000;
   const secondsNow = Date.now() / 1000;
   const secondsSinceInit = secondsNow - initializeSeconds;
   const performanceFeePeriodInSeconds = (performanceFee?.period || 1) * 24 * 60 * 60;
   const secondsSinceLastPeriod = secondsSinceInit % performanceFeePeriodInSeconds;
   const nextPeriodStart = secondsNow + (performanceFeePeriodInSeconds - secondsSinceLastPeriod);
+  const lastPriceUpdate = calculations && calculations[calculations.length - 1].timestamp;
 
   const normalizedCalculations = calculations.map((item, index, array) => {
     const returnSinceLastPriceUpdate =
@@ -208,6 +213,7 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
           <TokenValueDisplay value={accounting?.netAssetValue} symbol="WETH" decimals={0} />
         </DictionaryData>
       </DictionaryEntry>
+
       <DictionaryEntry>
         <DictionaryLabel>Total number of shares</DictionaryLabel>
         <DictionaryData>
@@ -218,8 +224,14 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
       <DictionaryEntry>
         <DictionaryLabel>Share price</DictionaryLabel>
         <DictionaryData>
-          <span>{numberPadding(sharePriceDigits || 0, maxDigits)}</span>
+          {/* <span>{numberPadding(sharePriceDigits || 0, maxDigits)}</span> */}
           <TokenValueDisplay value={accounting?.sharePrice} symbol="WETH" decimals={0} />
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>Last price update</DictionaryLabel>
+        <DictionaryData>
+          <FormattedDate timestamp={lastPriceUpdate} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
@@ -237,6 +249,12 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
       <DictionaryEntry>
         <DictionaryLabel>Performance fee period</DictionaryLabel>
         <DictionaryData>{performanceFee?.period} days</DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>Reserved Fees (% of NAV)</DictionaryLabel>
+        <DictionaryData>
+          <FormattedNumber value={reservedFees} decimals={4} suffix={'%'} />
+        </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Start of next performance fee period</DictionaryLabel>
