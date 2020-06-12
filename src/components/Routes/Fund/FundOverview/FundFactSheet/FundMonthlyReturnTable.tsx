@@ -7,7 +7,6 @@ import {
   format,
   differenceInCalendarMonths,
   startOfYear,
-  isBefore,
   differenceInCalendarYears,
   endOfMonth,
 } from 'date-fns';
@@ -18,8 +17,6 @@ import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { useFetchMonthlyFundPrices } from './FundMetricsQueries';
-import { InputWidget } from '~/components/Form/Input/Input';
-import { CheckboxGroup } from '~/components/Form/CheckboxGroup/CheckboxGroup';
 import { Button } from '~/components/Form/Button/Button';
 
 export interface MonthlyReturnTableProps {

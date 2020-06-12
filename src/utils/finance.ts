@@ -33,7 +33,6 @@ function average(data: number[] | BigNumber[]) {
 export function calculateReturn(currentPx: BigNumber | number, historicalPx: BigNumber | number): BigNumber {
   const current = typeof currentPx === 'number' ? new BigNumber(currentPx) : currentPx;
   const historical = typeof historicalPx === 'number' ? new BigNumber(historicalPx) : historicalPx;
-
   return current.dividedBy(historical).minus(1).multipliedBy(100);
 }
 

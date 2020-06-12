@@ -72,7 +72,7 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
     ? fundLastYearsData && fundLastYearsData.data[0].calculations.price
     : 1;
 
-  const qtdReturn = quarterStartPrice && calculateReturn(mostRecentPrice, quarterStartPrice);
+  const qtdReturn = fundLastQuartersData && calculateReturn(mostRecentPrice, quarterStartPrice);
   const ytdReturn = yearStartPrice && calculateReturn(mostRecentPrice, 1);
   const mtdReturn =
     fundLastMonthsData && calculateReturn(mostRecentPrice, fundLastMonthsData.data[0].calculations.price);
