@@ -66,58 +66,54 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
     );
   }
 
-  const mostRecentPrice = fundMonthlyData && fundMonthlyData.data[fundMonthlyData.data.length - 1].calculations.price;
-  const quarterStartPrice = fundLastQuartersData && fundLastQuartersData.data[0].calculations.price;
+  const mostRecentPrice =
+    fundMonthlyData?.data && fundMonthlyData.data[fundMonthlyData.data.length - 1].calculations.price;
+  const quarterStartPrice = fundLastQuartersData?.data && fundLastQuartersData.data[0].calculations.price;
   const yearStartPrice = isBefore(fundInception, yearStartDate)
     ? fundLastYearsData && fundLastYearsData.data[0].calculations.price
     : 1;
 
-  const qtdReturn = fundLastQuartersData && calculateReturn(mostRecentPrice, quarterStartPrice);
+  const qtdReturn =
+    mostRecentPrice && fundLastQuartersData?.data && calculateReturn(mostRecentPrice, quarterStartPrice);
   const ytdReturn = yearStartPrice && calculateReturn(mostRecentPrice, 1);
   const mtdReturn =
-    fundLastMonthsData && calculateReturn(mostRecentPrice, fundLastMonthsData.data[0].calculations.price);
+    fundLastMonthsData?.data && calculateReturn(mostRecentPrice, fundLastMonthsData.data[0].calculations.price);
 
-  const fundMonthlyReturns =
-    fundMonthlyData &&
-    fundMonthlyData.data.map((item: MetricsTimelineItem, index: number, arr: MetricsTimelineItem[]) => {
+  const fundMonthlyReturns = fundMonthlyData.data?.map(
+    (item: MetricsTimelineItem, index: number, arr: MetricsTimelineItem[]) => {
       if (index === 0) {
         return calculateReturn(item.calculations.price, 1);
       }
       return calculateReturn(item.calculations.price, arr[index - 1].calculations.price);
-    });
+    }
+  );
 
-  const bestMonth =
-    fundMonthlyData &&
-    fundMonthlyReturns.reduce((carry: BigNumber, current: BigNumber) => {
-      if (current.isGreaterThan(carry)) {
-        return current;
-      }
-      return carry;
-    }, fundMonthlyReturns[0]);
+  const bestMonth = fundMonthlyReturns?.reduce((carry: BigNumber, current: BigNumber) => {
+    if (current.isGreaterThan(carry)) {
+      return current;
+    }
+    return carry;
+  }, fundMonthlyReturns[0]);
 
-  const worstMonth =
-    fundMonthlyData &&
-    fundMonthlyReturns.reduce((carry: BigNumber, current: BigNumber) => {
-      if (current.isLessThan(carry)) {
-        return current;
-      }
-      return carry;
-    }, fundMonthlyReturns[0]);
+  const worstMonth = fundMonthlyReturns?.reduce((carry: BigNumber, current: BigNumber) => {
+    if (current.isLessThan(carry)) {
+      return current;
+    }
+    return carry;
+  }, fundMonthlyReturns[0]);
 
-  const monthlyWinLoss =
-    fundMonthlyData &&
-    fundMonthlyReturns.reduce(
-      (carry: { win: number; lose: number }, current: BigNumber) => {
-        if (current.isGreaterThanOrEqualTo(0)) {
-          carry.win++;
-          return carry;
-        }
-
-        carry.lose++;
+  const monthlyWinLoss = fundMonthlyReturns?.reduce(
+    (carry: { win: number; lose: number }, current: BigNumber) => {
+      if (current.isGreaterThanOrEqualTo(0)) {
+        carry.win++;
         return carry;
-      },
-      { win: 0, lose: 0 }
-    );
+      }
+
+      carry.lose++;
+      return carry;
+    },
+    { win: 0, lose: 0 }
+  );
 
   const positiveMonthRatio = fundMonthlyData && (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
 
