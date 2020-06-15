@@ -29,35 +29,37 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
   const yearStartDate = findCorrectFromTime(startOfYear(today));
   const toToday = findCorrectToTime(today);
 
-  const { data: fundMonthlyData, error: fundMonthlyError, isFetching: fundMonthlyFetching } = useFetchMonthlyFundPrices(
+  const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(
     fund.address!
   );
 
-  const {
-    data: fundLastMonthsData,
-    error: fundLastMonthsError,
-    isFetching: fundLastMonthsFetching,
-  } = useFetchFundPricesByDate(fund.address!, monthStartDate, toToday);
+  const { data: monthToDateData, error: monthToDateError, isFetching: monthToDateFetching } = useFetchFundPricesByDate(
+    fund.address!,
+    monthStartDate,
+    toToday
+  );
 
   const {
-    data: fundLastQuartersData,
-    error: fundLastQuartersError,
-    isFetching: fundLastQuartersFetching,
+    data: quarterToDateData,
+    error: quarterToDateError,
+    isFetching: quarterToDateFetching,
   } = useFetchFundPricesByDate(fund.address!, quarterStartDate, toToday);
 
-  const {
-    data: fundLastYearsData,
-    error: fundLastYearsError,
-    isFetching: fundLastYearsFetching,
-  } = useFetchFundPricesByDate(fund.address!, yearStartDate, toToday);
+  const { data: yearToDateData, error: yearToDateError, isFetching: yearToDateFetching } = useFetchFundPricesByDate(
+    fund.address!,
+    yearStartDate,
+    toToday
+  );
 
   if (
-    !fundLastMonthsData ||
-    fundLastMonthsFetching ||
-    !fundLastQuartersData ||
-    fundLastQuartersFetching ||
-    !fundLastYearsData ||
-    fundLastYearsFetching
+    !monthToDateData ||
+    monthToDateFetching ||
+    !quarterToDateData ||
+    quarterToDateFetching ||
+    !yearToDateData ||
+    yearToDateFetching ||
+    !monthlyData ||
+    monthlyFetching
   ) {
     return (
       <Block>
@@ -66,20 +68,18 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
     );
   }
 
-  const mostRecentPrice =
-    fundMonthlyData?.data && fundMonthlyData.data[fundMonthlyData.data.length - 1].calculations.price;
-  const quarterStartPrice = fundLastQuartersData?.data && fundLastQuartersData.data[0].calculations.price;
+  const mostRecentPrice = monthlyData?.data && monthlyData.data[monthlyData.data.length - 1].calculations.price;
+  const quarterStartPrice = quarterToDateData?.data && quarterToDateData.data[0].calculations.price;
   const yearStartPrice = isBefore(fundInception, yearStartDate)
-    ? fundLastYearsData && fundLastYearsData.data[0].calculations.price
+    ? yearToDateData && yearToDateData.data[0].calculations.price
     : 1;
 
-  const qtdReturn =
-    mostRecentPrice && fundLastQuartersData?.data && calculateReturn(mostRecentPrice, quarterStartPrice);
-  const ytdReturn = yearStartPrice && calculateReturn(mostRecentPrice, 1);
+  const qtdReturn = mostRecentPrice && quarterToDateData?.data && calculateReturn(mostRecentPrice, quarterStartPrice);
+  const ytdReturn = monthlyData?.data && calculateReturn(mostRecentPrice, 1);
   const mtdReturn =
-    fundLastMonthsData?.data && calculateReturn(mostRecentPrice, fundLastMonthsData.data[0].calculations.price);
+    monthToDateData?.data && calculateReturn(mostRecentPrice, monthToDateData.data[0].calculations.price);
 
-  const fundMonthlyReturns = fundMonthlyData.data?.map(
+  const monthlyReturns = monthlyData.data?.map(
     (item: MetricsTimelineItem, index: number, arr: MetricsTimelineItem[]) => {
       if (index === 0) {
         return calculateReturn(item.calculations.price, 1);
@@ -88,21 +88,21 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
     }
   );
 
-  const bestMonth = fundMonthlyReturns?.reduce((carry: BigNumber, current: BigNumber) => {
+  const bestMonth = monthlyReturns?.reduce((carry: BigNumber, current: BigNumber) => {
     if (current.isGreaterThan(carry)) {
       return current;
     }
     return carry;
-  }, fundMonthlyReturns[0]);
+  }, monthlyReturns[0]);
 
-  const worstMonth = fundMonthlyReturns?.reduce((carry: BigNumber, current: BigNumber) => {
+  const worstMonth = monthlyReturns?.reduce((carry: BigNumber, current: BigNumber) => {
     if (current.isLessThan(carry)) {
       return current;
     }
     return carry;
-  }, fundMonthlyReturns[0]);
+  }, monthlyReturns[0]);
 
-  const monthlyWinLoss = fundMonthlyReturns?.reduce(
+  const monthlyWinLoss = monthlyReturns?.reduce(
     (carry: { win: number; lose: number }, current: BigNumber) => {
       if (current.isGreaterThanOrEqualTo(0)) {
         carry.win++;
@@ -115,7 +115,7 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
     { win: 0, lose: 0 }
   );
 
-  const positiveMonthRatio = fundMonthlyData && (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
+  const positiveMonthRatio = monthlyData && (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
 
   return (
     <Dictionary>

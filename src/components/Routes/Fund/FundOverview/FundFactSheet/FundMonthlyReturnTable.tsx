@@ -58,7 +58,8 @@ function assembleTableData(
   monthsBeforeFund: number,
   monthsRemainingInYear: number,
   monthlyReturnData: DepthTimelineItem[]
-): { eth: DisplayData[]; eur: DisplayData[]; usd: DisplayData[] } {
+  // #TODO remove null types
+): { eth: DisplayData[]; eur: DisplayData[] | null; usd: DisplayData[] | null } {
   const inactiveMonthReturns: DisplayData[] = new Array(monthsBeforeFund)
     .fill(null)
     .map((item, index: number) => {
@@ -84,41 +85,42 @@ function assembleTableData(
     }
   );
 
-  const usdActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
-    (item: DepthTimelineItem, index: number, arr: DepthTimelineItem[]) => {
-      if (index === 0) {
-        return {
-          return: calculateReturn(new BigNumber(item.calculations.price / item.fx.ethusd), new BigNumber(1)),
-          date: new Date(item.timestamp * 1000),
-        };
-      }
-      return {
-        return: calculateReturn(
-          new BigNumber(item.calculations.price / item.fx.ethusd),
-          new BigNumber(arr[index - 1].calculations.price / arr[index - 1].fx.ethusd)
-        ),
-        date: new Date(item.timestamp * 1000),
-      };
-    }
-  );
+  // const usdActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
+  //   (item: DepthTimelineItem, index: number, arr: DepthTimelineItem[]) => {
+  //     if (index === 0) {
+  //       return {
+  //         return: calculateReturn(new BigNumber(item.calculations.price / item.fx.ethusd), new BigNumber(1)),
+  //         date: new Date(item.timestamp * 1000),
+  //       };
+  //     }
+  //     return {
+  //       return: calculateReturn(
+  //         new BigNumber(item.calculations.price / item.fx.ethusd),
+  //         new BigNumber(arr[index - 1].calculations.price / arr[index - 1].fx.ethusd)
+  //       ),
+  //       date: new Date(item.timestamp * 1000),
+  //     };
+  //   }
+  // );
 
-  const eurActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
-    (item: DepthTimelineItem, index: number, arr: DepthTimelineItem[]) => {
-      if (index === 0) {
-        return {
-          return: calculateReturn(new BigNumber(item.calculations.price / item.fx.etheur), new BigNumber(1)),
-          date: new Date(item.timestamp * 1000),
-        };
-      }
-      return {
-        return: calculateReturn(
-          new BigNumber(item.calculations.price / item.fx.etheur),
-          new BigNumber(arr[index - 1].calculations.price / arr[index - 1].fx.etheur)
-        ),
-        date: new Date(item.timestamp * 1000),
-      };
-    }
-  );
+  // const eurActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
+  //   (item: DepthTimelineItem, index: number, arr: DepthTimelineItem[]) => {
+  //     if (index === 0) {
+  //       return {
+  //         return: calculateReturn(new BigNumber(item.calculations.price / item.fx.etheur), new BigNumber(1)),
+  //         date: new Date(item.timestamp * 1000),
+  //       };
+  //     }
+  //     return {
+  //       return: calculateReturn(
+  //         new BigNumber(item.calculations.price / item.fx.etheur),
+  //         new BigNumber(arr[index - 1].calculations.price / arr[index - 1].fx.etheur)
+  //       ),
+  //       date: new Date(item.timestamp * 1000),
+  //     };
+  //   }
+  // );
+
   const remainingMonthReturns: DisplayData[] = new Array(monthsRemainingInYear)
     .fill(null)
     .map((item, index: number) => {
@@ -127,8 +129,10 @@ function assembleTableData(
 
   return {
     eth: inactiveMonthReturns.concat(ethActiveMonthReturns).concat(remainingMonthReturns),
-    usd: inactiveMonthReturns.concat(usdActiveMonthReturns).concat(remainingMonthReturns),
-    eur: inactiveMonthReturns.concat(eurActiveMonthReturns).concat(remainingMonthReturns),
+    // usd: inactiveMonthReturns.concat(usdActiveMonthReturns).concat(remainingMonthReturns),
+    // eur: inactiveMonthReturns.concat(eurActiveMonthReturns).concat(remainingMonthReturns),
+    usd: null,
+    eur: null,
   };
 }
 
@@ -149,15 +153,13 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     undefined
   );
 
-  const { data: fundMonthlyData, error: fundMonthlyError, isFetching: fundMonthlyFetching } = useFetchMonthlyFundPrices(
-    address
-  );
+  const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(address);
 
   const monthsBeforeFund = differenceInCalendarMonths(fundInception, startOfYear(activeYears[0]));
   const activeMonths = fund && differenceInCalendarMonths(today, fundInception) + 1;
   const monthsRemainingInYear = differenceInCalendarMonths(endOfYear(today), today);
 
-  if (!fundMonthlyData || fundMonthlyFetching) {
+  if (!monthlyData || monthlyFetching) {
     return (
       <Block>
         <Spinner />
@@ -166,37 +168,8 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   }
   const tableData =
     fund &&
-    fundMonthlyData &&
-    assembleTableData(today, activeMonths, monthsBeforeFund, monthsRemainingInYear, fundMonthlyData.data);
-
-  // creates DisplayData objects for months the fund has been in existence
-  const activeMonthReturns: DisplayData[] = fundMonthlyData?.data.map(
-    (item: DepthTimelineItem, index: number, arr: DepthTimelineItem[]) => {
-      if (index === 0) {
-        return {
-          return: calculateReturn(new BigNumber(item.calculations.price), new BigNumber(1)),
-          date: new Date(item.timestamp * 1000),
-        };
-      }
-      return {
-        return: calculateReturn(
-          new BigNumber(item.calculations.price),
-          new BigNumber(arr[index - 1].calculations.price)
-        ),
-        date: new Date(item.timestamp * 1000),
-      };
-    }
-  );
-
-  // creates objects for today => end of year
-  const remainingMonthReturns: DisplayData[] =
-    fund &&
-    new Array(monthsRemainingInYear).fill(null).map((item, index: number) => {
-      return { date: endOfMonth(addMonths(today, index + 1)), return: new BigNumber('n/a') };
-    });
-
-  // const tableData =
-  //   fund && activeMonthReturns && inactiveMonthReturns.concat(activeMonthReturns).concat(remainingMonthReturns);
+    monthlyData &&
+    assembleTableData(today, activeMonths, monthsBeforeFund, monthsRemainingInYear, monthlyData.data);
 
   function toggleYear() {
     if (selectedYear === 2020) {
