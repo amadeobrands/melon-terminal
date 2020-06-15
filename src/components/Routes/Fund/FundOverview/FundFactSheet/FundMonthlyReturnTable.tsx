@@ -11,6 +11,7 @@ import {
   endOfMonth,
   endOfYear,
   addMonths,
+  startOfMonth,
 } from 'date-fns';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { useFund } from '~/hooks/useFund';
@@ -18,7 +19,7 @@ import { calculateReturn } from '~/utils/finance';
 import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
 import { SectionTitle } from '~/storybook/Title/Title';
-import { useFetchMonthlyFundPrices } from './FundMetricsQueries';
+import { useFetchMonthlyFundPrices, fetchMultipleIndexPrices } from './FundMetricsQueries';
 import { Button } from '~/components/Form/Button/Button';
 
 export interface MonthlyReturnTableProps {
@@ -57,9 +58,10 @@ function assembleTableData(
   activeMonths: number,
   monthsBeforeFund: number,
   monthsRemainingInYear: number,
-  monthlyReturnData: DepthTimelineItem[]
+  monthlyReturnData: DepthTimelineItem[],
+  indexReturnData: BigNumber[][]
   // #TODO remove null types
-): { eth: DisplayData[]; eur: DisplayData[] | null; usd: DisplayData[] | null } {
+): { eth: DisplayData[]; eur: DisplayData[] | null; usd: DisplayData[] | null; index: DisplayData[] } {
   const inactiveMonthReturns: DisplayData[] = new Array(monthsBeforeFund)
     .fill(null)
     .map((item, index: number) => {
@@ -121,6 +123,13 @@ function assembleTableData(
   //   }
   // );
 
+  const indexActiveMonthReturns: DisplayData[] = indexReturnData.map((item: any, index: number, arr: any[]) => {
+    return {
+      return: calculateReturn(item[0], item[item.length - 1]),
+      date: endOfMonth(subMonths(today, index)),
+    };
+  });
+
   const remainingMonthReturns: DisplayData[] = new Array(monthsRemainingInYear)
     .fill(null)
     .map((item, index: number) => {
@@ -133,6 +142,7 @@ function assembleTableData(
     // eur: inactiveMonthReturns.concat(eurActiveMonthReturns).concat(remainingMonthReturns),
     usd: null,
     eur: null,
+    index: inactiveMonthReturns.concat(indexActiveMonthReturns).concat(remainingMonthReturns),
   };
 }
 
@@ -149,9 +159,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
 
   const [selectedYear, setSelectedYear] = React.useState(2020);
 
-  const [historicalMonthlyIndexPrices, setHistoricalMonthlyIndexPrices] = React.useState<BigNumber[][] | undefined>(
-    undefined
-  );
+  const [historicalIndexPrices, sethistoricalIndexPrices] = React.useState<BigNumber[][] | undefined>(undefined);
 
   const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(address);
 
@@ -159,18 +167,44 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   const activeMonths = fund && differenceInCalendarMonths(today, fundInception) + 1;
   const monthsRemainingInYear = differenceInCalendarMonths(endOfYear(today), today);
 
-  if (!monthlyData || monthlyFetching) {
+  const activeMonthDates = new Array(activeMonths)
+    .fill(null)
+    .map((item, index: number, arr: null[]) => {
+      if (index === arr.length - 1) {
+        const targetMonth = subMonths(today, index);
+        return [fund.creationTime!, endOfMonth(targetMonth)] as [Date, Date];
+      } else {
+        const targetMonth = subMonths(today, index);
+        return [startOfMonth(targetMonth), endOfMonth(targetMonth)] as [Date, Date];
+      }
+    })
+    .reverse();
+
+  React.useMemo(async () => {
+    const prices = await fetchMultipleIndexPrices(activeMonthDates);
+    sethistoricalIndexPrices(prices);
+  }, [fund]);
+
+  if (!monthlyData || monthlyFetching || !historicalIndexPrices) {
     return (
       <Block>
         <Spinner />
       </Block>
     );
   }
+
   const tableData =
     fund &&
     monthlyData &&
-    assembleTableData(today, activeMonths, monthsBeforeFund, monthsRemainingInYear, monthlyData.data);
-
+    assembleTableData(
+      today,
+      activeMonths,
+      monthsBeforeFund,
+      monthsRemainingInYear,
+      monthlyData.data,
+      historicalIndexPrices
+    );
+  console.log(historicalIndexPrices);
   function toggleYear() {
     if (selectedYear === 2020) {
       setSelectedYear(2019);
@@ -187,13 +221,25 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
         <Table>
           <tbody>
             <HeaderRow>
+              <HeaderCell></HeaderCell>
               {tableData &&
                 tableData.eth
                   .filter((item) => item.date.getFullYear() === selectedYear)
                   .map((item, index) => <HeaderCell key={index}>{format(item.date, 'MMM')}</HeaderCell>)}
             </HeaderRow>
             <BodyRow>
+              <BodyCell>Return vs ETH</BodyCell>
               {tableData.eth
+                .filter((item) => item.date.getFullYear() === selectedYear)
+                .map((item, index) => (
+                  <BodyCell key={index}>
+                    <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
+                  </BodyCell>
+                ))}
+            </BodyRow>
+            <BodyRow>
+              <BodyCell>Index Return</BodyCell>
+              {tableData.index
                 .filter((item) => item.date.getFullYear() === selectedYear)
                 .map((item, index) => (
                   <BodyCell key={index}>
@@ -231,13 +277,6 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
  *  Index query logic that we'll need later:
  *
  *
- *  const fundMonthDates = new Array(ageInMonths + 1)
- *    .fill(null)
- *    .map(item, index: number) => {
- *      const targetMonth = subMonths(today, index);
- *      return [startOfMonth(targetMonth), endOfMonth(targetMonth)] as [Date, Date];
- *    })
- *      .reverse()
  *
  *  React.useMemo(async () => {
  *    const prices = await fetchMultipleIndexPrices(fundMonthDates)
