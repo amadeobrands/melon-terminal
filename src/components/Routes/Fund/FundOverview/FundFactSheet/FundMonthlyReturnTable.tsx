@@ -123,6 +123,7 @@ function assembleTableData(
   //   }
   // );
 
+  // TODO - compare index returns to dollar returns here rather than just returning index returns
   const indexActiveMonthReturns: DisplayData[] = indexReturnData.map((item: any, index: number, arr: any[]) => {
     return {
       return: calculateReturn(item[0], item[item.length - 1]),
@@ -133,16 +134,16 @@ function assembleTableData(
   const remainingMonthReturns: DisplayData[] = new Array(monthsRemainingInYear)
     .fill(null)
     .map((item, index: number) => {
-      return { date: endOfMonth(addMonths(today, index + 1)), return: new BigNumber('n/a') };
+      return { date: endOfMonth(addMonths(today, index + 1)), return: new BigNumber('-') };
     });
 
   return {
-    eth: inactiveMonthReturns.concat(ethActiveMonthReturns).concat(remainingMonthReturns),
-    // usd: inactiveMonthReturns.concat(usdActiveMonthReturns).concat(remainingMonthReturns),
-    // eur: inactiveMonthReturns.concat(eurActiveMonthReturns).concat(remainingMonthReturns),
+    eth: inactiveMonthReturns.concat(ethActiveMonthReturns),
+    // usd: inactiveMonthReturns.concat(usdActiveMonthReturns),
+    // eur: inactiveMonthReturns.concat(eurActiveMonthReturns),
     usd: null,
     eur: null,
-    index: inactiveMonthReturns.concat(indexActiveMonthReturns).concat(remainingMonthReturns),
+    index: inactiveMonthReturns.concat(indexActiveMonthReturns),
   };
 }
 
@@ -156,15 +157,15 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
       .fill(null)
       .map((item, index) => subYears(today, index))
       .reverse();
-
   const [selectedYear, setSelectedYear] = React.useState(2020);
 
   const [historicalIndexPrices, sethistoricalIndexPrices] = React.useState<BigNumber[][] | undefined>(undefined);
 
   const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(address);
 
-  const monthsBeforeFund = differenceInCalendarMonths(fundInception, startOfYear(activeYears[0]));
+  const monthsBeforeFund = differenceInCalendarMonths(fundInception, startOfYear(2020));
   const activeMonths = fund && differenceInCalendarMonths(today, fundInception) + 1;
+
   const monthsRemainingInYear = differenceInCalendarMonths(endOfYear(today), today);
 
   const activeMonthDates = new Array(activeMonths)
@@ -185,7 +186,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     sethistoricalIndexPrices(prices);
   }, [fund]);
 
-  if (!monthlyData || monthlyFetching || !historicalIndexPrices) {
+  if (!monthlyData || monthlyFetching || !historicalIndexPrices || monthlyError) {
     return (
       <Block>
         <Spinner />
@@ -196,6 +197,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   const tableData =
     fund &&
     monthlyData &&
+    historicalIndexPrices &&
     assembleTableData(
       today,
       activeMonths,
@@ -204,19 +206,25 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
       monthlyData.data,
       historicalIndexPrices
     );
-  console.log(historicalIndexPrices);
-  function toggleYear() {
-    if (selectedYear === 2020) {
-      setSelectedYear(2019);
-    } else {
-      setSelectedYear(2020);
-    }
+
+  function toggleYear(year: number) {
+    setSelectedYear(2020);
   }
 
   return (
     <Block>
       <SectionTitle>{selectedYear} Monthly Returns (Share Price)</SectionTitle>
-      {activeYears.length > 1 ? <Button onClick={toggleYear}>Switch Year</Button> : null}
+      {activeYears.length > 1
+        ? activeYears.map((year) => {
+            const yearNumber = year.getFullYear();
+            return (
+              <Button onClick={() => toggleYear(yearNumber)}>
+                <FormattedNumber value={yearNumber} />
+              </Button>
+            );
+          })
+        : null}
+
       <ScrollableTable>
         <Table>
           <tbody>
