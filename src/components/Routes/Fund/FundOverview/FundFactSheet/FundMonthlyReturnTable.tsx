@@ -208,7 +208,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     );
 
   function toggleYear(year: number) {
-    setSelectedYear(2020);
+    setSelectedYear(year);
   }
 
   return (
@@ -217,11 +217,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
       {activeYears.length > 1
         ? activeYears.map((year) => {
             const yearNumber = year.getFullYear();
-            return (
-              <Button onClick={() => toggleYear(yearNumber)}>
-                <FormattedNumber value={yearNumber} />
-              </Button>
-            );
+            return <Button onClick={() => toggleYear(yearNumber)}>{yearNumber}</Button>;
           })
         : null}
 
@@ -279,24 +275,6 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     </Block>
   );
 };
-
-/**
- *
- *  Index query logic that we'll need later:
- *
- *
- *
- *  React.useMemo(async () => {
- *    const prices = await fetchMultipleIndexPrices(fundMonthDates)
- *    setHistoricalMonthlyIndexPrices(prices)
- *  }, [fund])
- *
- *  const { data: indexData, error: indexError, isFetching: indexFetching } = useFetchIndexPrices(
- *    indexQueryStartDate,
- *    endOfDay(today).toISOString()
- *  ) // where indexQueryStartDate is something like => startOfDay(subDays(subWeeks(today, 1), 1)).toISOString();
- *
- */
 
 /**
  * RETURN MATH FOR VOLATILITY AND VAR CALS
