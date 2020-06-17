@@ -7,6 +7,7 @@ import { Spinner } from '../storybook/Spinner/Spinner';
 import { ErrorFallback } from './Common/ErrorFallback/ErrorFallback';
 import { Layout } from './Layout/Layout';
 import { RequiresRates } from './Contexts/Rates/Rates';
+import FAQ from './Routes/FAQ/FAQ';
 
 const Home = React.lazy(() => import('./Routes/Home/Home'));
 const Wallet = React.lazy(() => import('./Routes/Wallet/Wallet'));
@@ -51,6 +52,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 <RequiresConnection>
                   <Fund />
                 </RequiresConnection>
+              </Route>
+
+              <Route path="/faq">
+                <FAQ />
               </Route>
 
               <Route>

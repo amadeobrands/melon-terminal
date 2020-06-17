@@ -108,6 +108,9 @@ export const Layout: React.FC<LayoutProps> = (props) => {
               </a>
             </FooterItem>
             <FooterItem>
+              <Link to={`/faq`}>FAQ</Link>
+            </FooterItem>
+            <FooterItem>
               <a href="https://docs.melonport.com" target="_blank">
                 Documentation
               </a>
