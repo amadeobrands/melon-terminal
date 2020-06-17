@@ -21,6 +21,7 @@ import { Spinner } from '~/storybook/Spinner/Spinner.styles';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { useFetchMonthlyFundPrices, fetchMultipleIndexPrices } from './FundMetricsQueries';
 import { Button } from '~/components/Form/Button/Button';
+import { Checkbox, CheckboxItem } from '~/components/Form/Checkbox/Checkbox';
 
 export interface MonthlyReturnTableProps {
   address: string;
@@ -157,6 +158,8 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
       .fill(null)
       .map((item, index) => subYears(today, index))
       .reverse();
+  const potentialCurrencies = ['ETH', 'BTC', 'USD', 'EUR'];
+  const [selectedCurrencies, setSelectedCurrencies] = React.useState([]);
   const [selectedYear, setSelectedYear] = React.useState(2020);
 
   const [historicalIndexPrices, sethistoricalIndexPrices] = React.useState<BigNumber[][] | undefined>(undefined);
@@ -211,6 +214,21 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     setSelectedYear(year);
   }
 
+  function handleCcyCheckbox(e) {
+    if (e.target.checked) {
+      console.log('box was not checked');
+      const newSelectedCurrencies: string[] = selectedCurrencies.concat([e.target.name]);
+      setSelectedCurrencies(newSelectedCurrencies);
+    } else {
+      console.log('box was checked');
+      const newSelectedCurrencies = selectedCurrencies.filter((item) => item != e.target.name);
+      console.log(newSelectedCurrencies);
+      setSelectedCurrencies(newSelectedCurrencies);
+    }
+
+    console.log(selectedCurrencies);
+  }
+
   return (
     <Block>
       <SectionTitle>{selectedYear} Monthly Returns (Share Price)</SectionTitle>
@@ -220,7 +238,11 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
             return <Button onClick={() => toggleYear(yearNumber)}>{yearNumber}</Button>;
           })
         : null}
-
+      {potentialCurrencies.map((ccy) => {
+        return (
+          <CheckboxItem onChange={(e) => handleCcyCheckbox(e)} label={ccy} value={ccy} name={ccy} touched={true} />
+        );
+      })}
       <ScrollableTable>
         <Table>
           <tbody>
