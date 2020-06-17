@@ -12,7 +12,7 @@ import {
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 import { useEnvironment } from '~/hooks/useEnvironment';
-import { useFundCalculationHistoryQuery } from '~/components/Routes/Fund/FundOverview/FundFactSheet/FundCalculationHistory.query';
+import { useFundCalculationHistoryQuery } from '~/components/Routes/Fund/FundDiligence/FundFactSheet/FundCalculationHistory.query';
 import BigNumber from 'bignumber.js';
 import { standardDeviation } from '~/utils/finance';
 import { useAccount } from '~/hooks/useAccount';
@@ -37,19 +37,16 @@ export const numberPadding = (digits: number, maxDigits: number) => {
     .join('');
 };
 
-export const FundDiligence: React.FC<FundFactSheetProps> = ({ address }) => {
+export const FundFinancials: React.FC<FundFactSheetProps> = ({ address }) => {
   const [fund, fundQuery] = useFundDetailsQuery(address);
-  const environment = useEnvironment()!;
-  const account = useAccount();
+
   const [calculations, calculationsQuery] = useFundCalculationHistoryQuery(address);
-  const [slug] = useFundSlug(address);
 
   if (!fundQuery || fundQuery.loading || !calculationsQuery || calculationsQuery.loading) {
     return (
-      <Dictionary>
-        <SectionTitle>Fund Factsheet</SectionTitle>
+      <>
         <Spinner />
-      </Dictionary>
+      </>
     );
   }
 
@@ -61,7 +58,6 @@ export const FundDiligence: React.FC<FundFactSheetProps> = ({ address }) => {
   const creation = fund.creationTime;
   const accounting = routes?.accounting;
   const shares = routes?.shares;
-  const version = routes?.version;
   const feeManager = routes?.feeManager;
   const managementFee = feeManager?.managementFee;
   const performanceFee = feeManager?.performanceFee;
@@ -72,7 +68,10 @@ export const FundDiligence: React.FC<FundFactSheetProps> = ({ address }) => {
   const performanceFeePeriodInSeconds = (performanceFee?.period || 1) * 24 * 60 * 60;
   const secondsSinceLastPeriod = secondsSinceInit % performanceFeePeriodInSeconds;
   const nextPeriodStart = secondsNow + (performanceFeePeriodInSeconds - secondsSinceLastPeriod);
-
+  const reservedFees = accounting?.grossAssetValue
+    .minus(accounting?.netAssetValue)
+    .dividedBy(accounting?.netAssetValue)
+    .multipliedBy(100);
   const normalizedCalculations = calculations.map((item, index, array) => {
     const returnSinceLastPriceUpdate =
       index > 0
@@ -121,15 +120,7 @@ export const FundDiligence: React.FC<FundFactSheetProps> = ({ address }) => {
     standardDeviation(normalizedCalculations.map((item) => item.logReturn)) * 100 * Math.sqrt(365.25);
 
   return (
-    <Dictionary>
-      <SectionTitle>
-        <span>Fund Factsheet</span>
-      </SectionTitle>
-      <DictionaryEntry>
-        <DictionaryLabel>Fund name</DictionaryLabel>
-        <DictionaryData>{fund.name}</DictionaryData>
-      </DictionaryEntry>
-
+    <>
       <DictionaryEntry>
         <DictionaryLabel>Gross asset value (GAV)</DictionaryLabel>
         <DictionaryData>
@@ -159,20 +150,6 @@ export const FundDiligence: React.FC<FundFactSheetProps> = ({ address }) => {
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
-        <DictionaryLabel>Inception</DictionaryLabel>
-        <DictionaryData>{creation ? <FormattedDate timestamp={creation} /> : 'N/A'}</DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Status</DictionaryLabel>
-        <DictionaryData>{fund.isShutDown ? 'Inactive' : 'Active'}</DictionaryData>
-      </DictionaryEntry>
-
-      <DictionaryDivider />
-      <SectionTitle>Fund Performance</SectionTitle>
-
-      <DictionaryDivider />
-      <SectionTitle>Due Diligence</SectionTitle>
-      <DictionaryEntry>
         <DictionaryLabel>Annualized return</DictionaryLabel>
         <DictionaryData>
           {olderThanOneYear ? (
@@ -192,6 +169,42 @@ export const FundDiligence: React.FC<FundFactSheetProps> = ({ address }) => {
           )}
         </DictionaryData>
       </DictionaryEntry>
-    </Dictionary>
+      <DictionaryDivider />
+      <DictionaryEntry>
+        <DictionaryLabel>Management fee</DictionaryLabel>
+        <DictionaryData>{managementFee?.rate}%</DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>Performance fee</DictionaryLabel>
+        <DictionaryData>{performanceFee?.rate}%</DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>Performance fee period</DictionaryLabel>
+        <DictionaryData>{performanceFee?.period} days</DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>Unpaid fees (% of NAV)</DictionaryLabel>
+        <DictionaryData>
+          <FormattedNumber value={reservedFees} decimals={4} suffix={'%'} />
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>Start of next performance fee period</DictionaryLabel>
+        <DictionaryData>
+          <FormattedDate timestamp={nextPeriodStart} />
+        </DictionaryData>
+      </DictionaryEntry>
+    </>
   );
 };
+
+{
+  /* <DictionaryEntry>
+<DictionaryLabel>Inception</DictionaryLabel>
+<DictionaryData>{creation ? <FormattedDate timestamp={creation} /> : 'N/A'}</DictionaryData>
+</DictionaryEntry>
+<DictionaryEntry>
+<DictionaryLabel>Status</DictionaryLabel>
+<DictionaryData>{fund.isShutDown ? 'Inactive' : 'Active'}</DictionaryData>
+</DictionaryEntry> */
+}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, GridRow, GridCol } from '~/storybook/Grid/Grid';
 import { FundRegisterPolicies } from './FundRegisterPolicies/FundRegisterPolicies';
-import { FundPolicies } from '../FundPolicies/FundPolicies';
+import { FundPolicies } from '../FundDiligence/FundPolicies/FundPolicies';
 import { RequiresFundDeployedWithCurrentVersion } from '~/components/Gates/RequiresFundDeployedWithCurrentVersion/RequiresFundDeployedWithCurrentVersion';
 import { RequiresFundManager } from '~/components/Gates/RequiresFundManager/RequiresFundManager';
 

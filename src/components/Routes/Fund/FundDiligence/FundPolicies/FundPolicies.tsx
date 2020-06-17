@@ -8,7 +8,7 @@ import {
   FundPolicy,
   AssetWhitelistPolicy,
   AssetBlacklistPolicy,
-} from '~/components/Routes/Fund/FundPolicies/FundPolicies.query';
+} from '~/components/Routes/Fund/FundDiligence/FundPolicies/FundPolicies.query';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { ScrollableTable, Table, HeaderCell, HeaderRow, BodyCell, BodyRow, NoEntries } from '~/storybook/Table/Table';
 import { MaxConcentration } from './MaxConcentration/MaxConcentration';
@@ -18,8 +18,6 @@ import { PriceTolerance } from './PriceTolerance/PriceTolerance';
 import { AssetWhitelist } from './AssetWhitelist/AssetWhitelist';
 import { AssetBlacklist } from './AssetBlacklist/AssetBlacklist';
 import { DeployedEnvironment } from '@melonproject/melonjs';
-import { SectionTitle } from '~/storybook/Title/Title';
-import { Block } from '~/storybook/Block/Block';
 
 export interface FundPoliciesParametersProps {
   policy: FundPolicy;
@@ -72,24 +70,22 @@ export const FundPolicies: React.FC<FundPoliciesProps> = ({ address }) => {
 
   if (query.loading) {
     return (
-      <Block>
-        <SectionTitle>Fund Ruleset</SectionTitle>
+      <>
         <Spinner />
-      </Block>
+      </>
     );
   }
 
   const policies = policyManager && policyManager.policies;
 
   return (
-    <Block>
-      <SectionTitle>Fund Ruleset</SectionTitle>
+    <>
       {policies && policies.length ? (
         <ScrollableTable>
           <Table>
             <thead>
               <HeaderRow>
-                <HeaderCell>Name</HeaderCell>
+                <HeaderCell>Policy Name</HeaderCell>
                 <HeaderCell>Parameter(s)</HeaderCell>
               </HeaderRow>
             </thead>
@@ -106,7 +102,7 @@ export const FundPolicies: React.FC<FundPoliciesProps> = ({ address }) => {
       ) : (
         <NoEntries>No fund rules registered.</NoEntries>
       )}
-    </Block>
+    </>
   );
 };
 
