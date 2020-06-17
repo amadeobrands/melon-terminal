@@ -16,12 +16,12 @@ export const FAQ: React.FC = () => {
               <SectionTitle>FAQ</SectionTitle>
 
               <FAQTOC>
-                <FAQToCItem>Fund Setup</FAQToCItem>
-                <FAQToCItem>Fund Policies</FAQToCItem>
-                <FAQToCItem>Fund Setup</FAQToCItem>
+                <FAQToCItem section="setup">Setting up a fund</FAQToCItem>
+                <FAQToCItem section="policies">Risk-management policies</FAQToCItem>
+                <FAQToCItem section="investing">Investing into a fund</FAQToCItem>
               </FAQTOC>
 
-              <FAQSection>Fund Setup</FAQSection>
+              <FAQSection name="setup">Fund Setup</FAQSection>
 
               <FAQQuestion>How much does it cost to setup a Melon fund?</FAQQuestion>
 

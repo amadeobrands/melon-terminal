@@ -6,9 +6,7 @@ import { SectionTitle } from '~/storybook/Title/Title';
 import { Serie, Datum } from '~/components/Charts/ZoomControl/ZoomControl';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { PriceChart } from '~/components/Charts/PriceChart/PriceChart';
-import styled from 'styled-components';
 import { findCorrectToTime } from '~/utils/priceServiceDates';
-import { async } from 'rxjs/internal/scheduler/async';
 
 export interface NewFundPerformanceChartProps {
   address: string;
