@@ -41,10 +41,10 @@ export const FundDiligence: React.FC<FundDiligenceProps> = ({ address }) => {
           </TabBarSection>
         </TabBarContent>
       </TabBar>
-      {activeTab === 'facts' ? <FundFactSheet address={address} /> : null}
-      {activeTab === 'financials' ? <FundFinancials address={address} /> : null}
-      {activeTab === 'contracts' ? <FundContracts address={address} /> : null}
-      {activeTab === 'ruleset' ? <FundPolicies address={address} /> : null}
+      {activeTab === 'facts' && <FundFactSheet address={address} />}
+      {activeTab === 'financials' && <FundFinancials address={address} />}
+      {activeTab === 'contracts' && <FundContracts address={address} />}
+      {activeTab === 'ruleset' && <FundPolicies address={address} />}
     </Block>
   );
 };
