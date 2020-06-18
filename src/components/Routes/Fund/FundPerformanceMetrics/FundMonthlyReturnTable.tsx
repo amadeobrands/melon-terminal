@@ -11,7 +11,6 @@ import {
   differenceInCalendarYears,
   endOfMonth,
   endOfYear,
-  addMonths,
   startOfMonth,
 } from 'date-fns';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
@@ -242,18 +241,14 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   // TODO: Type this param correctly
   function handleCcyCheckbox(e: any) {
     if (e.target.checked) {
-      console.log('box was not checked');
       const newSelectedCurrencies: string[] = selectedCurrencies.concat([e.target.name]);
       setSelectedCurrencies(newSelectedCurrencies);
     } else {
-      console.log('box was checked');
       const newSelectedCurrencies = selectedCurrencies.filter((item) => item != e.target.name);
-      console.log(newSelectedCurrencies);
       setSelectedCurrencies(newSelectedCurrencies);
     }
-
-    console.log(selectedCurrencies);
   }
+
   return (
     <Block>
       <SectionTitle>{selectedYear} Monthly Returns (Share Price)</SectionTitle>
