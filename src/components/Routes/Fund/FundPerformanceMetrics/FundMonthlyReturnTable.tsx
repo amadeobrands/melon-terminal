@@ -54,6 +54,14 @@ interface DisplayData {
   return: BigNumber;
 }
 
+interface TableData {
+  eth: DisplayData[];
+  eur: DisplayData[];
+  usd: DisplayData[];
+  index: DisplayData[];
+  btc: DisplayData[];
+}
+
 const CheckBoxContainer = styled.div`
   display: flex;
   flex-direction: row;
@@ -65,10 +73,9 @@ function assembleTableData(
   today: Date,
   activeMonths: number,
   monthsBeforeFund: number,
-  monthsRemainingInYear: number,
   monthlyReturnData: DepthTimelineItem[],
   indexReturnData: BigNumber[][]
-): { eth: DisplayData[]; eur: DisplayData[]; usd: DisplayData[]; index: DisplayData[]; btc: DisplayData[] } {
+): TableData {
   const inactiveMonthReturns: DisplayData[] = new Array(monthsBeforeFund)
     .fill(null)
     .map((item, index: number) => {
@@ -221,18 +228,11 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     );
   }
 
-  const tableData =
+  const tableData: TableData =
     fund &&
     monthlyData &&
     historicalIndexPrices &&
-    assembleTableData(
-      today,
-      activeMonths,
-      monthsBeforeFund,
-      monthsRemainingInYear,
-      monthlyData.data,
-      historicalIndexPrices
-    );
+    assembleTableData(today, activeMonths, monthsBeforeFund, monthlyData.data, historicalIndexPrices);
 
   function toggleYear(year: number) {
     setSelectedYear(year);
