@@ -61,12 +61,28 @@ interface TableData {
   index: DisplayData[];
   btc: DisplayData[];
 }
-
-const CheckBoxContainer = styled.div`
+const CurrencyCheckbox = styled(CheckboxItem)`
+  margin-left: ${(props) => props.theme.spaceUnits.s};
+`;
+const ControlContainer = styled.div`
   display: flex;
   flex-direction: row;
   width: 100%;
   justify-content: space-between;
+`;
+
+const YearContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 50%;
+  justify-content: flex-start;
+`;
+
+const CheckBoxContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 50%;
+  justify-content: flex-end;
 `;
 
 function assembleTableData(
@@ -252,31 +268,34 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   return (
     <Block>
       <SectionTitle>{selectedYear} Monthly Returns (Share Price)</SectionTitle>
-
-      <CheckBoxContainer>
-        {activeYears.length > 1 &&
-          activeYears.map((year) => {
-            const yearNumber = year.getFullYear();
+      <ControlContainer>
+        <YearContainer>
+          {activeYears.length > 1 &&
+            activeYears.map((year) => {
+              const yearNumber = year.getFullYear();
+              return (
+                <Button key={yearNumber * Math.random()} onClick={() => toggleYear(yearNumber)}>
+                  {yearNumber}
+                </Button>
+              );
+            })}
+        </YearContainer>
+        <CheckBoxContainer>
+          {potentialCurrencies.map((ccy) => {
             return (
-              <Button key={yearNumber * Math.random()} onClick={() => toggleYear(yearNumber)}>
-                {yearNumber}
-              </Button>
+              <CurrencyCheckbox
+                key={ccy}
+                onChange={(e) => handleCcyCheckbox(e)}
+                checked={selectedCurrencies.includes(ccy)}
+                label={ccy}
+                value={ccy}
+                name={ccy}
+                touched={true}
+              />
             );
           })}
-        {potentialCurrencies.map((ccy) => {
-          return (
-            <CheckboxItem
-              key={ccy}
-              onChange={(e) => handleCcyCheckbox(e)}
-              checked={selectedCurrencies.includes(ccy)}
-              label={ccy}
-              value={ccy}
-              name={ccy}
-              touched={true}
-            />
-          );
-        })}
-      </CheckBoxContainer>
+        </CheckBoxContainer>
+      </ControlContainer>
       <ScrollableTable>
         <Table>
           <tbody>
