@@ -22,10 +22,12 @@ export const FundOverview: React.FC<FundOverviewProps> = ({ address }) => (
       </GridCol>
     </GridRow>
     <GridRow>
-      <GridCol xs={12} sm={6}>
+      <GridCol>
         <FundHoldings address={address} />
       </GridCol>
-      <GridCol xs={12} sm={6}>
+    </GridRow>
+    <GridRow>
+      <GridCol>
         <FundDiligence address={address} />
       </GridCol>
     </GridRow>
