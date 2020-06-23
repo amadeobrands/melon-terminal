@@ -7,12 +7,13 @@ import { FundFinancials } from './FundFinancials/FundFinancials';
 import { FundFactSheet } from './FundFactSheet/FundFactSheet';
 import FundPolicies from './FundPolicies/FundPolicies';
 import { FundTradeHistory } from './FundTradeHistory/FundTradeHistory';
+import { FundInvestmentHistory } from './FundInvestmentHistory/FundInvestmentHistory';
 
 export interface FundDiligenceProps {
   address: string;
 }
 
-type Tab = 'facts' | 'financials' | 'contracts' | 'ruleset' | 'tradeHistory';
+type Tab = 'facts' | 'financials' | 'contracts' | 'ruleset' | 'tradeHistory' | 'investmentHistory';
 
 export const FundDiligence: React.FC<FundDiligenceProps> = ({ address }) => {
   const [activeTab, setActiveTab] = React.useState<Tab>('facts');
@@ -42,6 +43,9 @@ export const FundDiligence: React.FC<FundDiligenceProps> = ({ address }) => {
             <TabItem onClick={() => tabHandler('tradeHistory')} active={activeTab === 'tradeHistory'}>
               Trade History
             </TabItem>
+            <TabItem onClick={() => tabHandler('investmentHistory')} active={activeTab === 'investmentHistory'}>
+              Investment History
+            </TabItem>
           </TabBarSection>
         </TabBarContent>
       </TabBar>
@@ -50,6 +54,7 @@ export const FundDiligence: React.FC<FundDiligenceProps> = ({ address }) => {
       {activeTab === 'contracts' && <FundContracts address={address} />}
       {activeTab === 'ruleset' && <FundPolicies address={address} />}
       {activeTab === 'tradeHistory' && <FundTradeHistory address={address} />}
+      {activeTab === 'investmentHistory' && <FundInvestmentHistory address={address} />}
     </Block>
   );
 };
