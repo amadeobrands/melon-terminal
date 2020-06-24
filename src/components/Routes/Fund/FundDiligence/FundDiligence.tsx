@@ -8,6 +8,8 @@ import { FundFactSheet } from './FundFactSheet/FundFactSheet';
 import FundPolicies from './FundPolicies/FundPolicies';
 import { FundTradeHistory } from './FundTradeHistory/FundTradeHistory';
 import { FundInvestmentHistory } from './FundInvestmentHistory/FundInvestmentHistory';
+import { Bar, BarContent } from '~/storybook/Bar/Bar';
+import styled from 'styled-components';
 
 export interface FundDiligenceProps {
   address: string;
@@ -15,46 +17,72 @@ export interface FundDiligenceProps {
 
 type Tab = 'facts' | 'financials' | 'contracts' | 'ruleset' | 'tradeHistory' | 'investmentHistory';
 
-export const FundDiligence: React.FC<FundDiligenceProps> = ({ address }) => {
-  const [activeTab, setActiveTab] = React.useState<Tab>('facts');
+const AccordionSection = styled(Bar)``;
 
-  const tabHandler = (tab: Tab) => {
-    setActiveTab(tab);
+export const FundDiligence: React.FC<FundDiligenceProps> = ({ address }) => {
+  const [activeTabs, setActiveTabs] = React.useState<Tab[]>(['facts']);
+
+  const tabHandler = (section: Tab) => {
+    if (activeTabs.includes(section)) {
+      const newActiveTabs = activeTabs.filter((tab) => tab !== section);
+      setActiveTabs(newActiveTabs);
+    } else {
+      const newActiveTabs: Tab[] = activeTabs.concat([section]);
+      setActiveTabs(newActiveTabs);
+    }
   };
 
   return (
     <Block>
       <SectionTitle>Fund Diligence</SectionTitle>
-      <TabBar>
-        <TabBarContent justify="between">
-          <TabBarSection>
-            <TabItem onClick={() => tabHandler('facts')} active={activeTab === 'facts'}>
-              Fact Sheet
-            </TabItem>
-            <TabItem onClick={() => tabHandler('financials')} active={activeTab === 'financials'}>
-              Financials
-            </TabItem>
-            <TabItem onClick={() => tabHandler('contracts')} active={activeTab === 'contracts'}>
-              Contracts
-            </TabItem>
-            <TabItem onClick={() => tabHandler('ruleset')} active={activeTab === 'ruleset'}>
-              Ruleset
-            </TabItem>
-            <TabItem onClick={() => tabHandler('tradeHistory')} active={activeTab === 'tradeHistory'}>
-              Trade History
-            </TabItem>
-            <TabItem onClick={() => tabHandler('investmentHistory')} active={activeTab === 'investmentHistory'}>
-              Investment History
-            </TabItem>
-          </TabBarSection>
-        </TabBarContent>
-      </TabBar>
-      {activeTab === 'facts' && <FundFactSheet address={address} />}
-      {activeTab === 'financials' && <FundFinancials address={address} />}
-      {activeTab === 'contracts' && <FundContracts address={address} />}
-      {activeTab === 'ruleset' && <FundPolicies address={address} />}
-      {activeTab === 'tradeHistory' && <FundTradeHistory address={address} />}
-      {activeTab === 'investmentHistory' && <FundInvestmentHistory address={address} />}
+      <Bar>
+        <BarContent>
+          <div onClick={() => tabHandler('facts')} active={activeTabs.includes('facts')}>
+            Fact Sheet
+          </div>
+        </BarContent>
+      </Bar>
+      {activeTabs.includes('facts') && <FundFactSheet address={address} />}
+      <Bar>
+        <BarContent>
+          <div onClick={() => tabHandler('financials')} active={activeTabs.includes('financials')}>
+            Financials
+          </div>
+        </BarContent>
+      </Bar>
+      {activeTabs.includes('financials') && <FundFinancials address={address} />}
+      <Bar>
+        <BarContent>
+          <div onClick={() => tabHandler('contracts')} active={activeTabs.includes('contracts')}>
+            Contracts
+          </div>
+        </BarContent>
+      </Bar>
+      {activeTabs.includes('contracts') && <FundContracts address={address} />}
+      <Bar>
+        <BarContent>
+          <div onClick={() => tabHandler('ruleset')} active={activeTabs.includes('ruleset')}>
+            Ruleset
+          </div>
+        </BarContent>
+      </Bar>
+      {activeTabs.includes('ruleset') && <FundPolicies address={address} />}
+      <Bar>
+        <BarContent>
+          <div onClick={() => tabHandler('tradeHistory')} active={activeTabs.includes('tradeHistory')}>
+            Trade History
+          </div>
+        </BarContent>
+      </Bar>
+      {activeTabs.includes('tradeHistory') && <FundTradeHistory address={address} />}
+      <Bar>
+        <BarContent>
+          <div onClick={() => tabHandler('investmentHistory')} active={activeTabs.includes('investmentHistory')}>
+            Investment History
+          </div>
+        </BarContent>
+      </Bar>
+      {activeTabs.includes('investmentHistory') && <FundInvestmentHistory address={address} />}
     </Block>
   );
 };
