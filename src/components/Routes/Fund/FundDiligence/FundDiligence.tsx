@@ -20,7 +20,7 @@ export interface FundDiligenceProps {
 type DiligenceSection = 'facts' | 'financials' | 'contracts' | 'ruleset' | 'tradeHistory' | 'investmentHistory';
 
 export const FundDiligence: React.FC<FundDiligenceProps> = ({ address }) => {
-  const [activeSections, setActiveSections] = React.useState<DiligenceSection[]>(['facts']);
+  const [activeSections, setActiveSections] = React.useState<DiligenceSection[]>([]);
 
   const sectionHandler = (section: DiligenceSection) => {
     if (activeSections.includes(section)) {

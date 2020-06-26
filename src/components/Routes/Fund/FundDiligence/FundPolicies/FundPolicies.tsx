@@ -18,6 +18,7 @@ import { PriceTolerance } from './PriceTolerance/PriceTolerance';
 import { AssetWhitelist } from './AssetWhitelist/AssetWhitelist';
 import { AssetBlacklist } from './AssetBlacklist/AssetBlacklist';
 import { DeployedEnvironment } from '@melonproject/melonjs';
+import { Block } from '~/storybook/Block/Block';
 
 export interface FundPoliciesParametersProps {
   policy: FundPolicy;
@@ -70,16 +71,16 @@ export const FundPolicies: React.FC<FundPoliciesProps> = ({ address }) => {
 
   if (query.loading) {
     return (
-      <>
+      <Block>
         <Spinner />
-      </>
+      </Block>
     );
   }
 
   const policies = policyManager && policyManager.policies;
 
   return (
-    <>
+    <Block>
       {policies && policies.length ? (
         <ScrollableTable>
           <Table>
@@ -102,7 +103,7 @@ export const FundPolicies: React.FC<FundPoliciesProps> = ({ address }) => {
       ) : (
         <NoEntries>No fund rules registered.</NoEntries>
       )}
-    </>
+    </Block>
   );
 };
 

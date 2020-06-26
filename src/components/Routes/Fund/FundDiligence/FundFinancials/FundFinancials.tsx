@@ -1,14 +1,7 @@
 import React from 'react';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { useFundDetailsQuery } from '../FundDetails.query';
-import { SectionTitle } from '~/storybook/Title/Title';
-import {
-  Dictionary,
-  DictionaryEntry,
-  DictionaryData,
-  DictionaryLabel,
-  DictionaryDivider,
-} from '~/storybook/Dictionary/Dictionary';
+import { DictionaryEntry, DictionaryData, DictionaryLabel, DictionaryDivider } from '~/storybook/Dictionary/Dictionary';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 import { useEnvironment } from '~/hooks/useEnvironment';
@@ -19,6 +12,7 @@ import { useAccount } from '~/hooks/useAccount';
 import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
 import { range } from 'ramda';
 import { useFundSlug } from '../../FundHeader/FundSlug.query';
+import { Block } from '~/storybook/Block/Block';
 
 export interface NormalizedCalculation {
   sharePrice: BigNumber;
@@ -121,7 +115,7 @@ export const FundFinancials: React.FC<FundFactSheetProps> = ({ address }) => {
     standardDeviation(normalizedCalculations.map((item) => item.logReturn)) * 100 * Math.sqrt(365.25);
 
   return (
-    <>
+    <Block>
       <DictionaryEntry>
         <DictionaryLabel>Gross asset value (GAV)</DictionaryLabel>
         <DictionaryData>
@@ -195,7 +189,7 @@ export const FundFinancials: React.FC<FundFactSheetProps> = ({ address }) => {
           <FormattedDate timestamp={nextPeriodStart} />
         </DictionaryData>
       </DictionaryEntry>
-    </>
+    </Block>
   );
 };
 

@@ -15,6 +15,7 @@ import {
 import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 import { EtherscanLink } from '~/components/Common/EtherscanLink/EtherscanLink';
 import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
+import { Block } from '~/storybook/Block/Block';
 
 export interface FundInvestmentHistoryProps {
   address: string;
@@ -33,14 +34,14 @@ export const FundInvestmentHistory: React.FC<FundInvestmentHistoryProps> = ({ ad
 
   if (!fundInvestment || !fundInvestment.length) {
     return (
-      <>
+      <Block>
         <NoEntries>No entries.</NoEntries>
-      </>
+      </Block>
     );
   }
 
   return (
-    <>
+    <Block>
       <ScrollableTable>
         <Table>
           <thead>
@@ -87,6 +88,6 @@ export const FundInvestmentHistory: React.FC<FundInvestmentHistoryProps> = ({ ad
           </tbody>
         </Table>
       </ScrollableTable>
-    </>
+    </Block>
   );
 };

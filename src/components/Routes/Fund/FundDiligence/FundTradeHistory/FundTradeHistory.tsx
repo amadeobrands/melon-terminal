@@ -14,6 +14,7 @@ import {
 import { useFundTradeHistoryQuery } from './FundTradeHistory.query';
 import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
+import { Block } from '~/storybook/Block/Block';
 
 export interface FundTradeHistoryProps {
   address: string;
@@ -23,7 +24,7 @@ export const FundTradeHistory: React.FC<FundTradeHistoryProps> = ({ address }) =
   const [trades, query] = useFundTradeHistoryQuery(address);
 
   return (
-    <>
+    <Block>
       {query.loading && <Spinner />}
       {!query.loading && !trades.length && <NoEntries>No entries.</NoEntries>}
       {!query.loading && trades.length > 0 && (
@@ -83,6 +84,6 @@ export const FundTradeHistory: React.FC<FundTradeHistoryProps> = ({ address }) =
           </Table>
         </ScrollableTable>
       )}
-    </>
+    </Block>
   );
 };

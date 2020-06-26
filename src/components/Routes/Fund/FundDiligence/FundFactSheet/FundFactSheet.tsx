@@ -23,6 +23,7 @@ import { range } from 'ramda';
 import { useFundSlug } from '../../FundHeader/FundSlug.query';
 import { NetworkEnum } from '~/types';
 import { format } from 'date-fns';
+import { Block } from '~/storybook/Block/Block';
 
 export interface NormalizedCalculation {
   sharePrice: BigNumber;
@@ -107,7 +108,7 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
   const version = routes?.version;
 
   return (
-    <>
+    <Block>
       <DictionaryEntry>
         <DictionaryLabel>Fund name</DictionaryLabel>
         <DictionaryData>{fund.name}</DictionaryData>
@@ -142,7 +143,7 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
         <DictionaryLabel>Investable assets</DictionaryLabel>
         <DictionaryData>{allowedAssetsSymbols ? allowedAssetsSymbols.sort().join(', ') : 'N/A'}</DictionaryData>
       </DictionaryEntry>
-    </>
+    </Block>
   );
 };
 

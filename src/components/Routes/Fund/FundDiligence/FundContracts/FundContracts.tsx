@@ -3,6 +3,7 @@ import { useFundDetailsQuery } from '../FundDetails.query';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { Dictionary, DictionaryEntry, DictionaryLabel, DictionaryData } from '~/storybook/Dictionary/Dictionary';
 import { EtherscanLink } from '~/components/Common/EtherscanLink/EtherscanLink';
+import { Block } from '~/storybook/Block/Block';
 
 export interface FundContractsProps {
   address: string;
@@ -42,7 +43,7 @@ export const FundContracts: React.FC<FundContractsProps> = ({ address }) => {
   const version = routes?.version;
 
   return (
-    <>
+    <Block>
       <DictionaryEntry>
         <DictionaryLabel>Manager Address</DictionaryLabel>
         <DictionaryData>
@@ -66,6 +67,6 @@ export const FundContracts: React.FC<FundContractsProps> = ({ address }) => {
             )} */}
           </Fragment>
         ))}
-    </>
+    </Block>
   );
 };
