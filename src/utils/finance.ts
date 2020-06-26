@@ -1,5 +1,4 @@
 import BigNumber from 'bignumber.js';
-import { isBigNumber } from '../../../melon-js/node_modules/web3-utils/types';
 
 export function standardDeviation(values: number[]) {
   const avg = average(values);
