@@ -1,8 +1,28 @@
 import * as React from 'react';
-import { AccordionBarContent } from '../Bar/Bar';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
+import styled, { css } from 'styled-components';
+import { BarContent } from '../Bar/Bar';
 
-export type AccordionSection = string;
+export interface AccordionBarProps {
+  active: boolean;
+}
+
+export const AccordionBarContent = styled(BarContent)<AccordionBarProps>`
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: ${(props) => props.theme.spaceUnits.m};
+  ${(props) => {
+    if (props.active) {
+      return css`
+        background-color: ${(props) => props.theme.mainColors.secondary};
+      `;
+    }
+  }}
+  :hover {
+    background-color: ${(props) => props.theme.mainColors.secondary};
+    cursor: pointer;
+  }
+`;
 
 export interface AccordionSectionProps {
   label: string;

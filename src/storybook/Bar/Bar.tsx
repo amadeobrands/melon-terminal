@@ -5,10 +5,6 @@ export interface BarContentProps {
   justify?: 'between' | 'around' | 'end';
 }
 
-export interface AccordionProps {
-  active: boolean;
-}
-
 export const Bar = styled.div`
   width: 100%;
   padding: ${(props) => props.theme.spaceUnits.l} 0px;
@@ -40,19 +36,4 @@ export const BarContent = styled(Container)<BarContentProps>`
       justify-content: flex-end;
     `}
 
-`;
-
-export const AccordionBarContent = styled(BarContent)<AccordionProps>`
-  ${(props) => {
-    if (props.active) {
-      return css`
-        background-color: ${(props) => props.theme.mainColors.secondary};
-      `;
-    }
-  }}
-  justify-content: space-between;
-  :hover {
-    background-color: ${(props) => props.theme.mainColors.secondary};
-    cursor: pointer;
-  }
 `;
