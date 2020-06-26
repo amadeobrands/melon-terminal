@@ -8,7 +8,7 @@ export interface AccordionSectionProps {
   label: string;
   value: string;
   activeSections: string[];
-  sectionSelector: (section: string) => void;
+  sectionSelector: (section: any) => void;
 }
 
 export function AccordionSection(props: AccordionSectionProps) {
