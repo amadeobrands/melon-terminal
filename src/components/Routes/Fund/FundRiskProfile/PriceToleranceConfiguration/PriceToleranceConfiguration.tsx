@@ -10,7 +10,7 @@ import { Button } from '~/components/Form/Button/Button';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { BlockActions } from '~/storybook/Block/Block';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
-import { FundPolicy, PriceTolerancePolicy } from '../../FundPolicies/FundPolicies.query';
+import { FundPolicy, PriceTolerancePolicy } from '../../FundDiligence/FundPolicies/FundPolicies.query';
 
 const validationSchema = Yup.object().shape({
   priceTolerance: Yup.number().label('Price Tolerance').required().min(0).max(100),

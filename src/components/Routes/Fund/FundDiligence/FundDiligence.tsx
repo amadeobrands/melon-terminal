@@ -2,15 +2,11 @@ import * as React from 'react';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { Block } from '~/storybook/Block/Block';
 import { FundContracts } from './FundContracts/FundContracts';
-import { TabBar, TabBarContent, TabBarSection, TabItem } from '~/storybook/TabNavigation/TabNavigation';
 import { FundFinancials } from './FundFinancials/FundFinancials';
 import { FundFactSheet } from './FundFactSheet/FundFactSheet';
 import FundPolicies from './FundPolicies/FundPolicies';
 import { FundTradeHistory } from './FundTradeHistory/FundTradeHistory';
 import { FundInvestmentHistory } from './FundInvestmentHistory/FundInvestmentHistory';
-import { Bar, BarContent, AccordionBarContent } from '~/storybook/Bar/Bar';
-import styled from 'styled-components';
-import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 import { AccordionSection } from '~/storybook/Accordion/Accordion';
 
 export interface FundDiligenceProps {

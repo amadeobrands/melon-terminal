@@ -10,7 +10,7 @@ import { Input } from '~/components/Form/Input/Input';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { BlockActions } from '~/storybook/Block/Block';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
-import { FundPolicy, MaxPositionsPolicy } from '../../FundPolicies/FundPolicies.query';
+import { FundPolicy, MaxPositionsPolicy } from '../../FundDiligence/FundPolicies/FundPolicies.query';
 
 const validationSchema = Yup.object().shape({
   maxPositions: Yup.number().label('Maximum positions').required().min(0).integer(),
