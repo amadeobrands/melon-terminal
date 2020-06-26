@@ -61,17 +61,18 @@ export const FundFinancials: React.FC<FundFactSheetProps> = ({ address }) => {
   const feeManager = routes?.feeManager;
   const managementFee = feeManager?.managementFee;
   const performanceFee = feeManager?.performanceFee;
-
+  const reservedFees = accounting?.grossAssetValue
+    .minus(accounting?.netAssetValue)
+    .dividedBy(accounting?.netAssetValue)
+    .multipliedBy(100);
   const initializeSeconds = (fund?.routes?.feeManager?.performanceFee?.initializeTime.getTime() || Date.now()) / 1000;
   const secondsNow = Date.now() / 1000;
   const secondsSinceInit = secondsNow - initializeSeconds;
   const performanceFeePeriodInSeconds = (performanceFee?.period || 1) * 24 * 60 * 60;
   const secondsSinceLastPeriod = secondsSinceInit % performanceFeePeriodInSeconds;
   const nextPeriodStart = secondsNow + (performanceFeePeriodInSeconds - secondsSinceLastPeriod);
-  const reservedFees = accounting?.grossAssetValue
-    .minus(accounting?.netAssetValue)
-    .dividedBy(accounting?.netAssetValue)
-    .multipliedBy(100);
+  const lastPriceUpdate = calculations && calculations[calculations.length - 1]?.timestamp;
+
   const normalizedCalculations = calculations.map((item, index, array) => {
     const returnSinceLastPriceUpdate =
       index > 0

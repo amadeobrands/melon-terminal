@@ -8,81 +8,75 @@ import { FundFactSheet } from './FundFactSheet/FundFactSheet';
 import FundPolicies from './FundPolicies/FundPolicies';
 import { FundTradeHistory } from './FundTradeHistory/FundTradeHistory';
 import { FundInvestmentHistory } from './FundInvestmentHistory/FundInvestmentHistory';
-import { Bar, BarContent } from '~/storybook/Bar/Bar';
+import { Bar, BarContent, AccordionBarContent } from '~/storybook/Bar/Bar';
 import styled from 'styled-components';
+import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
+import { AccordionSection } from '~/storybook/Accordion/Accordion';
 
 export interface FundDiligenceProps {
   address: string;
 }
 
-type Tab = 'facts' | 'financials' | 'contracts' | 'ruleset' | 'tradeHistory' | 'investmentHistory';
-
-const AccordionSection = styled(Bar)``;
+type DiligenceSection = 'facts' | 'financials' | 'contracts' | 'ruleset' | 'tradeHistory' | 'investmentHistory';
 
 export const FundDiligence: React.FC<FundDiligenceProps> = ({ address }) => {
-  const [activeTabs, setActiveTabs] = React.useState<Tab[]>(['facts']);
+  const [activeSections, setActiveSections] = React.useState<DiligenceSection[]>(['facts']);
 
-  const tabHandler = (section: Tab) => {
-    if (activeTabs.includes(section)) {
-      const newActiveTabs = activeTabs.filter((tab) => tab !== section);
-      setActiveTabs(newActiveTabs);
+  const sectionHandler = (section: DiligenceSection) => {
+    if (activeSections.includes(section)) {
+      const newActiveSections = activeSections.filter((item) => item !== section);
+      setActiveSections(newActiveSections);
     } else {
-      const newActiveTabs: Tab[] = activeTabs.concat([section]);
-      setActiveTabs(newActiveTabs);
+      const newActiveSections: DiligenceSection[] = activeSections.concat([section]);
+      setActiveSections(newActiveSections);
     }
   };
 
   return (
     <Block>
       <SectionTitle>Fund Diligence</SectionTitle>
-      <Bar>
-        <BarContent>
-          <div onClick={() => tabHandler('facts')} active={activeTabs.includes('facts')}>
-            Fact Sheet
-          </div>
-        </BarContent>
-      </Bar>
-      {activeTabs.includes('facts') && <FundFactSheet address={address} />}
-      <Bar>
-        <BarContent>
-          <div onClick={() => tabHandler('financials')} active={activeTabs.includes('financials')}>
-            Financials
-          </div>
-        </BarContent>
-      </Bar>
-      {activeTabs.includes('financials') && <FundFinancials address={address} />}
-      <Bar>
-        <BarContent>
-          <div onClick={() => tabHandler('contracts')} active={activeTabs.includes('contracts')}>
-            Contracts
-          </div>
-        </BarContent>
-      </Bar>
-      {activeTabs.includes('contracts') && <FundContracts address={address} />}
-      <Bar>
-        <BarContent>
-          <div onClick={() => tabHandler('ruleset')} active={activeTabs.includes('ruleset')}>
-            Ruleset
-          </div>
-        </BarContent>
-      </Bar>
-      {activeTabs.includes('ruleset') && <FundPolicies address={address} />}
-      <Bar>
-        <BarContent>
-          <div onClick={() => tabHandler('tradeHistory')} active={activeTabs.includes('tradeHistory')}>
-            Trade History
-          </div>
-        </BarContent>
-      </Bar>
-      {activeTabs.includes('tradeHistory') && <FundTradeHistory address={address} />}
-      <Bar>
-        <BarContent>
-          <div onClick={() => tabHandler('investmentHistory')} active={activeTabs.includes('investmentHistory')}>
-            Investment History
-          </div>
-        </BarContent>
-      </Bar>
-      {activeTabs.includes('investmentHistory') && <FundInvestmentHistory address={address} />}
+      <AccordionSection
+        label="Fact Sheet"
+        value="facts"
+        activeSections={activeSections}
+        sectionSelector={sectionHandler}
+      />
+      {activeSections.includes('facts') && <FundFactSheet address={address} />}
+      <AccordionSection
+        label="Financials"
+        value="financials"
+        activeSections={activeSections}
+        sectionSelector={sectionHandler}
+      />
+      {activeSections.includes('financials') && <FundFinancials address={address} />}
+      <AccordionSection
+        label="Contracts"
+        value="contracts"
+        activeSections={activeSections}
+        sectionSelector={sectionHandler}
+      />
+      {activeSections.includes('contracts') && <FundContracts address={address} />}
+      <AccordionSection
+        label="Ruleset"
+        value="ruleset"
+        activeSections={activeSections}
+        sectionSelector={sectionHandler}
+      />
+      {activeSections.includes('ruleset') && <FundPolicies address={address} />}
+      <AccordionSection
+        label="Trade History"
+        value="tradeHistory"
+        activeSections={activeSections}
+        sectionSelector={sectionHandler}
+      />
+      {activeSections.includes('tradeHistory') && <FundTradeHistory address={address} />}
+      <AccordionSection
+        label="Investment History"
+        value="investmentHistory"
+        activeSections={activeSections}
+        sectionSelector={sectionHandler}
+      />
+      {activeSections.includes('investmentHistory') && <FundInvestmentHistory address={address} />}
     </Block>
   );
 };

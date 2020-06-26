@@ -14,10 +14,12 @@ export const FundRiskProfile: React.FC<FundRiskProfileProps> = ({ address }) => 
     <Grid>
       <GridRow>
         <RequiresFundDeployedWithCurrentVersion address={address} fallback={false}>
-          <GridCol>
+          <GridCol xs={12} sm={12}>
             <FundRegisterPolicies address={address} />
           </GridCol>
         </RequiresFundDeployedWithCurrentVersion>
+      </GridRow>
+      <GridRow>
         <GridCol>
           <FundPolicies address={address} />
         </GridCol>

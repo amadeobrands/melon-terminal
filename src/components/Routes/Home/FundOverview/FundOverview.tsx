@@ -101,7 +101,7 @@ const useFilteredFunds = (funds: FundProcessed[], search: string, filter: Filter
 
 const useSortedFunds = (filteredFunds: FundProcessed[]) => {
   const [item, setItem] = useState<SortChoice>({
-    key: 'sharePrice',
+    key: 'aumEth',
     order: 'desc',
   });
 
@@ -187,7 +187,7 @@ export const FundOverview: React.FC = () => {
   const [funds, query] = useFundOverviewQuery();
   const [version] = useVersionQuery();
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<Filter>({ active: true, funded: false, version: false });
+  const [filter, setFilter] = useState<Filter>({ active: true, funded: true, version: true });
 
   const filtered = useFilteredFunds(funds, search, filter, version?.name);
   const sorted = useSortedFunds(filtered.funds);

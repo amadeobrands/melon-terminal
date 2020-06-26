@@ -10,24 +10,30 @@ import { Button } from '~/components/Form/Button/Button';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { BlockActions } from '~/storybook/Block/Block';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
+import { FundPolicy, PriceTolerancePolicy } from '../../FundPolicies/FundPolicies.query';
 
 const validationSchema = Yup.object().shape({
   priceTolerance: Yup.number().label('Price Tolerance').required().min(0).max(100),
 });
 
 const initialValues = {
-  priceTolerance: 10,
+  priceTolerance: 25,
 };
 
 export interface PriceToleranceConfigurationProps {
   policyManager: string;
   policy: PolicyDefinition;
+  allPolicies?: FundPolicy[];
   startTransaction: (tx: Deployment<PriceTolerance>, name: string) => void;
 }
 
 export const PriceToleranceConfiguration: React.FC<PriceToleranceConfigurationProps> = (props) => {
   const environment = useEnvironment()!;
   const account = useAccount();
+
+  const preExistingPolicy = props.allPolicies?.find((policy) => policy.identifier === 'PriceTolerance') as
+    | PriceTolerancePolicy
+    | undefined;
 
   const formik = useFormik({
     validationSchema,
@@ -38,6 +44,19 @@ export const PriceToleranceConfiguration: React.FC<PriceToleranceConfigurationPr
     },
   });
 
+  if (preExistingPolicy) {
+    return (
+      <>
+        <SectionTitle>Configure Price Tolerance Policy</SectionTitle>
+        <NotificationBar kind="neutral">
+          <NotificationContent>
+            You have already deployed a price tolerance policy. You cannot deploy a second price tolerance policy.
+          </NotificationContent>
+        </NotificationBar>
+      </>
+    );
+  }
+
   return (
     <>
       <SectionTitle>Configure Price Tolerance Policy</SectionTitle>
@@ -45,6 +64,14 @@ export const PriceToleranceConfiguration: React.FC<PriceToleranceConfigurationPr
         <NotificationContent>
           The price tolerance policy provides a pre-trade price check ensuring that you do not trade at a price that is
           disadvantageous to the fund. It is expressed as a percentage and references the last on-chain price update.
+        </NotificationContent>
+      </NotificationBar>
+      <NotificationBar kind="error">
+        <NotificationContent>
+          Deploying a price tolerance policy cannot be undone. Once you have deployed a price tolerance policy, you will
+          not be able to change the parameters of the policy. <br />
+          <br />
+          Policies protect investors, but they can also make your fund un-usable if they are too stringent.
         </NotificationContent>
       </NotificationBar>
       <Form formik={formik}>
