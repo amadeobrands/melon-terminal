@@ -7,7 +7,7 @@ export interface AccordionBarProps {
   active: boolean;
 }
 
-export const AccordionBarContent = styled(BarContent)<AccordionBarProps>`
+export const AccordionSectionContent = styled(BarContent)<AccordionBarProps>`
   justify-content: space-between;
   align-items: center;
   margin-bottom: ${(props) => props.theme.spaceUnits.m};
@@ -33,12 +33,12 @@ export interface AccordionSectionProps {
 
 export function AccordionSection(props: AccordionSectionProps) {
   return (
-    <AccordionBarContent
+    <AccordionSectionContent
       active={props.activeSections.includes(props.value)}
       onClick={() => props.sectionSelector(props.value)}
     >
       {props.label}
       {props.activeSections.includes(props.value) ? <FaChevronDown /> : <FaChevronRight />}
-    </AccordionBarContent>
+    </AccordionSectionContent>
   );
 }
