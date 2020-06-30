@@ -92,14 +92,6 @@ export const Fund: React.FC = () => {
                 </NotificationBar>
               </RequiresNoSharesCreated>
               <RequiresFundJustCreated fallback={false}>
-                <RequiresNoPoliciesDeployed fallback={false} address={match.params.address}>
-                  <NotificationBar kind="neutral">
-                    <NotificationContent>
-                      You have not defined any policies for your fund. Go to{' '}
-                      <Link to={`${match.url}/policies`}>Ruleset</Link> to define your policies.
-                    </NotificationContent>
-                  </NotificationBar>
-                </RequiresNoPoliciesDeployed>
                 <ShareFund address={match.params.address} />
               </RequiresFundJustCreated>
             </RequiresFundManager>

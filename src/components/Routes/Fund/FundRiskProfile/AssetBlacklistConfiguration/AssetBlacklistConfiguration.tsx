@@ -48,6 +48,8 @@ export const AssetBlacklistConfiguration: React.FC<AssetBlacklistConfigurationPr
   const account = useAccount();
   const tokens = availableTokens(environment.deployment).filter((token) => !token.historic);
 
+  const wethToken = environment.getToken('WETH')!;
+
   const preExistingPolicy = props.allPolicies?.find((policy) => policy.identifier === 'AssetBlacklist') as
     | AssetBlacklistPolicy
     | undefined;
@@ -62,7 +64,9 @@ export const AssetBlacklistConfiguration: React.FC<AssetBlacklistConfigurationPr
   const options = tokens.map((item) => ({
     label: `${item.symbol} (${item.name})`,
     value: item.address,
-    disabled: preExistingPolicy && preExistingPolicy?.assetBlacklist.some((address) => address === item.address),
+    disabled:
+      (preExistingPolicy && preExistingPolicy?.assetBlacklist.some((address) => address === item.address)) ||
+      item.address === wethToken.address,
   }));
 
   const initialValues = {
@@ -99,6 +103,14 @@ export const AssetBlacklistConfiguration: React.FC<AssetBlacklistConfigurationPr
           The asset blacklist policy defines a list of assets that the fund is not allowed to invest in. Please note
           that no assets can be remove from the blacklist once it has been registered. Assets can only be added to the
           blacklist.
+        </NotificationContent>
+      </NotificationBar>
+      <NotificationBar kind="error">
+        <NotificationContent>
+          Deploying an asset blacklist policy cannot be undone. Once you have deployed an asset blacklist policy, you
+          will only be able to add assets to your blacklist, you cannot remove assets from the blacklist. <br />
+          <br />
+          Policies protect investors, but they can also make your fund un-usable if they are too stringent.
         </NotificationContent>
       </NotificationBar>
       <Form formik={formik}>

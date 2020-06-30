@@ -4,9 +4,12 @@ import { Button } from '~/components/Form/Button/Button';
 export const ControlBox = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: left;
+  justify-content: center;
   align-items: center;
-  padding: ${(props) => props.theme.spaceUnits.s};
+  @media (${(props) => props.theme.mediaQueries.s}) {
+    display: flex;
+    justify-content: left;
+  }
 `;
 
 export const ChartButton = styled(Button)`

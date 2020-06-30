@@ -6,9 +6,9 @@ import { SectionTitle } from '~/storybook/Title/Title';
 import { Serie, Datum } from '~/components/Charts/ZoomControl/ZoomControl';
 import { Spinner } from '~/storybook/Spinner/Spinner';
 import { PriceChart } from '~/components/Charts/PriceChart/PriceChart';
-import styled from 'styled-components';
-import { findCorrectToTime } from '~/utils/priceServiceDates';
-import { async } from 'rxjs/internal/scheduler/async';
+import { findCorrectToTime, findCorrectFromTime } from '~/utils/priceServiceDates';
+import { useFund } from '~/hooks/useFund';
+import { isBefore, subMonths } from 'date-fns';
 
 export interface NewFundPerformanceChartProps {
   address: string;
@@ -109,10 +109,21 @@ function useOnchainFundHistoryByDate(fund: string, from: number, to: number) {
 }
 
 export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (props) => {
-  const [depth, setDepth] = React.useState<Depth>('1m');
-  const [queryType, setQueryType] = React.useState<'depth' | 'date'>('depth');
-  const [fromDate, setFromDate] = React.useState<number>(1577750400);
+  const fund = useFund();
   const today = React.useMemo(() => new Date(), []);
+  const fundInceptionDate = fund.creationTime;
+
+  const initialQueryType = React.useMemo<'depth' | 'date'>(() => {
+    if (isBefore(subMonths(today, 1), fundInceptionDate!)) {
+      return 'date';
+    }
+
+    return 'depth';
+  }, [fund]);
+
+  const [depth, setDepth] = React.useState<Depth>('1m');
+  const [queryType, setQueryType] = React.useState<'depth' | 'date'>(initialQueryType);
+  const [fromDate, setFromDate] = React.useState<number>(findCorrectFromTime(fundInceptionDate!));
 
   const {
     data: onchainDataByDepth,
@@ -172,6 +183,7 @@ export const NewFundPerformanceChart: React.FC<NewFundPerformanceChartProps> = (
             data={queryType === 'depth' ? formattedOnchainDataByDepth : formattedOnchainDataByDate}
             secondaryData={queryType === 'depth' ? formattedOffchainDataByDepth : undefined}
             loading={onchainDataByDepthFetching || offchainDataByDepthFetching || onchainDataByDateFetching}
+            fundInceptionDate={fundInceptionDate}
           />
         </>
       ) : (

@@ -152,7 +152,7 @@ export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
               <FormattedNumber value={shares?.balanceOf} /> shares){' '}
             </>
           )}{' '}
-          of the fund &laquo;{fund.name}.&raquo; You will you receive a slice of the fund's assets.
+          of the fund &laquo;{fund.name}.&raquo; You will receive a slice of the fund's assets.
         </TransactionDescription>
       </TransactionModal>
     </Block>

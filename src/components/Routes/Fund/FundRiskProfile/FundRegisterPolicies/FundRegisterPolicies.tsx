@@ -116,6 +116,7 @@ export const FundRegisterPolicies: React.FC<FundRegisterPoliciesProps> = ({ addr
               <PriceToleranceConfiguration
                 policyManager={policyManager.address!}
                 policy={selectedPolicy}
+                allPolicies={policyManager.policies}
                 startTransaction={startTransaction}
               />
             )}
@@ -124,6 +125,7 @@ export const FundRegisterPolicies: React.FC<FundRegisterPoliciesProps> = ({ addr
               <MaxPositionsConfiguration
                 policyManager={policyManager.address!}
                 policy={selectedPolicy}
+                allPolicies={policyManager.policies}
                 startTransaction={startTransaction}
               />
             )}
@@ -132,6 +134,7 @@ export const FundRegisterPolicies: React.FC<FundRegisterPoliciesProps> = ({ addr
               <MaxConcentrationConfiguration
                 policyManager={policyManager.address!}
                 policy={selectedPolicy}
+                allPolicies={policyManager.policies}
                 startTransaction={startTransaction}
               />
             )}

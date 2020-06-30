@@ -3,7 +3,6 @@ import ReactApexChart from 'react-apexcharts';
 import styled, { useTheme } from 'styled-components';
 import * as S from './PriceChart.styles';
 import { Depth, Serie, ZoomControl } from '../ZoomControl/ZoomControl';
-import { useFund } from '~/hooks/useFund';
 
 export interface PriceChartProps {
   loading?: boolean;
@@ -15,6 +14,7 @@ export interface PriceChartProps {
   setQueryType: Dispatch<SetStateAction<'depth' | 'date'>>;
   queryType: 'depth' | 'date';
   queryFromDate: number;
+  fundInceptionDate: Date | undefined;
 }
 
 const ChartDescription = styled.span`
@@ -27,7 +27,6 @@ const ChartDescription = styled.span`
 
 export const PriceChart: React.FC<PriceChartProps> = (props) => {
   const theme = useTheme();
-  const fund = useFund();
 
   const showSecondaryData = props.queryType == 'depth' && (props.depth === '1d' || props.depth === '1w') ? true : false;
 
@@ -105,7 +104,7 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
   return (
     <>
       <ZoomControl
-        fundInceptionDate={fund.creationTime}
+        fundInceptionDate={props.fundInceptionDate}
         depth={props.depth}
         setDepth={props.setDepth}
         setDate={props.setDate}

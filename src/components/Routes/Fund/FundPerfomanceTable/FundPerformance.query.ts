@@ -251,13 +251,13 @@ function computeAssetBenchmarkData(input: AssetPerformance, fundAge: number): As
   const data = keys.reduce((carry, key) => {
     const value = input[key] && input[key][0];
     const valid = value?.priceValid;
-    const ageCheck = input[key][0].timestamp > fundAge;
+    const ageCheck = input[key][0]?.timestamp > fundAge;
     return {
       ...carry,
       [key]:
         valid && ageCheck
           ? fromTokenBaseUnit(value?.price ?? nan, 8)
-          : fromTokenBaseUnit(input['inceptionDatePx'][0].price, 8),
+          : fromTokenBaseUnit(input['inceptionDatePx'][0]?.price, 8),
     };
   }, {} as AssetPerformanceParsed);
 

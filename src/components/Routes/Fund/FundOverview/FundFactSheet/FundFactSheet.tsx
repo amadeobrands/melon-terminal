@@ -86,7 +86,7 @@ export const FundFactSheet: React.FC<FundFactSheetProps> = ({ address }) => {
   const performanceFeePeriodInSeconds = (performanceFee?.period || 1) * 24 * 60 * 60;
   const secondsSinceLastPeriod = secondsSinceInit % performanceFeePeriodInSeconds;
   const nextPeriodStart = secondsNow + (performanceFeePeriodInSeconds - secondsSinceLastPeriod);
-  const lastPriceUpdate = calculations && calculations[calculations.length - 1].timestamp;
+  const lastPriceUpdate = calculations && calculations[calculations.length - 1]?.timestamp;
 
   const normalizedCalculations = calculations.map((item, index, array) => {
     const returnSinceLastPriceUpdate =

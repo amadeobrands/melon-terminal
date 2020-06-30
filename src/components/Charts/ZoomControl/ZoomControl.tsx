@@ -15,7 +15,7 @@ export interface Datum {
   y: number | string;
 }
 
-interface clickHandlerParams {
+interface ClickHandlerParams {
   queryType: 'depth' | 'date';
   depthQueryValue?: Depth;
   dateQueryValue?: number;
@@ -42,9 +42,31 @@ export interface ZoomControlProps {
   fundInceptionDate: Date | undefined;
 }
 
+function useWindowSize() {
+  const [windowSize, setWindowSize] = React.useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  React.useEffect(() => {
+    function handleResize() {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return windowSize;
+}
+
 export const ZoomControl: React.FC<ZoomControlProps> = (props) => {
   const today = new Date();
   const fundInceptionDate: undefined | number = props.fundInceptionDate && props.fundInceptionDate.getTime();
+
+  const windowSize = useWindowSize();
 
   const options = React.useMemo<ZoomOption[]>(() => {
     const options: ZoomOption[] = [
@@ -68,7 +90,8 @@ export const ZoomControl: React.FC<ZoomControlProps> = (props) => {
 
     return options.map((item) => ({
       ...item,
-      disabled: fundInceptionDate && item.timestamp ? item.timestamp < fundInceptionDate : undefined,
+      disabled:
+        props.fundInceptionDate && item.timestamp ? item.timestamp < props.fundInceptionDate.getTime() : undefined,
     }));
   }, [props.depth, props.queryFromDate]);
 
@@ -88,7 +111,7 @@ export const ZoomControl: React.FC<ZoomControlProps> = (props) => {
     return false;
   };
 
-  function clickHandler(params: clickHandlerParams) {
+  function clickHandler(params: ClickHandlerParams) {
     if (params.queryType === 'depth' && params.depthQueryValue) {
       props.setDepth(params.depthQueryValue);
     } else {
@@ -102,26 +125,41 @@ export const ZoomControl: React.FC<ZoomControlProps> = (props) => {
   return (
     <>
       <S.ControlBox>
-        Zoom:<span></span>
+        {windowSize.width > 500 ? 'Zoom: ' : null}
+
         {options.map((item, index) => {
           const queryValue = item.type === 'depth' ? 'depthQueryValue' : 'dateQueryValue';
-          const clickParams: clickHandlerParams = {
+          const clickParams: ClickHandlerParams = {
             queryType: item.type,
             [queryValue]: item.value,
             buttonLabel: item.label,
           };
-
-          return (
-            <S.ChartButton
-              kind={checkActive(item) ? 'success' : 'secondary'}
-              disabled={item.disabled}
-              size="small"
-              key={index}
-              onClick={() => clickHandler(clickParams)}
-            >
-              {item.label}
-            </S.ChartButton>
-          );
+          if (windowSize.width! > 400) {
+            return (
+              <S.ChartButton
+                kind={checkActive(item) ? 'success' : 'secondary'}
+                disabled={item.disabled}
+                size="small"
+                key={index}
+                onClick={() => clickHandler(clickParams)}
+              >
+                {item.label}
+              </S.ChartButton>
+            );
+          }
+          if (item.label !== '3m' && item.label !== '1y') {
+            return (
+              <S.ChartButton
+                kind={checkActive(item) ? 'success' : 'secondary'}
+                disabled={item.disabled}
+                size="small"
+                key={index}
+                onClick={() => clickHandler(clickParams)}
+              >
+                {item.label}
+              </S.ChartButton>
+            );
+          }
         })}
       </S.ControlBox>
     </>

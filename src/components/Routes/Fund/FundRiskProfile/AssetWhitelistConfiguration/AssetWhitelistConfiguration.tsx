@@ -49,6 +49,8 @@ export const AssetWhitelistConfiguration: React.FC<AssetWhitelistConfigurationPr
   const account = useAccount();
   const tokens = availableTokens(environment.deployment).filter((token) => !token.historic);
 
+  const wethToken = environment.getToken('WETH')!;
+
   const preExistingPolicy = props.allPolicies?.find((policy) => policy.identifier === 'AssetWhitelist') as
     | AssetWhitelistPolicy
     | undefined;
@@ -63,11 +65,13 @@ export const AssetWhitelistConfiguration: React.FC<AssetWhitelistConfigurationPr
   const options = tokens.map((item) => ({
     label: `${item.symbol} (${item.name})`,
     value: item.address,
-    disabled: preExistingPolicy && !preExistingPolicy?.assetWhitelist.some((address) => address === item.address),
+    disabled:
+      (preExistingPolicy && !preExistingPolicy?.assetWhitelist.some((address) => address === item.address)) ||
+      item.address === wethToken?.address,
   }));
 
   const initialValues = {
-    assetWhitelist: preExistingPolicy?.assetWhitelist || [],
+    assetWhitelist: preExistingPolicy?.assetWhitelist || [wethToken.address],
   };
 
   const formik = useFormik({
@@ -101,6 +105,16 @@ export const AssetWhitelistConfiguration: React.FC<AssetWhitelistConfigurationPr
           can be added to the whitelist once it has been registered. Assets can only be removed from the whitelist.
         </NotificationContent>
       </NotificationBar>
+
+      <NotificationBar kind="error">
+        <NotificationContent>
+          Deploying an asset whitelist policy cannot be undone. Once you have deployed an asset whitelist policy, you
+          will only be able to remove assets from your whitelist, you cannot add assets to the whitelist. <br />
+          <br />
+          Policies protect investors, but they can also make your fund un-usable if they are too stringent.
+        </NotificationContent>
+      </NotificationBar>
+
       <Form formik={formik}>
         <CheckboxGroup options={options} name="assetWhitelist" />
 

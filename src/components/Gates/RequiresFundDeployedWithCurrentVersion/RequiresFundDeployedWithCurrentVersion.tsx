@@ -24,7 +24,7 @@ export const RequiresFundDeployedWithCurrentVersion: React.FC<RequiresFundDeploy
     return loader || null;
   }
 
-  if (!fundVersion || (fundVersion && fundVersion.address === environment.deployment.melon.addr.Version)) {
+  if (!fundVersion || fundVersion?.address === environment.deployment.melon.addr.Version) {
     return <>{children}</>;
   }
 
@@ -32,7 +32,7 @@ export const RequiresFundDeployedWithCurrentVersion: React.FC<RequiresFundDeploy
     fallback === true ? (
       <NotificationBar kind="error">
         <NotificationContent>
-          This fund is running on a deprecated version ({fundVersion.name}) of the Melon protocol. The current version
+          This fund is running on a deprecated version ({fundVersion?.name}) of the Melon protocol. The current version
           is {currentVersion.name}.
         </NotificationContent>
       </NotificationBar>
