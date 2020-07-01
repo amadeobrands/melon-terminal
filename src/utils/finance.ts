@@ -14,7 +14,7 @@ export function standardDeviation(values: number[]) {
   return stdDev;
 }
 
-function average(data: number[] | BigNumber[]) {
+export function average(data: number[] | BigNumber[]) {
   const sum = (data as any[]).reduce((s: BigNumber, value: number | BigNumber) => {
     if (BigNumber.isBigNumber(value)) {
       return s.plus(value);

@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import { startOfYear, startOfMonth, startOfQuarter, isBefore } from 'date-fns';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { useFund } from '~/hooks/useFund';
-import { calculateReturn } from '~/utils/finance';
+import { calculateReturn, average } from '~/utils/finance';
 import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
 import { SectionTitle } from '~/storybook/Title/Title';
@@ -20,67 +20,39 @@ interface DisplayData {
   price: BigNumber;
 }
 
-const findDateInTimeline = (arr: MetricsTimelineItem[], date: Date) => {
+function findSharePriceByDate(timeline: MetricsTimelineItem[], date: Date) {
   const startOfDay = findCorrectFromTime(date);
   const endOfDay = findCorrectToTime(date);
-  const timelineItem = arr.reduce((carry, current) => {
+  const targetDate = timeline.reduce((carry, current) => {
     if (startOfDay < current.timestamp && current.timestamp < endOfDay) {
       return current;
     }
     return carry;
-  }, arr[0]);
-
-  return timelineItem;
-};
+  }, timeline[0]);
+  return targetDate.calculations.price;
+}
 
 export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
 
   const fundInceptionDate = findCorrectFromTime(fund.creationTime!);
-  const monthStartDate = findCorrectFromTime(startOfMonth(today));
-  const quarterStartDate = findCorrectFromTime(startOfQuarter(today));
-  const yearStartDate = findCorrectFromTime(startOfYear(today));
+  const monthStartDate = startOfMonth(today);
+  const quarterStartDate = startOfQuarter(today);
+  const yearStartDate = startOfYear(today);
   const toToday = findCorrectToTime(today);
 
   const {
-    data: fundHistoricalData,
-    error: fundHistoricalError,
-    isFetching: fundHistoricalFetching,
+    data: historicalData,
+    error: historicalDataError,
+    isFetching: historicalDataFetching,
   } = useFetchFundPricesByDate(fund.address!, fundInceptionDate, toToday);
 
   const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(
     fund.address!
   );
 
-  const { data: monthToDateData, error: monthToDateError, isFetching: monthToDateFetching } = useFetchFundPricesByDate(
-    fund.address!,
-    monthStartDate,
-    toToday
-  );
-
-  const {
-    data: quarterToDateData,
-    error: quarterToDateError,
-    isFetching: quarterToDateFetching,
-  } = useFetchFundPricesByDate(fund.address!, quarterStartDate, toToday);
-
-  const { data: yearToDateData, error: yearToDateError, isFetching: yearToDateFetching } = useFetchFundPricesByDate(
-    fund.address!,
-    yearStartDate,
-    toToday
-  );
-
-  if (
-    !monthToDateData ||
-    monthToDateFetching ||
-    !quarterToDateData ||
-    quarterToDateFetching ||
-    !yearToDateData ||
-    yearToDateFetching ||
-    !monthlyData ||
-    monthlyFetching
-  ) {
+  if (!historicalData || historicalDataFetching || !monthlyData || monthlyFetching) {
     return (
       <Block>
         <Spinner />
@@ -88,25 +60,25 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
     );
   }
 
-  // fundHistoricalDate is a bunch of timeline items. to find a specific date amongst them, you need to reduce
-  // to find the data.timestamp that's between the 'from' time and the 'to time' of the date you're looking for
-  // as generall all timestamps are done around 8utc
-  // write a function that takes an array of TimeLineItems and a date and returns the timestamp
+  if (historicalDataError || monthlyError) {
+    return (
+      <Block>
+        <>ERROR</>
+      </Block>
+    );
+  }
 
   const mostRecentPrice = monthlyData?.data && monthlyData.data[monthlyData.data.length - 1].calculations.price;
 
-  const quarterStartPrice = quarterToDateData?.data.length && quarterToDateData.data[0].calculations.price;
-
+  const quarterStartPrice = historicalData?.data.length && findSharePriceByDate(historicalData.data, quarterStartDate);
+  const monthStartPrice = historicalData?.data.length && findSharePriceByDate(historicalData.data, monthStartDate);
   const yearStartPrice = isBefore(fundInceptionDate, yearStartDate)
-    ? yearToDateData && yearToDateData.data[0].calculations.price
+    ? historicalData?.data.length && findSharePriceByDate(historicalData.data, yearStartDate)
     : 1;
 
   const qtdReturn = mostRecentPrice && quarterStartPrice && calculateReturn(mostRecentPrice, quarterStartPrice);
+  const mtdReturn = mostRecentPrice && monthStartPrice && calculateReturn(mostRecentPrice, monthStartPrice);
   const ytdReturn = mostRecentPrice && yearStartPrice && calculateReturn(mostRecentPrice, 1);
-  const mtdReturn =
-    mostRecentPrice &&
-    monthToDateData?.data.length &&
-    calculateReturn(mostRecentPrice, monthToDateData.data[0].calculations.price);
 
   const monthlyReturns = monthlyData.data?.map(
     (item: MetricsTimelineItem, index: number, arr: MetricsTimelineItem[]) => {
@@ -143,6 +115,8 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
     },
     { win: 0, lose: 0 }
   );
+
+  const averageMonthlyReturn = average(monthlyReturns);
 
   const positiveMonthRatio = monthlyData && (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
 
@@ -183,6 +157,12 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
         <DictionaryLabel>% Months with Gain</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
           <FormattedNumber decimals={2} value={positiveMonthRatio} suffix={'%'} />
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>Average Monthly Return</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          <FormattedNumber decimals={2} value={averageMonthlyReturn} colorize={true} suffix={'%'} />
         </DictionaryData>
       </DictionaryEntry>
     </Dictionary>
