@@ -177,13 +177,13 @@ function assembleTableData(
     .map((item: any, index: number, arr: any[]) => {
       return {
         // gives the index's return over the month. I.e. a dollar invested in the index is now worth $1 + (1*return)
-        return: calculateReturn(item[0], item[item.length - 1]),
+        return: item.length && calculateReturn(item[0], item[item.length - 1]),
       };
     })
     .map((item: { return: BigNumber }, index: number) => {
       return {
         // a dollar's return invested in the fund minus the index's return should be the difference
-        return: usdActiveMonthReturns[index].return.minus(item.return),
+        return: usdActiveMonthReturns[index]?.return.minus(item.return),
         date: endOfMonth(subMonths(today, index)),
       };
     });

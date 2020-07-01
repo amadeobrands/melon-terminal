@@ -19,15 +19,35 @@ interface DisplayData {
   date: string;
   price: BigNumber;
 }
+
+const findDateInTimeline = (arr: MetricsTimelineItem[], date: Date) => {
+  const startOfDay = findCorrectFromTime(date);
+  const endOfDay = findCorrectToTime(date);
+  const timelineItem = arr.reduce((carry, current) => {
+    if (startOfDay < current.timestamp && current.timestamp < endOfDay) {
+      return current;
+    }
+    return carry;
+  }, arr[0]);
+
+  return timelineItem;
+};
+
 export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
-  const fundInception = fund.creationTime!;
 
+  const fundInceptionDate = findCorrectFromTime(fund.creationTime!);
   const monthStartDate = findCorrectFromTime(startOfMonth(today));
   const quarterStartDate = findCorrectFromTime(startOfQuarter(today));
   const yearStartDate = findCorrectFromTime(startOfYear(today));
   const toToday = findCorrectToTime(today);
+
+  const {
+    data: fundHistoricalData,
+    error: fundHistoricalError,
+    isFetching: fundHistoricalFetching,
+  } = useFetchFundPricesByDate(fund.address!, fundInceptionDate, toToday);
 
   const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(
     fund.address!
@@ -68,16 +88,25 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
     );
   }
 
+  // fundHistoricalDate is a bunch of timeline items. to find a specific date amongst them, you need to reduce
+  // to find the data.timestamp that's between the 'from' time and the 'to time' of the date you're looking for
+  // as generall all timestamps are done around 8utc
+  // write a function that takes an array of TimeLineItems and a date and returns the timestamp
+
   const mostRecentPrice = monthlyData?.data && monthlyData.data[monthlyData.data.length - 1].calculations.price;
-  const quarterStartPrice = quarterToDateData?.data && quarterToDateData.data[0].calculations.price;
-  const yearStartPrice = isBefore(fundInception, yearStartDate)
+
+  const quarterStartPrice = quarterToDateData?.data.length && quarterToDateData.data[0].calculations.price;
+
+  const yearStartPrice = isBefore(fundInceptionDate, yearStartDate)
     ? yearToDateData && yearToDateData.data[0].calculations.price
     : 1;
 
-  const qtdReturn = mostRecentPrice && quarterToDateData?.data && calculateReturn(mostRecentPrice, quarterStartPrice);
-  const ytdReturn = monthlyData?.data && calculateReturn(mostRecentPrice, 1);
+  const qtdReturn = mostRecentPrice && quarterStartPrice && calculateReturn(mostRecentPrice, quarterStartPrice);
+  const ytdReturn = mostRecentPrice && yearStartPrice && calculateReturn(mostRecentPrice, 1);
   const mtdReturn =
-    monthToDateData?.data && calculateReturn(mostRecentPrice, monthToDateData.data[0].calculations.price);
+    mostRecentPrice &&
+    monthToDateData?.data.length &&
+    calculateReturn(mostRecentPrice, monthToDateData.data[0].calculations.price);
 
   const monthlyReturns = monthlyData.data?.map(
     (item: MetricsTimelineItem, index: number, arr: MetricsTimelineItem[]) => {
