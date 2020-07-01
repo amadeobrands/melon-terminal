@@ -59,12 +59,6 @@ export const FundContracts: React.FC<FundContractsProps> = ({ address }) => {
                 <EtherscanLink address={a.address} />
               </DictionaryData>
             </DictionaryEntry>
-            {/* {(a.name === 'Fund' || a.name === 'Vault') && (
-              <DictionaryEntry>
-                <DictionaryLabel>&nbsp;</DictionaryLabel>
-                <DictionaryData>&nbsp;</DictionaryData>
-              </DictionaryEntry>
-            )} */}
           </Fragment>
         ))}
     </Block>

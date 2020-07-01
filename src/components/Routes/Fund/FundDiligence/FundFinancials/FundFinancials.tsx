@@ -192,14 +192,3 @@ export const FundFinancials: React.FC<FundFactSheetProps> = ({ address }) => {
     </Block>
   );
 };
-
-{
-  /* <DictionaryEntry>
-<DictionaryLabel>Inception</DictionaryLabel>
-<DictionaryData>{creation ? <FormattedDate timestamp={creation} /> : 'N/A'}</DictionaryData>
-</DictionaryEntry>
-<DictionaryEntry>
-<DictionaryLabel>Status</DictionaryLabel>
-<DictionaryData>{fund.isShutDown ? 'Inactive' : 'Active'}</DictionaryData>
-</DictionaryEntry> */
-}
