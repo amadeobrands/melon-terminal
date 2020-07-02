@@ -217,7 +217,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
       .reverse();
   const monthsBeforeFund = differenceInCalendarMonths(fundInception, startOfYear(activeYears[0]));
   const activeMonths = fund && differenceInCalendarMonths(today, fundInception) + 1;
-  const monthsRemainingInYear = differenceInCalendarMonths(endOfYear(today), today);
+
   const activeMonthDates = new Array(activeMonths)
     .fill(null)
     .map((item, index: number, arr: null[]) => {

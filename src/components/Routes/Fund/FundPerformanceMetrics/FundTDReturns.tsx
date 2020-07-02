@@ -15,11 +15,6 @@ export interface FundTDReturnsProps {
   address: string;
 }
 
-interface DisplayData {
-  date: string;
-  price: BigNumber;
-}
-
 function findSharePriceByDate(timeline: MetricsTimelineItem[], date: Date) {
   const startOfDay = findCorrectFromTime(date);
   const endOfDay = findCorrectToTime(date);
@@ -69,7 +64,6 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
   }
 
   const mostRecentPrice = monthlyData?.data && monthlyData.data[monthlyData.data.length - 1].calculations.price;
-
   const quarterStartPrice = historicalData?.data.length && findSharePriceByDate(historicalData.data, quarterStartDate);
   const monthStartPrice = historicalData?.data.length && findSharePriceByDate(historicalData.data, monthStartDate);
   const yearStartPrice = isBefore(fundInceptionDate, yearStartDate)
