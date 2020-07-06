@@ -18,7 +18,7 @@ import { useFund } from '~/hooks/useFund';
 import { calculateReturn } from '~/utils/finance';
 import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
-import { SectionTitle } from '~/storybook/Title/Title';
+import { SectionTitle, Title } from '~/storybook/Title/Title';
 import { useFetchMonthlyFundPrices, fetchMultipleIndexPrices } from './FundMetricsQueries';
 import { Button } from '~/components/Form/Button/Button';
 import { CheckboxItem } from '~/components/Form/Checkbox/Checkbox';
@@ -55,11 +55,11 @@ interface DisplayData {
 }
 
 interface TableData {
-  eth: DisplayData[];
-  eur: DisplayData[];
-  usd: DisplayData[];
-  index: DisplayData[];
-  btc: DisplayData[];
+  ETH: DisplayData[];
+  EUR: DisplayData[];
+  USD: DisplayData[];
+  BITWISE10: DisplayData[];
+  BTC: DisplayData[];
 }
 const CurrencyCheckbox = styled(CheckboxItem)`
   margin-left: ${(props) => props.theme.spaceUnits.s};
@@ -163,7 +163,7 @@ function assembleTableData(
         };
       }
       return {
-        // one eth worth of euros invested
+        // one eth worth of  invested
         return: calculateReturn(
           new BigNumber(item.calculations.price * item.references.ethbtc),
           new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.ethbtc)
@@ -173,27 +173,29 @@ function assembleTableData(
     }
   );
 
-  const indexActiveMonthReturns: DisplayData[] = indexReturnData
-    .map((item: any, index: number, arr: any[]) => {
-      return {
-        // gives the index's return over the month. I.e. a dollar invested in the index is now worth $1 + (1*return)
-        return: item.length && calculateReturn(item[0], item[item.length - 1]),
-      };
-    })
-    .map((item: { return: BigNumber }, index: number) => {
-      return {
-        // a dollar's return invested in the fund minus the index's return should be the difference
-        return: usdActiveMonthReturns[index]?.return.minus(item.return),
-        date: endOfMonth(subMonths(today, index)),
-      };
-    });
+  const indexActiveMonthReturns: DisplayData[] =
+    usdActiveMonthReturns &&
+    indexReturnData
+      .map((item: any, index: number, arr: any[]) => {
+        return {
+          // gives the index's return over the month. I.e. a dollar invested in the index is now worth $1 + (1*return)
+          return: item.length && calculateReturn(item[0], item[item.length - 1]),
+        };
+      })
+      .map((item: { return: BigNumber }, index: number) => {
+        return {
+          // a dollar's return invested in the fund minus the index's return should be the difference
+          return: usdActiveMonthReturns[index]?.return.minus(item.return),
+          date: endOfMonth(subMonths(today, index)),
+        };
+      });
 
   return {
-    eth: inactiveMonthReturns.concat(ethActiveMonthReturns),
-    usd: inactiveMonthReturns.concat(usdActiveMonthReturns),
-    eur: inactiveMonthReturns.concat(eurActiveMonthReturns),
-    btc: inactiveMonthReturns.concat(btcActiveMonthReturns),
-    index: inactiveMonthReturns.concat(indexActiveMonthReturns),
+    ETH: inactiveMonthReturns.concat(ethActiveMonthReturns),
+    USD: inactiveMonthReturns.concat(usdActiveMonthReturns),
+    EUR: inactiveMonthReturns.concat(eurActiveMonthReturns),
+    BTC: inactiveMonthReturns.concat(btcActiveMonthReturns),
+    BITWISE10: inactiveMonthReturns.concat(indexActiveMonthReturns),
   };
 }
 
@@ -201,8 +203,8 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
 
-  const potentialCurrencies = ['ETH', 'BTC', 'USD', 'EUR', 'BITWISE10'];
-  const [selectedCurrencies, setSelectedCurrencies] = React.useState<string[]>(['ETH']);
+  const potentialCurrencies: (keyof TableData)[] = ['ETH', 'BTC', 'USD', 'EUR', 'BITWISE10'];
+  const [selectedCurrencies, setSelectedCurrencies] = React.useState<(keyof TableData)[]>(['ETH']);
   const [selectedYear, setSelectedYear] = React.useState(2020);
 
   const [historicalIndexPrices, sethistoricalIndexPrices] = React.useState<BigNumber[][] | undefined>(undefined);
@@ -257,7 +259,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   // TODO: Type this param correctly
   function handleCcyCheckbox(e: any) {
     if (e.target.checked) {
-      const newSelectedCurrencies: string[] = selectedCurrencies.concat([e.target.name]);
+      const newSelectedCurrencies: (keyof TableData)[] = selectedCurrencies.concat([e.target.name]);
       setSelectedCurrencies(newSelectedCurrencies);
     } else {
       const newSelectedCurrencies = selectedCurrencies.filter((item) => item != e.target.name);
@@ -267,7 +269,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
 
   return (
     <Block>
-      <SectionTitle>{selectedYear} Monthly Returns (Share Price)</SectionTitle>
+      <SectionTitle>{selectedYear} Monthly Returns </SectionTitle>
       <ControlContainer>
         <YearContainer>
           {activeYears.length > 1 &&
@@ -281,6 +283,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
             })}
         </YearContainer>
         <CheckBoxContainer>
+          <Title>Returns in: </Title>
           {potentialCurrencies.map((ccy) => {
             return (
               <CurrencyCheckbox
@@ -302,73 +305,24 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
             <HeaderRow>
               <HeaderCell>{null}</HeaderCell>
               {tableData &&
-                tableData.eth
-                  .filter((item) => item.date.getFullYear() === selectedYear)
-                  .map((item, index) => <HeaderCell key={index}>{format(item.date, 'MMM')}</HeaderCell>)}
+                tableData.ETH.filter((item) => item.date.getFullYear() === selectedYear).map((item, index) => (
+                  <HeaderCell key={index}>{format(item.date, 'MMM')}</HeaderCell>
+                ))}
             </HeaderRow>
-            {selectedCurrencies.includes('ETH') && (
-              <BodyRow>
-                <BodyCell>Return vs ETH</BodyCell>
-                {tableData.eth
-                  .filter((item) => item.date.getFullYear() === selectedYear)
-                  .map((item, index) => (
-                    <BodyCell key={index}>
-                      <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
-                    </BodyCell>
-                  ))}
-              </BodyRow>
-            )}
-            {selectedCurrencies.includes('BITWISE10') && (
-              <BodyRow>
-                <BodyCell>Return vs Bitwise10</BodyCell>
-                {tableData.index
-                  .filter((item) => item.date.getFullYear() === selectedYear)
-                  .map((item, index) => (
-                    <BodyCell key={index}>
-                      <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
-                    </BodyCell>
-                  ))}
-              </BodyRow>
-            )}
-            {selectedCurrencies.includes('USD') && (
-              <BodyRow>
-                <BodyCell>Return vs USD</BodyCell>
-
-                {tableData.usd
-                  .filter((item) => item.date.getFullYear() === selectedYear)
-                  .map((item, index) => (
-                    <BodyCell key={index}>
-                      <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
-                    </BodyCell>
-                  ))}
-              </BodyRow>
-            )}
-            {selectedCurrencies.includes('EUR') && (
-              <BodyRow>
-                <BodyCell>Return vs EUR</BodyCell>
-
-                {tableData.eur
-                  .filter((item) => item.date.getFullYear() === selectedYear)
-                  .map((item, index) => (
-                    <BodyCell key={index}>
-                      <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
-                    </BodyCell>
-                  ))}
-              </BodyRow>
-            )}
-            {selectedCurrencies.includes('BTC') && (
-              <BodyRow>
-                <BodyCell>Return vs BTC</BodyCell>
-
-                {tableData.btc
-                  .filter((item) => item.date.getFullYear() === selectedYear)
-                  .map((item, index) => (
-                    <BodyCell key={index}>
-                      <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
-                    </BodyCell>
-                  ))}
-              </BodyRow>
-            )}
+            {selectedCurrencies.map((ccy, index) => {
+              return (
+                <BodyRow key={index * Math.random()}>
+                  <BodyCell>Return vs {ccy}</BodyCell>
+                  {tableData[ccy]
+                    .filter((item) => item.date.getFullYear() === selectedYear)
+                    .map((item, index) => (
+                      <BodyCell key={index}>
+                        <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
+                      </BodyCell>
+                    ))}
+                </BodyRow>
+              );
+            })}
           </tbody>
         </Table>
       </ScrollableTable>
