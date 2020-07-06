@@ -1,7 +1,7 @@
 import { useQuery } from 'react-query';
 import { BigNumber } from 'bignumber.js';
 
-export interface MetricsTimelineItem {
+export interface RangeTimelineItem {
   timestamp: number;
   rates: {
     [symbol: string]: number;
@@ -10,6 +10,27 @@ export interface MetricsTimelineItem {
     [symbol: string]: number;
   };
   shares: number;
+  calculations: {
+    price: number;
+    gav: number;
+    nav: number;
+  };
+}
+
+export interface MonthendTimelineItem {
+  timestamp: number;
+  rates: {
+    [symbol: string]: number;
+  };
+  holdings: {
+    [symbol: string]: number;
+  };
+  shares: number;
+  references: {
+    ethusd: number;
+    etheur: number;
+    ethbtc: number;
+  };
   calculations: {
     price: number;
     gav: number;
