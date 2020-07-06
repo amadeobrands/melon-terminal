@@ -1,5 +1,4 @@
 import BigNumber from 'bignumber.js';
-import { isBigNumber } from '../../../melon-js/node_modules/web3-utils/types';
 
 export function standardDeviation(values: number[]) {
   const avg = average(values);
@@ -26,7 +25,7 @@ export function average(data: number[] | BigNumber[]) {
 }
 
 /**
- * Returns a BigNumber representing the percentage return of the asset given the current price and some historical price
+ * Returns a BigNumber representing the holding period return of the asset given the current price and some historical price
  * @param currentPx a BigNumber representing the current price of the asset
  * @param historicalPx a BigNumber representing the historical price against which you're measuring
  */
