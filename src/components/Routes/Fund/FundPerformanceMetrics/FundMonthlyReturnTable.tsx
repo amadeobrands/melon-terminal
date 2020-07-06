@@ -19,33 +19,12 @@ import { calculateReturn } from '~/utils/finance';
 import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
 import { SectionTitle, Title } from '~/storybook/Title/Title';
-import { useFetchMonthlyFundPrices, fetchMultipleIndexPrices } from './FundMetricsQueries';
+import { useFetchMonthlyFundPrices, fetchMultipleIndexPrices, MonthendTimelineItem } from './FundMetricsQueries';
 import { Button } from '~/components/Form/Button/Button';
 import { CheckboxItem } from '~/components/Form/Checkbox/Checkbox';
 
 export interface MonthlyReturnTableProps {
   address: string;
-}
-
-interface DepthTimelineItem {
-  timestamp: number;
-  rates: {
-    [symbol: string]: number;
-  };
-  holdings: {
-    [symbol: string]: number;
-  };
-  shares: number;
-  references: {
-    ethusd: number;
-    etheur: number;
-    ethbtc: number;
-  };
-  calculations: {
-    price: number;
-    gav: number;
-    nav: number;
-  };
 }
 
 interface DisplayData {
@@ -89,7 +68,7 @@ function assembleTableData(
   today: Date,
   activeMonths: number,
   monthsBeforeFund: number,
-  monthlyReturnData: DepthTimelineItem[],
+  monthlyReturnData: MonthendTimelineItem[],
   indexReturnData: BigNumber[][]
 ): TableData {
   const inactiveMonthReturns: DisplayData[] = new Array(monthsBeforeFund)
@@ -100,7 +79,7 @@ function assembleTableData(
     .reverse();
 
   const ethActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
-    (item: DepthTimelineItem, index: number, arr: DepthTimelineItem[]) => {
+    (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
         return {
           return: calculateReturn(new BigNumber(item.calculations.price), new BigNumber(1)),
@@ -118,7 +97,7 @@ function assembleTableData(
   );
 
   const usdActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
-    (item: DepthTimelineItem, index: number, arr: DepthTimelineItem[]) => {
+    (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
         return {
           return: new BigNumber('n/a'),
@@ -136,7 +115,7 @@ function assembleTableData(
   );
 
   const eurActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
-    (item: DepthTimelineItem, index: number, arr: DepthTimelineItem[]) => {
+    (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
         return {
           return: new BigNumber('n/a'),
@@ -155,7 +134,7 @@ function assembleTableData(
   );
 
   const btcActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
-    (item: DepthTimelineItem, index: number, arr: DepthTimelineItem[]) => {
+    (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
         return {
           return: new BigNumber('n/a'),
