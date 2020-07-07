@@ -15,12 +15,23 @@ import {
 } from './FundMetricsQueries';
 import { findCorrectFromTime, findCorrectToTime } from '~/utils/priceServiceDates';
 import { Dictionary, DictionaryEntry, DictionaryLabel, DictionaryData } from '~/storybook/Dictionary/Dictionary';
+import { SelectWidget } from '~/components/Form/Select/Select';
 
 export interface FundTDReturnsProps {
   address: string;
 }
 
-type FxReference = 'ethusd' | 'ethbtc' | 'etheur' | undefined;
+interface HoldingPeriodReturns {
+  ethReturns: BigNumber[];
+  usdReturns: BigNumber[];
+  eurReturns: BigNumber[];
+  btcReturns: BigNumber[];
+}
+
+interface SelectItem {
+  label: string;
+  value: keyof HoldingPeriodReturns;
+}
 
 function findSharePriceByDate(timeline: RangeTimelineItem[], date: Date) {
   const startOfDay = findCorrectFromTime(date);
@@ -37,40 +48,70 @@ function findSharePriceByDate(timeline: RangeTimelineItem[], date: Date) {
 /**
  *
  * @param timeline is an array of MonthendTimelineItems that contain the fund's share price and fx data for the last day of each month of the fund's existence
- * @param dayZero is an object that contains the eth to usd eur and btc exchange rates on the day the fund was created
- * @param identifier tells the function which fx rate to use, both in dayZero and in timeline.references
+ * @param dayZero is an object that contains the eth/usd /eur and /btc exchange rates on the day the fund was created
+ * @returns an object whose properties are arrays of BigNumbers that represent holding period returns in each denomination
  */
+
 function prepareMonthlyReturns(
   timeline: MonthendTimelineItem[],
-  dayZero: { ethbtc: number; ethusd: number; etheur: number },
-  comparisonCurrency: FxReference | undefined
-) {
-  if (!comparisonCurrency) {
-    // the share price-only case
-    return timeline.map((item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
-      if (index === 0) {
-        return calculateReturn(item.calculations.price, 1);
-      }
-      return calculateReturn(item.calculations.price, arr[index - 1].calculations.price);
-    });
-  }
-  // every other case
-  return timeline.map((item, index, arr) => {
+  dayZero: { ethbtc: number; ethusd: number; etheur: number }
+): HoldingPeriodReturns {
+  const ethReturns = timeline.map((item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
     if (index === 0) {
-      return calculateReturn(item.references[comparisonCurrency], dayZero[comparisonCurrency]);
+      return calculateReturn(item.calculations.price, 1);
+    }
+    return calculateReturn(item.calculations.price, arr[index - 1].calculations.price);
+  });
+
+  const usdReturns = timeline.map((item, index, arr) => {
+    if (index === 0) {
+      return calculateReturn(item.references.ethusd, dayZero.ethusd);
     }
     return calculateReturn(
-      item.references[comparisonCurrency] * item.calculations.price, // current fx price times current share price
-      arr[index - 1].references[comparisonCurrency] * arr[index - 1].calculations.price // one month back's fx price times share price
+      item.references.ethusd * item.calculations.price, // current fx price times current share price
+      arr[index - 1].references.ethusd * arr[index - 1].calculations.price // one month back's fx price times share price
     );
   });
+
+  const eurReturns = timeline.map((item, index, arr) => {
+    if (index === 0) {
+      return calculateReturn(item.references.ethusd, dayZero.etheur);
+    }
+    return calculateReturn(
+      item.references.etheur * item.calculations.price, // current fx price times current share price
+      arr[index - 1].references.etheur * arr[index - 1].calculations.price // one month back's fx price times share price
+    );
+  });
+
+  const btcReturns = timeline.map((item, index, arr) => {
+    if (index === 0) {
+      return calculateReturn(item.references.ethbtc, dayZero.ethbtc);
+    }
+    return calculateReturn(
+      item.references.ethbtc * item.calculations.price, // current fx price times current share price
+      arr[index - 1].references.ethbtc * arr[index - 1].calculations.price // one month back's fx price times share price
+    );
+  });
+
+  return { ethReturns: ethReturns, usdReturns: usdReturns, eurReturns: eurReturns, btcReturns: btcReturns };
 }
 
 export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
 
-  const [comparisonCurrency, setComparisonCurrency] = React.useState<FxReference>(undefined);
+  const comparisonCurrencies: SelectItem[] = [
+    { label: 'ETH', value: 'ethReturns' },
+    { label: 'BTC', value: 'btcReturns' },
+    { label: 'EUR', value: 'eurReturns' },
+    { label: 'USD', value: 'usdReturns' },
+  ];
+
+  const [selectedCurrency, setSelectedCurrency] = React.useState(comparisonCurrencies[0]);
+
+  const unselectedCurrencies = React.useMemo(() => {
+    return comparisonCurrencies.filter((ccy) => ccy.label !== selectedCurrency.label);
+  }, [selectedCurrency]);
 
   const fundInceptionDate = findCorrectFromTime(fund.creationTime!);
   const monthStartDate = startOfMonth(today);
@@ -90,7 +131,7 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
   );
 
   const monthlyReturns = React.useMemo(() => {
-    return monthlyData?.data && prepareMonthlyReturns(monthlyData.data, fxAtInception, comparisonCurrency);
+    return monthlyData?.data && prepareMonthlyReturns(monthlyData.data, fxAtInception);
   }, [monthlyData]);
 
   if (!historicalData || historicalDataFetching || !monthlyData || monthlyFetching) {
@@ -119,21 +160,21 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
   const mtdReturn = mostRecentPrice && monthStartPrice && calculateReturn(mostRecentPrice, monthStartPrice);
   const ytdReturn = mostRecentPrice && yearStartPrice && calculateReturn(mostRecentPrice, 1);
 
-  const bestMonth = monthlyReturns?.reduce((carry: BigNumber, current: BigNumber) => {
+  const bestMonth = monthlyReturns?.[selectedCurrency.value].reduce((carry: BigNumber, current: BigNumber) => {
     if (current.isGreaterThan(carry)) {
       return current;
     }
     return carry;
-  }, monthlyReturns[0]);
+  }, monthlyReturns[selectedCurrency.value][0]);
 
-  const worstMonth = monthlyReturns?.reduce((carry: BigNumber, current: BigNumber) => {
+  const worstMonth = monthlyReturns?.[selectedCurrency.value].reduce((carry: BigNumber, current: BigNumber) => {
     if (current.isLessThan(carry)) {
       return current;
     }
     return carry;
-  }, monthlyReturns[0]);
+  }, monthlyReturns[selectedCurrency.value][0]);
 
-  const monthlyWinLoss = monthlyReturns?.reduce(
+  const monthlyWinLoss = monthlyReturns?.[selectedCurrency.value].reduce(
     (carry: { win: number; lose: number }, current: BigNumber) => {
       if (current.isGreaterThanOrEqualTo(0)) {
         carry.win++;
@@ -146,13 +187,28 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
     { win: 0, lose: 0 }
   );
 
-  const averageMonthlyReturn = average(monthlyReturns);
+  const averageMonthlyReturn = average(monthlyReturns[selectedCurrency.value]);
 
   const positiveMonthRatio = monthlyData && (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
+
+  function toggleCurrencySelection(value: keyof HoldingPeriodReturns) {
+    if (!value) {
+      return;
+    }
+    const newCurrency = comparisonCurrencies.filter((item) => item.value == value)[0];
+    setSelectedCurrency(newCurrency);
+  }
 
   return (
     <Dictionary>
       <SectionTitle>Various Metrics (Share Price)</SectionTitle>
+      <SelectWidget
+        name="Comparison Currency"
+        placeholder="Select a currency to view returns"
+        options={unselectedCurrencies}
+        onChange={(value) => value && toggleCurrencySelection((value as any).value)}
+        value={null}
+      />
       <DictionaryEntry>
         <DictionaryLabel>MTD Return</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
