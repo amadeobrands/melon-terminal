@@ -107,7 +107,7 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
     { label: 'USD', value: 'usdReturns' },
   ];
 
-  const [selectedCurrency, setSelectedCurrency] = React.useState(comparisonCurrencies[0]);
+  const [selectedCurrency, setSelectedCurrency] = React.useState<SelectItem>(comparisonCurrencies[0]);
 
   const unselectedCurrencies = React.useMemo(() => {
     return comparisonCurrencies.filter((ccy) => ccy.label !== selectedCurrency.label);

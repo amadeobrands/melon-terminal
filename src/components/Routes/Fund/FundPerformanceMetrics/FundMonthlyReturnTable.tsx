@@ -12,6 +12,8 @@ import {
   endOfMonth,
   endOfYear,
   startOfMonth,
+  getMonth,
+  addMonths,
 } from 'date-fns';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { useFund } from '~/hooks/useFund';
@@ -22,6 +24,7 @@ import { SectionTitle, Title } from '~/storybook/Title/Title';
 import { useFetchMonthlyFundPrices, fetchMultipleIndexPrices, MonthendTimelineItem } from './FundMetricsQueries';
 import { Button } from '~/components/Form/Button/Button';
 import { CheckboxItem } from '~/components/Form/Checkbox/Checkbox';
+import { SelectWidget } from '~/components/Form/Select/Select';
 
 export interface MonthlyReturnTableProps {
   address: string;
@@ -31,6 +34,11 @@ interface DisplayData {
   label?: string;
   date: Date;
   return: BigNumber;
+}
+
+interface SelectItem {
+  value: keyof TableData;
+  label: string;
 }
 
 interface TableData {
@@ -74,7 +82,7 @@ function assembleTableData(
   const inactiveMonthReturns: DisplayData[] = new Array(monthsBeforeFund)
     .fill(null)
     .map((item, index: number) => {
-      return { date: endOfMonth(subMonths(today, index + activeMonths)), return: new BigNumber('n/a') };
+      return { date: endOfMonth(subMonths(today, index + activeMonths)), return: new BigNumber('') };
     })
     .reverse();
 
@@ -182,8 +190,20 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
 
-  const potentialCurrencies: (keyof TableData)[] = ['ETH', 'BTC', 'USD', 'EUR', 'BITWISE10'];
-  const [selectedCurrencies, setSelectedCurrencies] = React.useState<(keyof TableData)[]>(['ETH']);
+  const potentialCurrencies: SelectItem[] = [
+    { label: 'ETH', value: 'ETH' },
+    { label: 'BTC', value: 'BTC' },
+    { label: 'EUR', value: 'EUR' },
+    { label: 'USD', value: 'USD' },
+    { label: 'BITWISE10', value: 'BITWISE10' },
+  ];
+
+  const [selectedCurrencies, setSelectedCurrencies] = React.useState<SelectItem[]>([potentialCurrencies[0]]);
+
+  const unselectedCurrencies = React.useMemo(() => {
+    return potentialCurrencies.filter((ccy) => !selectedCurrencies.includes(ccy));
+  }, [selectedCurrencies]);
+  console.log('204: ', unselectedCurrencies);
   const [selectedYear, setSelectedYear] = React.useState(2020);
 
   const [historicalIndexPrices, sethistoricalIndexPrices] = React.useState<BigNumber[][] | undefined>(undefined);
@@ -236,75 +256,82 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   }
 
   // TODO: Type this param correctly
-  function handleCcyCheckbox(e: any) {
-    if (e.target.checked) {
-      const newSelectedCurrencies: (keyof TableData)[] = selectedCurrencies.concat([e.target.name]);
-      setSelectedCurrencies(newSelectedCurrencies);
-    } else {
-      const newSelectedCurrencies = selectedCurrencies.filter((item) => item != e.target.name);
-      setSelectedCurrencies(newSelectedCurrencies);
+  function toggleCurrencySelection(value: SelectItem) {
+    console.log(selectedCurrencies);
+    if (!value) {
+      console.log('sdfkljdsk');
+      return;
     }
+    if (selectedCurrencies.includes(value)) {
+      setSelectedCurrencies(selectedCurrencies.filter((ccy) => ccy !== value));
+    } else {
+      setSelectedCurrencies(selectedCurrencies.concat([value]));
+    }
+    console.log(selectedCurrencies);
   }
+  const months = new Array(12).fill(null).map((item, index) => {
+    const january = startOfYear(today);
+    return format(addMonths(january, index), 'MMM');
+  });
 
   return (
     <Block>
       <SectionTitle>{selectedYear} Monthly Returns </SectionTitle>
-      <ControlContainer>
-        <YearContainer>
-          {activeYears.length > 1 &&
-            activeYears.map((year) => {
-              const yearNumber = year.getFullYear();
-              return (
-                <Button key={yearNumber * Math.random()} onClick={() => toggleYear(yearNumber)}>
-                  {yearNumber}
-                </Button>
-              );
-            })}
-        </YearContainer>
-        <CheckBoxContainer>
-          <Title>Returns in: </Title>
-          {potentialCurrencies.map((ccy) => {
+
+      <YearContainer>
+        {activeYears.length > 1 &&
+          activeYears.map((year) => {
+            const yearNumber = year.getFullYear();
             return (
-              <CurrencyCheckbox
-                key={ccy}
-                onChange={(e) => handleCcyCheckbox(e)}
-                checked={selectedCurrencies.includes(ccy)}
-                label={ccy}
-                value={ccy}
-                name={ccy}
-                touched={true}
-              />
+              <Button key={yearNumber * Math.random()} onClick={() => toggleYear(yearNumber)}>
+                {yearNumber}
+              </Button>
             );
           })}
-        </CheckBoxContainer>
-      </ControlContainer>
+      </YearContainer>
+
       <ScrollableTable>
         <Table>
           <tbody>
             <HeaderRow>
               <HeaderCell>{null}</HeaderCell>
-              {tableData &&
-                tableData.ETH.filter((item) => item.date.getFullYear() === selectedYear).map((item, index) => (
-                  <HeaderCell key={index}>{format(item.date, 'MMM')}</HeaderCell>
-                ))}
+              {months.map((month, index) => (
+                <HeaderCell key={index}>{month}</HeaderCell>
+              ))}
             </HeaderRow>
             {selectedCurrencies.map((ccy, index) => {
               return (
                 <BodyRow key={index * Math.random()}>
-                  <BodyCell>Return vs {ccy}</BodyCell>
-                  {tableData[ccy]
+                  <BodyCell>Return vs {ccy.label}</BodyCell>
+                  {tableData[ccy.value]
                     .filter((item) => item.date.getFullYear() === selectedYear)
                     .map((item, index) => (
                       <BodyCell key={index}>
                         <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
                       </BodyCell>
                     ))}
+                  <BodyCell>
+                    <Button
+                      onClick={(ccy) => {
+                        toggleCurrencySelection(ccy as any);
+                      }}
+                    >
+                      X
+                    </Button>
+                  </BodyCell>
                 </BodyRow>
               );
             })}
           </tbody>
         </Table>
       </ScrollableTable>
+      <SelectWidget
+        name="Comparison Currency"
+        placeholder="Select a currency to view returns"
+        options={unselectedCurrencies}
+        onChange={(value) => value && toggleCurrencySelection(value as any)}
+        value={null}
+      />
     </Block>
   );
 };
