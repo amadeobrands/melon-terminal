@@ -72,8 +72,8 @@ export function useFetchFundPricesByDate(fund: string, from: number, to: number)
 
 async function fetchIndexPrices(key: string, startDate: string, endDate: string) {
   const apiKey = '007383bc-d3b7-4249-9a0d-b3a1d17113d9';
-  const urlWithParams = `https://api.bitwiseinvestments.com/api/v1/indexes/BITWISE10/history?apiKey=${apiKey}&start=${startDate}&end=${endDate}`;
-  const response = await fetch(urlWithParams)
+  const queryAddress = `https://api.bitwiseinvestments.com/api/v1/indexes/BITWISE10/history?apiKey=${apiKey}&start=${startDate}&end=${endDate}`;
+  const response = await fetch(queryAddress)
     .then((response) => response.json())
     .catch((error) => console.log(error));
   const prices = response.map((item: number[]) => new BigNumber(item[1]));
@@ -90,7 +90,21 @@ export async function fetchMultipleIndexPrices(dates: [Date, Date][]) {
 }
 
 export function useFetchIndexPrices(startDate: string, endDate: string) {
-  return useQuery(['indices', startDate, endDate], fetchIndexPrices, {
+  return useQuery([startDate + endDate, startDate, endDate], fetchIndexPrices, {
+    refetchOnWindowFocus: false,
+  });
+}
+
+async function fetchReferencePrices(key: string, base: string, quote: string, date: number) {
+  const url = process.env.MELON_RATES_API;
+  const queryAddress = `${url}/api/day-average?${base}&${quote}&${date}`;
+  const response = await fetch(queryAddress)
+    .then((response) => response.json())
+    .catch((error) => console.log(error));
+}
+
+export function useFetchReferencePrices(base: string, quote: string, date: number) {
+  return useQuery([(Math.random() * date).toString(), base, quote, date], fetchReferencePrices, {
     refetchOnWindowFocus: false,
   });
 }
