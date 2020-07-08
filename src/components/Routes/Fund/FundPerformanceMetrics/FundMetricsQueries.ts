@@ -1,5 +1,6 @@
 import { useQuery } from 'react-query';
 import { BigNumber } from 'bignumber.js';
+import { findCorrectToTime } from '~/utils/priceServiceDates';
 
 export interface RangeTimelineItem {
   timestamp: number;
@@ -95,16 +96,31 @@ export function useFetchIndexPrices(startDate: string, endDate: string) {
   });
 }
 
-async function fetchReferencePrices(key: string, base: string, quote: string, date: number) {
+async function fetchReferencePricesByDate(key: string, date: number) {
   const url = process.env.MELON_RATES_API;
-  const queryAddress = `${url}/api/day-average?${base}&${quote}&${date}`;
-  const response = await fetch(queryAddress)
-    .then((response) => response.json())
-    .catch((error) => console.log(error));
+  console.log(date, '<< in query');
+
+  const btcQueryAddress = `${url}/api/day-average?base=ETH&quote=BTC&day=${date}`;
+  const usdQueryAddress = `${url}/api/day-average?base=ETH&quote=USD&day=${date}`;
+  const eurQueryAddress = `${url}/api/day-average?base=ETH&quote=EUR&day=${date}`;
+  try {
+    const btcResponse = await fetch(btcQueryAddress).then((response) => response.json());
+    const usdResponse = await fetch(usdQueryAddress).then((response) => response.json());
+    const eurResponse = await fetch(eurQueryAddress).then((response) => response.json());
+    return {
+      ethbtc: btcResponse.data.rate,
+      ethusd: usdResponse.data.rate,
+      etheur: eurResponse.data.rate,
+    };
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 }
 
-export function useFetchReferencePrices(base: string, quote: string, date: number) {
-  return useQuery([(Math.random() * date).toString(), base, quote, date], fetchReferencePrices, {
+export function useFetchReferencePricesByDate(date: Date) {
+  const day = findCorrectToTime(date);
+  return useQuery([Math.random().toString(), day], fetchReferencePricesByDate, {
     refetchOnWindowFocus: false,
   });
 }
