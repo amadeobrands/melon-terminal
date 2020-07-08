@@ -12,10 +12,12 @@ import {
   useFetchFundPricesByDate,
   RangeTimelineItem,
   MonthendTimelineItem,
+  useFetchReferencePricesByDate,
 } from './FundMetricsQueries';
 import { findCorrectFromTime, findCorrectToTime } from '~/utils/priceServiceDates';
 import { Dictionary, DictionaryEntry, DictionaryLabel, DictionaryData } from '~/storybook/Dictionary/Dictionary';
 import { SelectWidget } from '~/components/Form/Select/Select';
+import { useQuery } from 'react-query';
 
 export interface FundTDReturnsProps {
   address: string;
@@ -96,7 +98,7 @@ function prepareMonthlyReturns(
   return { ethReturns: ethReturns, usdReturns: usdReturns, eurReturns: eurReturns, btcReturns: btcReturns };
 }
 
-export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
+export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
 
@@ -118,7 +120,12 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
   const quarterStartDate = startOfQuarter(today);
   const yearStartDate = startOfYear(today);
   const toToday = findCorrectToTime(today);
-  const fxAtInception = { ethbtc: 1, ethusd: 2, etheur: 1.9 }; // This'll be a UseMemo function with an empty deps array that queries the endpoint that gives us the VWAP of eth/eur btc usd by date
+  console.log(fund.creationTime);
+  const {
+    data: fxAtInception,
+    error: fxAtInceptionError,
+    isFetching: fxAtInceptionFetching,
+  } = useFetchReferencePricesByDate(fund.creationTime!);
 
   const {
     data: historicalData,
@@ -131,10 +138,17 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
   );
 
   const monthlyReturns = React.useMemo(() => {
-    return monthlyData?.data && prepareMonthlyReturns(monthlyData.data, fxAtInception);
+    return monthlyData?.data && fxAtInception && prepareMonthlyReturns(monthlyData.data, fxAtInception);
   }, [monthlyData]);
 
-  if (!historicalData || historicalDataFetching || !monthlyData || monthlyFetching) {
+  if (
+    !historicalData ||
+    historicalDataFetching ||
+    !monthlyData ||
+    monthlyFetching
+    // !fxAtInception ||
+    // fxAtInceptionFetching
+  ) {
     return (
       <Block>
         <Spinner />
@@ -142,13 +156,15 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
     );
   }
 
-  if (historicalDataError || monthlyError) {
-    return (
-      <Block>
-        <>ERROR</>
-      </Block>
-    );
-  }
+  // if (historicalDataError || monthlyError || fxAtInceptionError) {
+  //   console.log(fxAtInceptionError)
+  //   return (
+  //     <Block>
+  //       <>ERROR</>
+  //     </Block>
+  //   );
+  // }
+  console.log(fxAtInception);
   const mostRecentPrice = monthlyData?.data && monthlyData.data[monthlyData.data.length - 1].calculations.price;
   const quarterStartPrice = historicalData?.data.length && findSharePriceByDate(historicalData.data, quarterStartDate);
   const monthStartPrice = historicalData?.data.length && findSharePriceByDate(historicalData.data, monthStartDate);
@@ -187,9 +203,9 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (address) => {
     { win: 0, lose: 0 }
   );
 
-  const averageMonthlyReturn = average(monthlyReturns[selectedCurrency.value]);
+  const averageMonthlyReturn = monthlyReturns && average(monthlyReturns[selectedCurrency.value]);
 
-  const positiveMonthRatio = monthlyData && (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
+  const positiveMonthRatio = monthlyWinLoss && (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
 
   function toggleCurrencySelection(value: keyof HoldingPeriodReturns) {
     if (!value) {
