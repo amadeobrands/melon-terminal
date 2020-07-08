@@ -1,7 +1,16 @@
 import * as React from 'react';
 import BigNumber from 'bignumber.js';
 import styled from 'styled-components';
-import { Table, HeaderCell, HeaderRow, BodyRow, BodyCell, ScrollableTable } from '~/storybook/Table/Table';
+import {
+  Table,
+  HeaderCell,
+  HeaderRow,
+  BodyRow,
+  BodyCell,
+  ScrollableTable,
+  BodyCellRightAlign,
+  HeaderCellRightAlign,
+} from '~/storybook/Table/Table';
 import {
   subMonths,
   subYears,
@@ -76,15 +85,20 @@ function assembleTableData(
   today: Date,
   activeMonths: number,
   monthsBeforeFund: number,
+  monthsRemaining: number,
   monthlyReturnData: MonthendTimelineItem[],
   indexReturnData: BigNumber[][]
 ): TableData {
   const inactiveMonthReturns: DisplayData[] = new Array(monthsBeforeFund)
     .fill(null)
     .map((item, index: number) => {
-      return { date: endOfMonth(subMonths(today, index + activeMonths)), return: new BigNumber('') };
+      return { date: endOfMonth(subMonths(today, index + activeMonths)), return: new BigNumber('NaN') };
     })
     .reverse();
+
+  const monthsRemainingInYear: DisplayData[] = new Array(monthsRemaining).fill(null).map((item, index: number) => {
+    return { date: endOfMonth(addMonths(today, index + 1)), return: new BigNumber('NaN') };
+  });
 
   const ethActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
@@ -108,7 +122,7 @@ function assembleTableData(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
         return {
-          return: new BigNumber('n/a'),
+          return: new BigNumber('NaN'),
           date: new Date(item.timestamp * 1000),
         };
       }
@@ -126,7 +140,7 @@ function assembleTableData(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
         return {
-          return: new BigNumber('n/a'),
+          return: new BigNumber('NaN'),
           date: new Date(item.timestamp * 1000),
         };
       }
@@ -145,7 +159,7 @@ function assembleTableData(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
         return {
-          return: new BigNumber('n/a'),
+          return: new BigNumber('NaN'),
           date: new Date(item.timestamp * 1000),
         };
       }
@@ -178,11 +192,11 @@ function assembleTableData(
       });
 
   return {
-    ETH: inactiveMonthReturns.concat(ethActiveMonthReturns),
-    USD: inactiveMonthReturns.concat(usdActiveMonthReturns),
-    EUR: inactiveMonthReturns.concat(eurActiveMonthReturns),
-    BTC: inactiveMonthReturns.concat(btcActiveMonthReturns),
-    BITWISE10: inactiveMonthReturns.concat(indexActiveMonthReturns),
+    ETH: inactiveMonthReturns.concat(ethActiveMonthReturns).concat(monthsRemainingInYear),
+    USD: inactiveMonthReturns.concat(usdActiveMonthReturns).concat(monthsRemainingInYear),
+    EUR: inactiveMonthReturns.concat(eurActiveMonthReturns).concat(monthsRemainingInYear),
+    BTC: inactiveMonthReturns.concat(btcActiveMonthReturns).concat(monthsRemainingInYear),
+    BITWISE10: inactiveMonthReturns.concat(indexActiveMonthReturns).concat(monthsRemainingInYear),
   };
 }
 
@@ -198,14 +212,19 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     { label: 'BITWISE10', value: 'BITWISE10' },
   ];
 
-  const [selectedCurrencies, setSelectedCurrencies] = React.useState<SelectItem[]>([potentialCurrencies[0]]);
+  // Select management
+  const [selectedCurrencies, setSelectedCurrencies] = React.useState<(keyof TableData)[]>([
+    potentialCurrencies[0].value,
+  ]);
 
   const unselectedCurrencies = React.useMemo(() => {
-    return potentialCurrencies.filter((ccy) => !selectedCurrencies.includes(ccy));
+    console.log('revamp');
+    return potentialCurrencies.filter((ccy) => !selectedCurrencies.includes(ccy.value));
   }, [selectedCurrencies]);
-  console.log('204: ', unselectedCurrencies);
+
   const [selectedYear, setSelectedYear] = React.useState(2020);
 
+  // Data Fetching
   const [historicalIndexPrices, sethistoricalIndexPrices] = React.useState<BigNumber[][] | undefined>(undefined);
   const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(address);
 
@@ -217,6 +236,8 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
       .map((item, index) => subYears(today, index))
       .reverse();
   const monthsBeforeFund = differenceInCalendarMonths(fundInception, startOfYear(activeYears[0]));
+  const monthsRemaining = differenceInCalendarMonths(endOfYear(today), today);
+
   const activeMonths = fund && differenceInCalendarMonths(today, fundInception) + 1;
 
   const activeMonthDates = new Array(activeMonths)
@@ -249,17 +270,15 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     fund &&
     monthlyData &&
     historicalIndexPrices &&
-    assembleTableData(today, activeMonths, monthsBeforeFund, monthlyData.data, historicalIndexPrices);
+    assembleTableData(today, activeMonths, monthsBeforeFund, monthsRemaining, monthlyData.data, historicalIndexPrices);
 
   function toggleYear(year: number) {
     setSelectedYear(year);
   }
 
-  // TODO: Type this param correctly
-  function toggleCurrencySelection(value: SelectItem) {
-    console.log(selectedCurrencies);
+  function toggleCurrencySelection(value: keyof TableData) {
+    console.log(value);
     if (!value) {
-      console.log('sdfkljdsk');
       return;
     }
     if (selectedCurrencies.includes(value)) {
@@ -267,17 +286,30 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     } else {
       setSelectedCurrencies(selectedCurrencies.concat([value]));
     }
-    console.log(selectedCurrencies);
+    console.log(unselectedCurrencies);
   }
   const months = new Array(12).fill(null).map((item, index) => {
     const january = startOfYear(today);
     return format(addMonths(january, index), 'MMM');
   });
+  // you have an array of active years
+  // if there is more than one active year
+  //you want to show a button on the left side of the title if the selectedYear is not the first item in that array
+  // you want that button to decrement the current year by 1
+  // in the middle, you want the title to show the selected year
+  // if there is more than one active year
+  // you want to show a button on the right side of the title if the selected year is not the last item in that array
+  // you want that button to increment the current year by 1
 
   return (
     <Block>
-      <SectionTitle>{selectedYear} Monthly Returns </SectionTitle>
-
+      <div>
+        {activeYears.length > 1 && selectedYear !== activeYears[0].getFullYear() ? <div>x</div> : null}
+        <SectionTitle>{selectedYear} Monthly Returns </SectionTitle>
+        {activeYears.length > 1 && selectedYear !== activeYears[activeYears.length - 1].getFullYear() ? (
+          <div>x</div>
+        ) : null}
+      </div>
       <YearContainer>
         {activeYears.length > 1 &&
           activeYears.map((year) => {
@@ -294,26 +326,31 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
         <Table>
           <tbody>
             <HeaderRow>
-              <HeaderCell>{null}</HeaderCell>
+              <HeaderCellRightAlign>{'             '}</HeaderCellRightAlign>
               {months.map((month, index) => (
-                <HeaderCell key={index}>{month}</HeaderCell>
+                <HeaderCellRightAlign key={index}>{month}</HeaderCellRightAlign>
               ))}
+              <HeaderCellRightAlign>{null}</HeaderCellRightAlign>
             </HeaderRow>
             {selectedCurrencies.map((ccy, index) => {
               return (
                 <BodyRow key={index * Math.random()}>
-                  <BodyCell>Return vs {ccy.label}</BodyCell>
-                  {tableData[ccy.value]
+                  <BodyCell>Return in {ccy}</BodyCell>
+                  {tableData[ccy]
                     .filter((item) => item.date.getFullYear() === selectedYear)
                     .map((item, index) => (
-                      <BodyCell key={index}>
-                        <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
-                      </BodyCell>
+                      <BodyCellRightAlign key={index}>
+                        {!item.return.isNaN() ? (
+                          <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
+                        ) : (
+                          '-'
+                        )}
+                      </BodyCellRightAlign>
                     ))}
                   <BodyCell>
                     <Button
-                      onClick={(ccy) => {
-                        toggleCurrencySelection(ccy as any);
+                      onClick={() => {
+                        toggleCurrencySelection(ccy);
                       }}
                     >
                       X
@@ -329,7 +366,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
         name="Comparison Currency"
         placeholder="Select a currency to view returns"
         options={unselectedCurrencies}
-        onChange={(value) => value && toggleCurrencySelection(value as any)}
+        onChange={(value) => value && toggleCurrencySelection((value as any).value)}
         value={null}
       />
     </Block>
