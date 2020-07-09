@@ -18,6 +18,7 @@ import { findCorrectFromTime, findCorrectToTime } from '~/utils/priceServiceDate
 import { Dictionary, DictionaryEntry, DictionaryLabel, DictionaryData } from '~/storybook/Dictionary/Dictionary';
 import { SelectWidget } from '~/components/Form/Select/Select';
 import { useQuery } from 'react-query';
+import { useAsync } from 'react-use';
 
 export interface FundTDReturnsProps {
   address: string;
@@ -120,7 +121,7 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
   const quarterStartDate = startOfQuarter(today);
   const yearStartDate = startOfYear(today);
   const toToday = findCorrectToTime(today);
-  console.log(fund.creationTime);
+
   const {
     data: fxAtInception,
     error: fxAtInceptionError,
@@ -145,9 +146,9 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
     !historicalData ||
     historicalDataFetching ||
     !monthlyData ||
-    monthlyFetching
-    // !fxAtInception ||
-    // fxAtInceptionFetching
+    monthlyFetching ||
+    !fxAtInception ||
+    fxAtInceptionFetching
   ) {
     return (
       <Block>
@@ -156,15 +157,14 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
     );
   }
 
-  // if (historicalDataError || monthlyError || fxAtInceptionError) {
-  //   console.log(fxAtInceptionError)
-  //   return (
-  //     <Block>
-  //       <>ERROR</>
-  //     </Block>
-  //   );
-  // }
-  console.log(fxAtInception);
+  if (historicalDataError || monthlyError || fxAtInceptionError) {
+    return (
+      <Block>
+        <>ERROR</>
+      </Block>
+    );
+  }
+
   const mostRecentPrice = monthlyData?.data && monthlyData.data[monthlyData.data.length - 1].calculations.price;
   const quarterStartPrice = historicalData?.data.length && findSharePriceByDate(historicalData.data, quarterStartDate);
   const monthStartPrice = historicalData?.data.length && findSharePriceByDate(historicalData.data, monthStartDate);

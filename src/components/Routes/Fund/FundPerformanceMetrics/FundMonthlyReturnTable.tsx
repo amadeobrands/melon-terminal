@@ -29,10 +29,17 @@ import { calculateReturn } from '~/utils/finance';
 import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
 import { SectionTitle, Title } from '~/storybook/Title/Title';
-import { useFetchMonthlyFundPrices, fetchMultipleIndexPrices, MonthendTimelineItem } from './FundMetricsQueries';
+import {
+  useFetchMonthlyFundPrices,
+  fetchMultipleIndexPrices,
+  MonthendTimelineItem,
+  useFetchReferencePricesByDate,
+} from './FundMetricsQueries';
 import { Button } from '~/components/Form/Button/Button';
 import { SelectWidget } from '~/components/Form/Select/Select';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { SectionTitleContainer } from '~/storybook/Title/Title.styles';
+import { useAsync } from 'react-use';
 
 export interface MonthlyReturnTableProps {
   address: string;
@@ -63,7 +70,12 @@ function assembleTableData(
   monthsBeforeFund: number,
   monthsRemaining: number,
   monthlyReturnData: MonthendTimelineItem[],
-  indexReturnData: BigNumber[][]
+  indexReturnData: BigNumber[][],
+  dayZeroFx: {
+    ethbtc: number;
+    ethusd: number;
+    etheur: number;
+  }
 ): TableData {
   const inactiveMonthReturns: DisplayData[] = new Array(monthsBeforeFund)
     .fill(null)
@@ -98,7 +110,10 @@ function assembleTableData(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
         return {
-          return: new BigNumber('NaN'),
+          return: calculateReturn(
+            new BigNumber(dayZeroFx.ethusd),
+            new BigNumber(item.calculations.price * item.references.ethusd)
+          ),
           date: new Date(item.timestamp * 1000),
         };
       }
@@ -116,7 +131,10 @@ function assembleTableData(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
         return {
-          return: new BigNumber('NaN'),
+          return: calculateReturn(
+            new BigNumber(dayZeroFx.etheur),
+            new BigNumber(item.calculations.price * item.references.etheur)
+          ),
           date: new Date(item.timestamp * 1000),
         };
       }
@@ -135,7 +153,10 @@ function assembleTableData(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
         return {
-          return: new BigNumber('NaN'),
+          return: calculateReturn(
+            new BigNumber(dayZeroFx.ethbtc),
+            new BigNumber(item.calculations.price * item.references.ethbtc)
+          ),
           date: new Date(item.timestamp * 1000),
         };
       }
@@ -215,6 +236,12 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   const [historicalIndexPrices, sethistoricalIndexPrices] = React.useState<BigNumber[][] | undefined>(undefined);
   const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(address);
 
+  const {
+    data: fxAtInception,
+    error: fxAtInceptionError,
+    isFetching: fxAtInceptionFetching,
+  } = useFetchReferencePricesByDate(fund.creationTime!);
+
   const monthsBeforeFund = differenceInCalendarMonths(fundInception, startOfYear(activeYears[0]));
   const monthsRemaining = differenceInCalendarMonths(endOfYear(today), today);
 
@@ -238,7 +265,14 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     sethistoricalIndexPrices(prices);
   }, [fund]);
 
-  if (!monthlyData || monthlyFetching || !historicalIndexPrices || monthlyError) {
+  if (
+    !monthlyData ||
+    monthlyFetching ||
+    !historicalIndexPrices ||
+    monthlyError ||
+    !fxAtInception ||
+    fxAtInceptionFetching
+  ) {
     return (
       <Block>
         <Spinner />
@@ -250,7 +284,15 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     fund &&
     monthlyData &&
     historicalIndexPrices &&
-    assembleTableData(today, activeMonths, monthsBeforeFund, monthsRemaining, monthlyData.data, historicalIndexPrices);
+    assembleTableData(
+      today,
+      activeMonths,
+      monthsBeforeFund,
+      monthsRemaining,
+      monthlyData.data,
+      historicalIndexPrices,
+      fxAtInception
+    );
 
   function toggleYear(direction: 'decrement' | 'increment') {
     if (direction === 'decrement') {
@@ -261,7 +303,6 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   }
 
   function toggleCurrencySelection(value: keyof TableData) {
-    console.log(value);
     if (!value) {
       return;
     }
@@ -270,7 +311,6 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     } else {
       setSelectedCurrencies(selectedCurrencies.concat([value]));
     }
-    console.log(unselectedCurrencies);
   }
   const months = new Array(12).fill(null).map((item, index) => {
     const january = startOfYear(today);
@@ -288,15 +328,15 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
 
   return (
     <Block>
-      <div>
+      <SectionTitleContainer>
         {activeYears.length > 1 && selectedYear !== activeYears[0].getFullYear() ? (
           <FaChevronLeft onClick={() => toggleYear('decrement')} />
         ) : null}
-        <SectionTitle>{selectedYear} Monthly Returns </SectionTitle>
+        <Title>{selectedYear} Monthly Returns </Title>
         {activeYears.length > 1 && selectedYear !== activeYears[activeYears.length - 1].getFullYear() ? (
           <FaChevronRight onClick={() => toggleYear('increment')} />
         ) : null}
-      </div>
+      </SectionTitleContainer>
 
       <ScrollableTable>
         <Table>
@@ -311,7 +351,17 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
             {selectedCurrencies.map((ccy, index) => {
               return (
                 <BodyRow key={index * Math.random()}>
-                  <BodyCell>Return in {ccy}</BodyCell>
+                  <BodyCell>
+                    <Button
+                      size="extrasmall"
+                      onClick={() => {
+                        toggleCurrencySelection(ccy);
+                      }}
+                    >
+                      X
+                    </Button>{' '}
+                    <>Return in {ccy}</>
+                  </BodyCell>
                   {tableData[ccy]
                     .filter((item) => item.date.getFullYear() === selectedYear)
                     .map((item, index) => (
@@ -325,6 +375,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
                     ))}
                   <BodyCell>
                     <Button
+                      size="extrasmall"
                       onClick={() => {
                         toggleCurrencySelection(ccy);
                       }}
