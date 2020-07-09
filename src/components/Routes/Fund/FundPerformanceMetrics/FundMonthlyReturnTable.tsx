@@ -3,7 +3,6 @@ import BigNumber from 'bignumber.js';
 import styled from 'styled-components';
 import {
   Table,
-  HeaderCell,
   HeaderRow,
   BodyRow,
   BodyCell,
@@ -32,7 +31,6 @@ import { Spinner } from '~/storybook/Spinner/Spinner.styles';
 import { SectionTitle, Title } from '~/storybook/Title/Title';
 import { useFetchMonthlyFundPrices, fetchMultipleIndexPrices, MonthendTimelineItem } from './FundMetricsQueries';
 import { Button } from '~/components/Form/Button/Button';
-import { CheckboxItem } from '~/components/Form/Checkbox/Checkbox';
 import { SelectWidget } from '~/components/Form/Select/Select';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
