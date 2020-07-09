@@ -66,7 +66,7 @@ function prepareMonthlyReturns(
 
   const usdReturns = timeline.map((item, index, arr) => {
     if (index === 0) {
-      return calculateReturn(item.references.ethusd, dayZero.ethusd);
+      return calculateReturn(item.references.ethusd * item.calculations.price, dayZero.ethusd);
     }
     return calculateReturn(
       item.references.ethusd * item.calculations.price, // current fx price times current share price
@@ -76,7 +76,7 @@ function prepareMonthlyReturns(
 
   const eurReturns = timeline.map((item, index, arr) => {
     if (index === 0) {
-      return calculateReturn(item.references.ethusd, dayZero.etheur);
+      return calculateReturn(item.references.ethusd * item.calculations.price, dayZero.etheur);
     }
     return calculateReturn(
       item.references.etheur * item.calculations.price, // current fx price times current share price
@@ -86,7 +86,7 @@ function prepareMonthlyReturns(
 
   const btcReturns = timeline.map((item, index, arr) => {
     if (index === 0) {
-      return calculateReturn(item.references.ethbtc, dayZero.ethbtc);
+      return calculateReturn(item.references.ethbtc * item.calculations.price, dayZero.ethbtc);
     }
     return calculateReturn(
       item.references.ethbtc * item.calculations.price, // current fx price times current share price
@@ -249,7 +249,7 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
   const yearStartPrice = datePrices.yearStart[selectedCurrency];
   const qtdReturn = mostRecentPrice && quarterStartPrice && calculateReturn(mostRecentPrice, quarterStartPrice);
   const mtdReturn = mostRecentPrice && monthStartPrice && calculateReturn(mostRecentPrice, monthStartPrice);
-  const ytdReturn = mostRecentPrice && yearStartPrice && calculateReturn(mostRecentPrice, 1);
+  const ytdReturn = mostRecentPrice && yearStartPrice && calculateReturn(mostRecentPrice, yearStartPrice);
 
   const bestMonth = monthlyReturns?.[selectedCurrency].reduce((carry: BigNumber, current: BigNumber) => {
     if (current.isGreaterThan(carry)) {
@@ -278,6 +278,8 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
     { win: 0, lose: 0 }
   );
 
+  console.log(monthlyWinLoss);
+
   const averageMonthlyReturn = monthlyReturns && average(monthlyReturns[selectedCurrency]);
 
   const positiveMonthRatio = monthlyWinLoss && (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
@@ -292,7 +294,7 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
 
   return (
     <Dictionary>
-      <SectionTitle>Various Metrics (Share Price)</SectionTitle>
+      <SectionTitle>Various Metrics in {selectedCurrency} (Share Price)</SectionTitle>
 
       <DictionaryEntry>
         <DictionaryLabel>MTD Return</DictionaryLabel>
