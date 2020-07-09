@@ -218,7 +218,6 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   ]);
 
   const unselectedCurrencies = React.useMemo(() => {
-    console.log('revamp');
     return potentialCurrencies.filter((ccy) => !selectedCurrencies.includes(ccy.value));
   }, [selectedCurrencies]);
 
@@ -292,6 +291,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     const january = startOfYear(today);
     return format(addMonths(january, index), 'MMM');
   });
+
   // you have an array of active years
   // if there is more than one active year
   //you want to show a button on the left side of the title if the selectedYear is not the first item in that array
