@@ -4,8 +4,6 @@ import BigNumber from 'bignumber.js';
 
 export interface FundMetricsResult {
   state: {
-    activeInvestors: string;
-    nonActiveInvestors: string;
     allInvestments: string;
     activeFunds: string;
     nonActiveFunds: string;
@@ -16,8 +14,6 @@ export interface FundMetricsResult {
 const FundMetricsQuery = gql`
   query FundMetricsQuery {
     state(id: "0x") {
-      activeInvestors
-      nonActiveInvestors
       allInvestments
       activeFunds
       nonActiveFunds

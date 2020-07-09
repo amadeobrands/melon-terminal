@@ -11,7 +11,7 @@ import { BlockActions } from '~/storybook/Block/Block';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 import { Input } from '~/components/Form/Input/Input';
 import { Button } from '~/components/Form/Button/Button';
-import { FundPolicy, MaxConcentrationPolicy } from '../../FundPolicies/FundPolicies.query';
+import { FundPolicy, MaxConcentrationPolicy } from '../../FundDiligence/FundPolicies/FundPolicies.query';
 
 const validationSchema = Yup.object().shape({
   maxConcentration: Yup.number().label('Maximum concentration (%)').required().min(0).max(100),

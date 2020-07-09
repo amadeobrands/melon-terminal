@@ -10,7 +10,7 @@ import * as S from './TokenValueInput.styles';
 
 export interface TokenValueInputProps {
   name: string;
-  label?: string;
+  label?: string | JSX.Element;
   // token: TokenDefinition;
   disabled?: boolean;
   noIcon?: boolean;

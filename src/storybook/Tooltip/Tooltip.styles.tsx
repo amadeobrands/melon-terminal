@@ -12,3 +12,8 @@ export const Container = styled.span`
   transition: opacity 0.3s;
   z-index: 2147483647;
 `;
+
+export const TooltipContainer = styled.div`
+  margin-left: ${(props) => props.theme.spaceUnits.xxs};
+  // margin-bottom: ${(props) => props.theme.spaceUnits.xxs};
+`;

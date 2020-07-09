@@ -2,7 +2,7 @@ import React from 'react';
 // @ts-ignore
 import Fortmatic from 'fortmatic';
 import { Eth } from 'web3-eth';
-import { retryWhen, delay, switchMap, startWith, catchError } from 'rxjs/operators';
+import { switchMap, startWith, catchError } from 'rxjs/operators';
 import * as Rx from 'rxjs';
 import {
   connectionEstablished,
@@ -21,12 +21,7 @@ interface Resource extends Rx.Unsubscribable {
 
 const connect = () => {
   const create = () => {
-    const customNodeOptions = {
-      rpcUrl: process.env.MELON_MAINNET_PROVIDER,
-      chainId: 1,
-    };
-
-    const fm = new Fortmatic(process.env.MELON_FORTMATIC_KEY, customNodeOptions);
+    const fm = new Fortmatic(process.env.MELON_FORTMATIC_KEY);
     const provider = fm.getProvider();
     const eth = new Eth(provider as any, undefined, {
       transactionConfirmationBlocks: 1,
@@ -45,14 +40,7 @@ const connect = () => {
         const network = networkFromId(await eth.net.getId());
         return connectionEstablished(eth, network, accounts);
       }),
-      catchError((error) => {
-        if (error?.code === 4001) {
-          return Rx.of(connectionLost());
-        }
-
-        return Rx.throwError(error);
-      }),
-      retryWhen((error) => error.pipe(delay(1000)))
+      catchError(() => Rx.of(connectionLost()))
     );
 
     return Rx.concat(initial$, Rx.NEVER);

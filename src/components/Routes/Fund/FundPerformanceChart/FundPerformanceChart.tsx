@@ -60,7 +60,7 @@ async function fetchOnchainHistoryByDepth(key: string, fund: string, depth: Dept
   return prices;
 }
 
-function useOnchainFundHistoryByDepth(fund: string, depth: Depth) {
+export function useOnchainFundHistoryByDepth(fund: string, depth: Depth) {
   const address = React.useMemo(() => fund.toLowerCase(), [fund]);
   const key = 'onchainPrices';
   return useQuery([key, address, depth], fetchOnchainHistoryByDepth, {

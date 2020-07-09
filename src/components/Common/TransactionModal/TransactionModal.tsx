@@ -103,6 +103,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const open =
     state.progress < TransactionProgress.TRANSACTION_ACKNOWLEDGED &&
     state.progress > TransactionProgress.TRANSACTION_STARTED;
+  const pending = state.progress === TransactionProgress.EXECUTION_PENDING;
 
   const formGasPrice = new BigNumber(formik.values.gasPrice);
   const usedGasPrice = new BigNumber(state.sendOptions?.gasPrice ?? 'NaN');
@@ -161,6 +162,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 <a href={error.issueUri} target="_blank">
                   Report error
                 </a>
+              </NotificationContent>
+            </NotificationBar>
+          )}
+
+          {pending && (
+            <NotificationBar kind="neutral">
+              <NotificationContent>
+                Please confirm the transaction on your signing device (e.g. your hardware wallet or mobile phone)
               </NotificationContent>
             </NotificationBar>
           )}

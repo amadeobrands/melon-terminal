@@ -15,7 +15,7 @@ export interface FormattedNumberData {
 }
 
 interface ColorProps {
-  color: 'red' | 'green' | 'grey';
+  color: 'coral' | 'turquoise' | 'grey';
 }
 
 const NoWrap = styled.span`
@@ -49,7 +49,7 @@ export const FormattedNumber: React.FC<FormattedNumberData> = ({
   const bnFixed = bn.toFixed(tooltipDecimals);
 
   if (colorize) {
-    const color = bn.isNaN() || bn.isZero() ? 'grey' : bn.isPositive() ? 'green' : 'red';
+    const color = bn.isNaN() || bn.isZero() ? 'grey' : bn.isPositive() ? 'turquoise' : 'coral';
     return (
       <Color color={color}>
         {tooltip ? (

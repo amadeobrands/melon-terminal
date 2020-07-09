@@ -9,7 +9,7 @@ import { useAccount } from '~/hooks/useAccount';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { BlockActions } from '~/storybook/Block/Block';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
-import { FundPolicy, AssetBlacklistPolicy } from '../../FundPolicies/FundPolicies.query';
+import { FundPolicy, AssetBlacklistPolicy } from '../../FundDiligence/FundPolicies/FundPolicies.query';
 import { Button } from '~/components/Form/Button/Button';
 import { CheckboxGroup } from '~/components/Form/CheckboxGroup/CheckboxGroup';
 

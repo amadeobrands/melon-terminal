@@ -22,9 +22,9 @@ import { useInvestorTotalExposureQuery } from './InvestorTotalExposure.query';
 import { useTokenRates } from '~/components/Contexts/Rates/Rates';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 import { TokenValueDisplay } from '~/components/Common/TokenValueDisplay/TokenValueDisplay';
-import { Link } from '~/storybook/Link/Link';
 import { Token } from '@melonproject/melongql';
 import { SectionTitle } from '~/storybook/Title/Title';
+import { FormLabelWithTooltip } from '~/components/Form/FormLabelWithTooltip/FormLabelWithTooltip';
 
 export interface RequestInvestmentProps {
   fundAddress: string;
@@ -63,6 +63,8 @@ export const RequestInvestment = React.forwardRef(
     const account = useAccount();
     const environment = useEnvironment()!;
     const [nextTransaction, setNextTransaction] = React.useState<Transaction>();
+
+    const wethToken = environment.getToken('WETH');
 
     const participationAddress = props.participationAddress;
     const initialPremium = props.currentShares.isZero() ? 0 : 0.1;
@@ -232,36 +234,64 @@ export const RequestInvestment = React.forwardRef(
 
     return (
       <Form formik={formik}>
-        <TokenValueInput
-          name="requestedShares"
-          label="Number of shares"
-          noIcon={true}
-          disabled={loading}
-          onChange={handleRequestedSharesChange}
-        />
-
+        <>
+          <TokenValueInput
+            name="requestedShares"
+            label={
+              <FormLabelWithTooltip
+                label="Number of shares"
+                tooltipPlacement="auto"
+                tooltipValue="This parameter is either entered manually or calculated automatically based on the amount of asset you invest and the max premium to current share price. In the event that it is calculated automatically, it represents the LEAST number of shares you will be granted upon the execution of your investment request."
+              />
+            }
+            noIcon={true}
+            disabled={loading}
+            onChange={handleRequestedSharesChange}
+          />
+        </>
         <TokenValueSelect
           name="investmentAmount"
           label={
-            <>
-              Amount and asset (your wallet's balance: <TokenValueDisplay value={tokenBalance} />)
-            </>
+            <FormLabelWithTooltip
+              label={
+                <>
+                  Amount and asset (your wallet's balance:&nbsp;
+                  <TokenValueDisplay value={tokenBalance} />)
+                </>
+              }
+              tooltipPlacement="auto"
+              tooltipValue="This parameter is either entered manually or calculated automatically based on the number of shares requested and the max premium to current share price. In the event that it is calculated automatically, it represents the HIGHEST amount of the asset that will be withdrawn from your wallet upon the execution of your investment request."
+            />
           }
           tokens={props.investableAssets.map((item) => item.token)}
           disabled={loading}
           onChange={handleInvestmentChange}
         />
 
+        {investmentAmount.token.address === wethToken.address && (
+          <NotificationBar kind="neutral">
+            <NotificationContent style={{ textAlign: 'left' }}>
+              {' '}
+              <a href="/wallet/weth">Convert your ETH into WETH.</a>
+            </NotificationContent>
+          </NotificationBar>
+        )}
+
         {initialPremium > 0 && (
           <Select
             name="premiumPercentage"
-            label="Maximum premium to current share price"
+            label={
+              <FormLabelWithTooltip
+                label="Maximum premium to current share price"
+                tooltipPlacement="auto"
+                tooltipValue="Because investment requests made today are executed after tomorrow's price feed update, there's a chance that the value of a fund's shares could change dramatically in the interim. This parameter will prevent the execution of your investment request in the event that the share price increases by more than the value you've chosen."
+              />
+            }
             options={premiumOptions}
             disabled={loading}
             onChange={handlePremiumChange}
           />
         )}
-
         {formik.values.acknowledgeLimitRequired && (
           <>
             <NotificationBar kind="error">
@@ -278,7 +308,6 @@ export const RequestInvestment = React.forwardRef(
             />
           </>
         )}
-
         {initialPremium > formik.values.premiumPercentage && (
           <>
             <NotificationBar kind="warning">
@@ -300,7 +329,6 @@ export const RequestInvestment = React.forwardRef(
             </NotificationBar>
           </>
         )}
-
         <NotificationBar kind="neutral">
           <NotificationContent>
             <p style={{ textAlign: 'left', fontWeight: 'bold' }}>Investment summary</p>
@@ -311,7 +339,6 @@ export const RequestInvestment = React.forwardRef(
             <p style={{ textAlign: 'left' }}>Your investment request will be filled at the next price update.</p>
           </NotificationContent>
         </NotificationBar>
-
         <SectionTitle>Terms and Conditions</SectionTitle>
         <NotificationBar kind="neutral">
           <NotificationContent style={{ textAlign: 'left' }}>
@@ -326,15 +353,12 @@ export const RequestInvestment = React.forwardRef(
             CONDITIONS WHICH MAY HAVE BEEN COMMUNICATED INDEPENDENTLY OF THE PROTOCOL.
           </NotificationContent>
         </NotificationBar>
-
         <Checkbox disabled={loading} name="termsAndConditions" label="I accept the terms and conditions." />
-
         {formik.errors.etherBalance && (
           <NotificationBar kind="error">
             <NotificationContent style={{ textAlign: 'left' }}>{formik.errors.etherBalance}</NotificationContent>
           </NotificationBar>
         )}
-
         <BlockActions>
           <Button type="submit" disabled={loading}>
             Invest

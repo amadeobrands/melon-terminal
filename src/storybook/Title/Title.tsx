@@ -1,38 +1,54 @@
-import styled, { css } from 'styled-components';
+import React from 'react';
+import * as S from './Title.styles';
+import { TooltipContainer } from '../Tooltip/Tooltip.styles';
+import { Tooltip } from '../Tooltip/Tooltip';
+import { FaRegQuestionCircle } from 'react-icons/fa';
 
-const TitleBase = css`
-  position: relative;
-  margin-bottom: ${(props) => props.theme.spaceUnits.xs};
-  font-weight: 600;
-`;
+interface SectionTitleProps {
+  tooltip?: string;
 
-export const Title = styled.h1`
-  ${TitleBase}
-  font-size: ${(props) => props.theme.fontSizes.xl};
-  white-space: nowrap;
-`;
+  placement?:
+    | 'auto'
+    | 'left'
+    | 'right'
+    | 'top'
+    | 'bottom'
+    | 'auto-start'
+    | 'auto-end'
+    | 'top-start'
+    | 'top-end'
+    | 'bottom-start'
+    | 'bottom-end'
+    | 'right-start'
+    | 'right-end'
+    | 'left-start'
+    | 'left-end'
+    | undefined;
+}
 
-export const Subtitle = styled.h3`
-  ${TitleBase}
-  font-size: ${(props) => props.theme.fontSizes.l};
-  font-weight: normal;
-  border-bottom: none;
-  padding-bottom: 0;
-`;
+export const SectionTitle: React.FC<SectionTitleProps> = (props) => {
+  return (
+    <>
+      {!props.tooltip ? (
+        <S.SectionTitle>{props.children}</S.SectionTitle>
+      ) : (
+        <S.SectionTitleContainer>
+          <S.Title>{props.children}</S.Title>
+          <TooltipContainer>
+            <Tooltip placement={props.placement} value={props.tooltip}>
+              <FaRegQuestionCircle />
+            </Tooltip>
+          </TooltipContainer>
+        </S.SectionTitleContainer>
+      )}
+    </>
+  );
+};
 
-export const SectionTitle = styled.h2`
-  ${TitleBase}
-  font-size: ${(props) => props.theme.fontSizes.xl};
-  white-space: nowrap;
-  padding-bottom: ${(props) => props.theme.spaceUnits.xs};
-  border-bottom : ${(props) => props.theme.border.borderSecondary};
-  margin-bottom: ${(props) => props.theme.spaceUnits.m};
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
+export const Title: React.FC = (props) => {
+  return <S.Title>{props.children}</S.Title>;
+};
 
-  @media (${(props) => props.theme.mediaQueries.s}) {
-    display: flex;
-    justify-content: space-between;
-  }
-`;
+export const Subtitle: React.FC = (props) => {
+  return <S.Subtitle>{props.children}</S.Subtitle>;
+};

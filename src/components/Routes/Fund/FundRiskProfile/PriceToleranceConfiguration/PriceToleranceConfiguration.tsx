@@ -10,7 +10,7 @@ import { Button } from '~/components/Form/Button/Button';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { BlockActions } from '~/storybook/Block/Block';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
-import { FundPolicy, PriceTolerancePolicy } from '../../FundPolicies/FundPolicies.query';
+import { FundPolicy, PriceTolerancePolicy } from '../../FundDiligence/FundPolicies/FundPolicies.query';
 
 const validationSchema = Yup.object().shape({
   priceTolerance: Yup.number().label('Price Tolerance').required().min(0).max(100),
@@ -63,7 +63,8 @@ export const PriceToleranceConfiguration: React.FC<PriceToleranceConfigurationPr
       <NotificationBar kind="neutral">
         <NotificationContent>
           The price tolerance policy provides a pre-trade price check ensuring that you do not trade at a price that is
-          disadvantageous to the fund. It is expressed as a percentage and references the last on-chain price update.
+          disadvantageous to the fund. It is expressed as a percentage and references the difference between a token's
+          current price and its price as of the last on-chain price update.
         </NotificationContent>
       </NotificationBar>
       <NotificationBar kind="error">

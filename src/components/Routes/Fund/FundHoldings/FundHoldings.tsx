@@ -23,6 +23,8 @@ export interface FundHoldingsProps {
   address: string;
 }
 
+const coloredIcons = ['MLN', 'REN', 'ZRX'];
+
 export const FundHoldings: React.FC<FundHoldingsProps> = ({ address }) => {
   const [holdings, query] = useFundHoldingsQuery(address);
   const [assetDailyChange] = useAssetsDailyChange();
@@ -54,16 +56,13 @@ export const FundHoldings: React.FC<FundHoldingsProps> = ({ address }) => {
   return (
     <Block>
       <SectionTitle>Portfolio Holdings</SectionTitle>
-      <ScrollableTable maxHeight="650px">
+      <ScrollableTable>
         <Table>
           <thead>
             <HeaderRow>
               <HeaderCell>Asset</HeaderCell>
-              <HeaderCellRightAlign>
-                Price
-                <br />
-                Daily change
-              </HeaderCellRightAlign>
+              <HeaderCellRightAlign>Price</HeaderCellRightAlign>
+              <HeaderCellRightAlign>Daily change</HeaderCellRightAlign>
               <HeaderCellRightAlign>Balance</HeaderCellRightAlign>
               <HeaderCellRightAlign>Value [ETH]</HeaderCellRightAlign>
               <HeaderCellRightAlign>Allocation</HeaderCellRightAlign>
@@ -74,7 +73,11 @@ export const FundHoldings: React.FC<FundHoldingsProps> = ({ address }) => {
               <BodyRow key={key}>
                 <BodyCell>
                   <S.HoldingIcon>
-                    <Icons name={holding.token?.symbol as IconName} size="small" />
+                    <Icons
+                      name={holding.token?.symbol as IconName}
+                      size="small"
+                      colored={coloredIcons.some((icon) => icon === holding.token?.symbol)}
+                    />
                   </S.HoldingIcon>
                   <S.HoldingName>
                     <S.HoldingSymbol>{holding.token?.symbol}</S.HoldingSymbol>
@@ -84,9 +87,10 @@ export const FundHoldings: React.FC<FundHoldingsProps> = ({ address }) => {
                 </BodyCell>
                 <BodyCellRightAlign>
                   <TokenValueDisplay value={holding.token?.price} decimals={0} />
+                </BodyCellRightAlign>
+                <BodyCellRightAlign>
                   {holding.token?.symbol && (
                     <>
-                      <br />
                       <FormattedNumber
                         value={assetDailyChange[holding.token.symbol]}
                         colorize={true}

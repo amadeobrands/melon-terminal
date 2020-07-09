@@ -58,7 +58,7 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
       },
     },
 
-    colors: ['#238757', '#aaaaaa'],
+    colors: ['rgb(133,213,202)', '#aaaaaa'],
     dataLabels: {
       enabled: false,
     },
@@ -77,7 +77,7 @@ export const PriceChart: React.FC<PriceChartProps> = (props) => {
     },
     markers: {
       size: [2, 0],
-      colors: ['#238757', '#aaaaaa'],
+      colors: ['rgb(133,213,202)', '#aaaaaa'],
     },
     yaxis: {
       title: {

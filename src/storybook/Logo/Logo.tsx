@@ -33,7 +33,7 @@ export const Logo: React.FC<LogosProps> = ({ name, size }) => {
         xmlns="http://www.w3.org/2000/svg"
         viewBox={`0 0 ${dimensions[name].height} ${dimensions[name].width}`}
         height="100%"
-        fill={'#0B0B09'}
+        fill={'rgb(133,213,202)'}
       >
         {name === 'with-bottom-text' && (
           <>

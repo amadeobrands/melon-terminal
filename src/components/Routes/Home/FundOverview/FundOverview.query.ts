@@ -32,27 +32,38 @@ export interface Fund {
       symbol: string;
     };
   };
+  policyManager: {
+    id: string;
+    policies: {
+      id: string;
+      identifier: string;
+    }[];
+  };
+  holdings: {
+    id: string;
+    assetGav: BigNumber;
+    amount: BigNumber;
+    asset: {
+      id: string;
+      symbol: string;
+      decimals: number;
+    };
+  }[];
   calculationsHistory: {
     id: string;
     sharePrice: BigNumber;
     timestamp: string;
   }[];
-}
-
-export interface FundProcessed {
-  id: string;
-  name: string;
-  address: string;
-  inception: number;
-  aumEth: BigNumber;
-  aumUsd: BigNumber;
-  sharePrice: BigNumber;
-  change: BigNumber;
-  shares: BigNumber;
-  denomination: string;
-  investments: number;
-  version: string;
-  status: string;
+  yearStartPx: {
+    id: string;
+    sharePrice: BigNumber;
+    timestamp: string;
+  }[];
+  monthStartPx: {
+    id: string;
+    sharePrice: BigNumber;
+    timestamp: string;
+  }[];
 }
 
 export interface FundOverviewQueryResult {
@@ -60,15 +71,16 @@ export interface FundOverviewQueryResult {
 }
 
 export interface FundOverviewQueryVariables {
-  orderBy: string;
+  startOfYearDate: BigNumber;
+  startOfMonthDate: BigNumber;
 }
 
 const FundOverviewQuery = gql`
-  query FundOverviewQuery {
+  query FundOverviewQuery($startOfYearDate: BigInt!, $startOfMonthDate: BigInt!) {
     funds(
       first: 1000
       where: { id_not: "0x1e3ef9a8fe3cf5b3440b0df8347f1888484b8dc2" }
-      orderBy: "sharePrice"
+      orderBy: "gav"
       orderDirection: "desc"
     ) {
       id
@@ -92,7 +104,35 @@ const FundOverviewQuery = gql`
           symbol
         }
       }
+      policyManager {
+        id
+        policies {
+          id
+          identifier
+        }
+      }
+      holdings(orderBy: assetGav, orderDirection: desc) {
+        id
+        amount
+        assetGav
+        asset {
+          id
+          symbol
+          decimals
+        }
+      }
       calculationsHistory(orderBy: timestamp, orderDirection: desc, first: 2) {
+        id
+        sharePrice
+        timestamp
+      }
+
+      yearStartPx: calculationsHistory(where: { timestamp_gt: $startOfYearDate }, orderBy: timestamp, first: 1) {
+        id
+        sharePrice
+        timestamp
+      }
+      monthStartPx: calculationsHistory(where: { timestamp_gt: $startOfMonthDate }, orderBy: timestamp, first: 1) {
         id
         sharePrice
         timestamp
@@ -101,31 +141,15 @@ const FundOverviewQuery = gql`
   }
 `;
 
-export const useFundOverviewQuery = () => {
-  const result = useTheGraphQuery<FundOverviewQueryResult, FundOverviewQueryVariables>(FundOverviewQuery);
-  const rates = useTokenRates('ETH');
+export const useFundOverviewQuery = (startOfMonthDate: BigNumber, startOfYearDate: BigNumber) => {
+  const options = {
+    variables: {
+      startOfYearDate,
+      startOfMonthDate,
+    },
+  };
 
-  const rate = rates.USD;
+  const result = useTheGraphQuery<FundOverviewQueryResult, FundOverviewQueryVariables>(FundOverviewQuery, options);
 
-  const funds = (result && result.data && result.data.funds) || [];
-  const processed = funds.map((item) => ({
-    id: item.id,
-    name: item.name,
-    address: item.id.substr(0, 8),
-    inception: item.createdAt,
-    aumEth: item.gav,
-    aumUsd: new BigNumber(item.gav).multipliedBy(rate),
-    sharePrice: item.sharePrice,
-    change: calculateChangeFromSharePrice(
-      item.calculationsHistory[0]?.sharePrice,
-      item.calculationsHistory[1]?.sharePrice
-    ),
-    shares: item.totalSupply,
-    denomination: item.accounting.denominationAsset.symbol,
-    investments: item.investments.length,
-    version: item.version.name,
-    status: item.isShutdown ? 'Not active' : 'Active',
-  }));
-
-  return [processed, result] as [FundProcessed[], typeof result];
+  return result;
 };

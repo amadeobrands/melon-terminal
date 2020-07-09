@@ -23,10 +23,10 @@ export const Loader = styled.div<LoaderProps>`
   position: absolute;
   top: 0;
   border-style: solid;
-  border-top-color: ${(props) => props.theme.otherColors.black};
-  border-right-color: ${(props) => props.theme.otherColors.grey};
-  border-bottom-color: ${(props) => props.theme.otherColors.black};
-  border-left-color: ${(props) => props.theme.otherColors.grey};
+  border-top-color: ${(props) => props.theme.otherColors.turquoise};
+  border-right-color: ${(props) => props.theme.mainColors.primary};
+  border-bottom-color: ${(props) => props.theme.otherColors.turquoise};
+  border-left-color: ${(props) => props.theme.mainColors.primary};
   transform: translateZ(0);
   animation: ${rotate} 2s infinite linear;
 `;

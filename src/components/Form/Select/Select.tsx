@@ -11,7 +11,7 @@ import {
   SingleValueProps,
   ValueType,
 } from 'react-select';
-import { MenuListProps, MenuListComponentProps } from 'react-select/src/components/Menu';
+import { MenuListComponentProps } from 'react-select/src/components/Menu';
 import { Error, Label, useField, Wrapper } from '~/components/Form/Form';
 import { IconName, Icons } from '~/storybook/Icons/Icons';
 import * as S from './Select.styles';
@@ -20,14 +20,14 @@ export interface SelectOption<TValue = string | number> {
   value: TValue;
   label: string;
   description?: string;
-  icon?: string;
+  icon?: string | JSX.Element;
   [key: string]: any;
 }
 
 export interface SelectProps<TOption extends SelectOption = SelectOption> extends SelectPropsBase<TOption> {
   options: OptionsType<TOption>;
   name: string;
-  label?: string;
+  label?: string | JSX.Element;
   Component?: React.ElementType<SelectPropsBase<TOption>>;
 }
 
@@ -93,14 +93,14 @@ export const SelectField: React.FC<SelectProps> = ({ Component = SelectBase, ...
 
 export interface SelectLabelProps {
   label: string;
-  icon?: string;
+  icon?: string | JSX.Element;
 }
 
 export const SelectLabel: React.FC<SelectLabelProps> = (props) => (
   <S.SelectWrapper>
     {props.icon ? (
       <S.SelectIcon>
-        <Icons name={props.icon as IconName} size="small" />
+        {typeof props.icon === 'string' ? <Icons name={props.icon as IconName} size="small" /> : <>{props.icon}</>}
       </S.SelectIcon>
     ) : null}
     <S.SelectLabel>
@@ -119,7 +119,11 @@ const Option: React.FC<OptionProps<SelectOption>> = (props) => {
         <S.SelectWrapper>
           {props.data.icon ? (
             <S.SelectIcon>
-              <Icons name={props.data.icon as IconName} size={hasDescriptions ? 'normal' : 'small'} />
+              {typeof props.data.icon === 'string' ? (
+                <Icons name={props.data.icon as IconName} size={hasDescriptions ? 'normal' : 'small'} />
+              ) : (
+                <>{props.data.icon}</>
+              )}
             </S.SelectIcon>
           ) : null}
 
@@ -146,9 +150,11 @@ const SingleValue: React.FC<SingleValueProps<SelectOption>> = (props) => (
 );
 
 const MultiValue: React.FC<MultiValueProps<SelectOption>> = (props) => (
-  <components.MultiValue {...props}>
-    <SelectLabel {...props.data} />
-  </components.MultiValue>
+  <S.ComponentsMultiValue>
+    <components.MultiValue {...props}>
+      <SelectLabel {...props.data} />
+    </components.MultiValue>
+  </S.ComponentsMultiValue>
 );
 
 const Control: React.FC<ControlProps<SelectOption>> = (props) => (

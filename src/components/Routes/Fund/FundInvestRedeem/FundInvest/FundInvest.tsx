@@ -197,7 +197,12 @@ export const FundInvest: React.FC<FundInvestProps> = ({ address }) => {
 
   return (
     <Block>
-      <SectionTitle>Invest</SectionTitle>
+      <SectionTitle
+        tooltip="Fill out the form below to request an investment in this fund. Your request will be executed after the next price update, which usually occur in the morning UTC."
+        placement="auto"
+      >
+        Invest
+      </SectionTitle>
 
       <RequiresFundNotShutDown fallback="This fund is already shut down. You can only invest in active funds.">
         <RequiresFundCreatedAfter

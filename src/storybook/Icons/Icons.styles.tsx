@@ -1,25 +1,31 @@
 import styled, { css } from 'styled-components';
 
 export interface IconProps {
-  size?: 'normal' | 'small';
+  size?: 'normal' | 'medium' | 'small';
   pointer?: boolean;
   colored?: boolean;
 }
 
 export const IconsWrapper = styled.div<IconProps>`
   position: relative;
-  display: block;
+  display: inline;
 
   ${(props) =>
-    props.size &&
-    props.size === 'normal' &&
+    props?.size === 'normal' &&
     css`
       height: 32px;
       width: 32px;
     `}
+    
+    ${(props) =>
+      props?.size === 'medium' &&
+      css`
+        height: 24px;
+        width: 24px;
+      `}
+
   ${(props) =>
-    props.size &&
-    props.size === 'small' &&
+    props?.size === 'small' &&
     css`
       height: 16px;
       width: 16px;
@@ -32,16 +38,23 @@ export const IconsWrapper = styled.div<IconProps>`
       `}
 
   svg {
-    fill: ${(props) => props.colored && props.theme.mainColors.textColor};
-    display: block;
+    g {
+      fill: ${(props) => props.colored && props.theme.mainColors.textColor};
+    }
+    display: inline;
     overflow: visible;
     ${(props) =>
-      props.size &&
-      props.size === 'normal' &&
+      props?.size === 'normal' &&
       css`
         height: 32px;
         width: 32px;
       `}
+      ${(props) =>
+        props?.size === 'medium' &&
+        css`
+          height: 24px;
+          width: 24px;
+        `}
     ${(props) =>
       props.size &&
       props.size === 'small' &&

@@ -17,7 +17,7 @@ import { useAccount } from '~/hooks/useAccount';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { BlockActions } from '~/storybook/Block/Block';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
-import { FundPolicy } from '../../FundPolicies/FundPolicies.query';
+import { FundPolicy } from '../../FundDiligence/FundPolicies/FundPolicies.query';
 import { AccountContextValue } from '~/components/Contexts/Account/Account';
 import { Textarea } from '~/components/Form/Textarea/Textarea';
 import { Button } from '~/components/Form/Button/Button';

@@ -15,7 +15,10 @@ export const SelectIcon = styled.span`
   margin-right: 10px;
 `;
 
-export const SelectLabel = styled.span``;
+export const SelectLabel = styled.span`
+  color: ${(props) => props.theme.mainColors.textColor};
+  text-align: left;
+`;
 
 export const SelectDescription = styled.span`
   font-size: ${(props) => props.theme.fontSizes.m};
@@ -30,6 +33,7 @@ export const ComponentsControl = styled.div`
     border-width: 1px;
     background: ${(props) => props.theme.mainColors.primary};
     box-shadow: inset 1px 4px 4px rgba(200, 200, 200, 0.25);
+    min-height: ${(props) => props.theme.spaceUnits.xxl};
   }
   &.melon__control:active {
   }
@@ -47,6 +51,13 @@ export const ComponentsMenuList = styled.div`
 export const ComponentsSingleValue = styled.div`
   .melon__single-value {
     color: ${(props) => props.theme.mainColors.textColor};
+  }
+`;
+
+export const ComponentsMultiValue = styled.div`
+  .melon__multi-value {
+    color: ${(props) => props.theme.mainColors.textColor};
+    background: ${(props) => props.theme.mainColors.secondary};
   }
 `;
 

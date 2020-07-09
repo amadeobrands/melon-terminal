@@ -9,11 +9,13 @@ export interface TokenValueDisplayProps {
   decimals?: number;
   digits?: number;
   tooltipDigits?: number;
+  prefixSymbol?: boolean;
 }
 
 export const TokenValueDisplay: React.FC<TokenValueDisplayProps> = ({
   value,
   symbol = '',
+  prefixSymbol = false,
   decimals = 18,
   digits = 4,
   tooltipDigits = 18,
@@ -23,7 +25,8 @@ export const TokenValueDisplay: React.FC<TokenValueDisplayProps> = ({
       <FormattedNumber
         tooltip={true}
         value={value.value}
-        suffix={value.token.symbol}
+        suffix={!prefixSymbol ? value.token.symbol : ''}
+        prefix={prefixSymbol ? value.token.symbol : ''}
         decimals={digits}
         tooltipDecimals={tooltipDigits}
       />
@@ -35,7 +38,8 @@ export const TokenValueDisplay: React.FC<TokenValueDisplayProps> = ({
     <FormattedNumber
       tooltip={true}
       value={bn.dividedBy(new BigNumber(10).exponentiatedBy(decimals))}
-      suffix={symbol}
+      suffix={!prefixSymbol ? symbol : ''}
+      prefix={prefixSymbol ? symbol : ''}
       decimals={digits}
       tooltipDecimals={tooltipDigits}
     />

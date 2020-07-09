@@ -9,8 +9,6 @@ export const ScrollableTable = styled.div<ScrollableTableProps>`
   display: block;
   overflow-x: auto;
   white-space: nowrap;
-  margin-bottom: 25px;
-  padding-bottom: 25px;
 
   ${(props) =>
     props.maxHeight &&

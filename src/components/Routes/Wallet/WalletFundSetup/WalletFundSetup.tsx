@@ -204,24 +204,47 @@ const WalletFundSetupForm: React.FC<WalletFundSetupFormProps> = ({ transaction, 
   return (
     <Form formik={formik}>
       <BlockSection>
-        <SectionTitle>Fund</SectionTitle>
+        <SectionTitle
+          tooltip="The public-facing name of your fund. The name you choose now cannot be edited later."
+          placement="auto"
+        >
+          Fund
+        </SectionTitle>
         <Input name="name" label="Name" />
       </BlockSection>
       <BlockSection>
-        <SectionTitle>Fees</SectionTitle>
+        <SectionTitle
+          tooltip="The rates you will charge to manage your fund, and the frequency at which you will charge them. The fees you choose now cannot be edited later."
+          placement="auto"
+        >
+          Fees
+        </SectionTitle>
+
         <Input name="managementFee" label="Management Fee (%)" type="number" step="any" />
         <Input name="performanceFee" label="Performance Fee (%)" type="number" step="any" />
         <Input name="performanceFeePeriod" label="Performance Fee Period (days)" type="number" step="any" />
       </BlockSection>
       <BlockSection>
-        <SectionTitle>Supported Exchanges</SectionTitle>
+        <SectionTitle
+          tooltip="The decentralized exchanges upon which your fund will be able to trade."
+          placement="auto"
+        >
+          Supported Exchanges
+        </SectionTitle>
+
         <NotificationBar kind="neutral">
           <NotificationContent>Exchanges can be set up now and you can add more exchanges later.</NotificationContent>
         </NotificationBar>
         <CheckboxGroup name="exchanges" options={exchangeOptions} />
       </BlockSection>
       <BlockSection>
-        <SectionTitle>Allowed Investment Assets</SectionTitle>
+        <SectionTitle
+          tooltip="The tokens you will accept from an investor in exchange for shares of your fund."
+          placement="auto"
+        >
+          Allowed Investment Assets
+        </SectionTitle>
+
         <NotificationBar kind="neutral">
           <NotificationContent>Investment assets can be set up now and they can be changed later.</NotificationContent>
         </NotificationBar>

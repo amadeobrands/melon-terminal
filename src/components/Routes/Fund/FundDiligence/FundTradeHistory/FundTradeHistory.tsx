@@ -11,11 +11,10 @@ import {
   HeaderCellRightAlign,
   BodyCellRightAlign,
 } from '~/storybook/Table/Table';
-import { Block } from '~/storybook/Block/Block';
-import { SectionTitle } from '~/storybook/Title/Title';
 import { useFundTradeHistoryQuery } from './FundTradeHistory.query';
 import { FormattedDate } from '~/components/Common/FormattedDate/FormattedDate';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
+import { Block } from '~/storybook/Block/Block';
 
 export interface FundTradeHistoryProps {
   address: string;
@@ -26,8 +25,6 @@ export const FundTradeHistory: React.FC<FundTradeHistoryProps> = ({ address }) =
 
   return (
     <Block>
-      <SectionTitle>Trade History</SectionTitle>
-
       {query.loading && <Spinner />}
       {!query.loading && !trades.length && <NoEntries>No entries.</NoEntries>}
       {!query.loading && trades.length > 0 && (

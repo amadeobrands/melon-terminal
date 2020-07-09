@@ -50,27 +50,27 @@ const NotificationBarStyle = styled.div<NotificationBarProps>`
    ${(props) =>
      props.kind === 'error' &&
      css`
-       background: ${(props) => props.theme.statusColors.primaryLoss};
-       border-color: ${(props) => props.theme.statusColors.primaryLoss};
+       background: ${(props) => props.theme.otherColors.coral};
+       border-color: ${(props) => props.theme.otherColors.coral};
      `}
    ${(props) =>
      props.kind === 'error' &&
      props.layout === 'discrete' &&
      css`
-       color: ${(props) => props.theme.statusColors.primaryLoss};
+       color: ${(props) => props.theme.otherColors.coral};
        background: ${(props) => props.theme.mainColors.primaryAlpha};
      `}
    ${(props) =>
      props.kind === 'success' &&
      css`
-       background: ${(props) => props.theme.statusColors.primaryProfit};
-       border-color: ${(props) => props.theme.statusColors.primaryProfit};
+       background: ${(props) => props.theme.otherColors.turquoise};
+       border-color: ${(props) => props.theme.otherColors.turquoise};
      `}
      ${(props) =>
        props.kind === 'success' &&
        props.layout === 'discrete' &&
        css`
-         color: ${(props) => props.theme.statusColors.primaryProfit};
+         color: ${(props) => props.theme.otherColors.turquoise};
          background: ${(props) => props.theme.mainColors.primaryAlpha};
        `}
      ${(props) =>

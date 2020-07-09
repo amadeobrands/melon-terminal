@@ -7,12 +7,14 @@ import { FundLiquidityProviderTrading } from '~/components/Routes/Fund/FundTrade
 import { FundOrderbookTrading } from '~/components/Routes/Fund/FundTrade/FundOrderbookTrading/FundOrderbookTrading';
 import { useFundHoldingsQuery } from './FundHoldings/FundHoldings.query';
 import { useFundTrading } from './FundTrade.query';
-import { FundTradeHistory } from './FundTradeHistory/FundTradeHistory';
+import { FundTradeHistory } from '../FundDiligence/FundTradeHistory/FundTradeHistory';
 import { useEnvironment } from '~/hooks/useEnvironment';
 import { NetworkEnum } from '~/types';
 import { RequiresFundManager } from '~/components/Gates/RequiresFundManager/RequiresFundManager';
 import { RequiresFundDeployedWithCurrentVersion } from '~/components/Gates/RequiresFundDeployedWithCurrentVersion/RequiresFundDeployedWithCurrentVersion';
 import { RequiresFundNotShutDown } from '~/components/Gates/RequiresFundNotShutDown/RequiresFundNotShutDown';
+import { Block } from '~/storybook/Block/Block';
+import { SectionTitle } from '~/storybook/Title/Title';
 
 export interface FundTradeProps {
   address: string;
@@ -97,7 +99,10 @@ export const FundTrade: React.FC<FundTradeProps> = ({ address }) => {
 
       <GridRow>
         <GridCol>
-          <FundTradeHistory address={address} />
+          <Block>
+            <SectionTitle>Trade History</SectionTitle>
+            <FundTradeHistory address={address} />
+          </Block>
         </GridCol>
       </GridRow>
     </Grid>

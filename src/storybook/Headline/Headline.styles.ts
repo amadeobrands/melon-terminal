@@ -23,6 +23,7 @@ export const HeadlineIcon = styled.div<HeadlineIconProps>`
 export const HeadlineText = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
+  width: 100%;
 `;
 export const HeadlineSideInfo = styled.div`
   margin-bottom: 0px;

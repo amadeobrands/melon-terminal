@@ -1,7 +1,7 @@
 import styled, { css } from 'styled-components';
 
 export interface ButtonProps {
-  kind?: 'secondary' | 'warning' | 'danger' | 'success';
+  kind?: 'secondary' | 'warning' | 'danger' | 'success' | 'invest';
   size?: 'large' | 'small' | 'extrasmall';
   length?: 'stretch';
   disabled?: boolean;
@@ -52,13 +52,14 @@ export const Button = styled.button<ButtonProps>`
   ${(props) =>
     props.kind === 'danger' &&
     css`
-      background: ${(props) => props.theme.statusColors.primaryLoss};
+      background: ${(props) => props.theme.otherColors.coral};
     `}
   ${(props) =>
     props.kind === 'success' &&
     css`
-      background: ${(props) => props.theme.statusColors.primaryProfit};
+      background: ${(props) => props.theme.otherColors.turquoise};
     `}
+
   ${(props) =>
     props.disabled &&
     css`
