@@ -13,7 +13,7 @@ export const FundPerformanceMetrics: React.FC<FundMetricsProps> = ({ address }) 
     <Block>
       <SectionTitle>Various Fund Metrics</SectionTitle>
       <FundMonthlyReturnTable address={address} />
-      <FundTDReturns address={address} />
+      {/* <FundTDReturns address={address} /> */}
     </Block>
   );
 };

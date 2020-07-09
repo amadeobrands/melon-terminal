@@ -34,6 +34,7 @@ import { useFetchMonthlyFundPrices, fetchMultipleIndexPrices, MonthendTimelineIt
 import { Button } from '~/components/Form/Button/Button';
 import { CheckboxItem } from '~/components/Form/Checkbox/Checkbox';
 import { SelectWidget } from '~/components/Form/Select/Select';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 export interface MonthlyReturnTableProps {
   address: string;
@@ -221,19 +222,24 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     return potentialCurrencies.filter((ccy) => !selectedCurrencies.includes(ccy.value));
   }, [selectedCurrencies]);
 
-  const [selectedYear, setSelectedYear] = React.useState(2020);
-
-  // Data Fetching
-  const [historicalIndexPrices, sethistoricalIndexPrices] = React.useState<BigNumber[][] | undefined>(undefined);
-  const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(address);
-
+  // Display year state management
   const fundInception = fund.creationTime!;
+
+  // find all years in which the fund has existed and put them in an array
   const activeYears =
     fund &&
     new Array(differenceInCalendarYears(today, fundInception) + 1)
       .fill(null)
       .map((item, index) => subYears(today, index))
       .reverse();
+
+  // set state equal to current year
+  const [selectedYear, setSelectedYear] = React.useState(activeYears[activeYears.length - 1].getFullYear());
+
+  // Data Fetching
+  const [historicalIndexPrices, sethistoricalIndexPrices] = React.useState<BigNumber[][] | undefined>(undefined);
+  const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(address);
+
   const monthsBeforeFund = differenceInCalendarMonths(fundInception, startOfYear(activeYears[0]));
   const monthsRemaining = differenceInCalendarMonths(endOfYear(today), today);
 
@@ -271,8 +277,12 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     historicalIndexPrices &&
     assembleTableData(today, activeMonths, monthsBeforeFund, monthsRemaining, monthlyData.data, historicalIndexPrices);
 
-  function toggleYear(year: number) {
-    setSelectedYear(year);
+  function toggleYear(direction: 'decrement' | 'increment') {
+    if (direction === 'decrement') {
+      setSelectedYear(selectedYear - 1);
+    } else {
+      setSelectedYear(selectedYear + 1);
+    }
   }
 
   function toggleCurrencySelection(value: keyof TableData) {
@@ -304,10 +314,12 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   return (
     <Block>
       <div>
-        {activeYears.length > 1 && selectedYear !== activeYears[0].getFullYear() ? <div>x</div> : null}
+        {activeYears.length > 1 && selectedYear !== activeYears[0].getFullYear() ? (
+          <FaChevronLeft onClick={() => toggleYear('decrement')} />
+        ) : null}
         <SectionTitle>{selectedYear} Monthly Returns </SectionTitle>
         {activeYears.length > 1 && selectedYear !== activeYears[activeYears.length - 1].getFullYear() ? (
-          <div>x</div>
+          <FaChevronRight onClick={() => toggleYear('increment')} />
         ) : null}
       </div>
       <YearContainer>
