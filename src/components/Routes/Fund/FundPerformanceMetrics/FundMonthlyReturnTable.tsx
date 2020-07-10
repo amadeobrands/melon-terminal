@@ -32,8 +32,9 @@ import { SectionTitle, Title } from '~/storybook/Title/Title';
 import {
   useFetchMonthlyFundPrices,
   fetchMultipleIndexPrices,
-  MonthendTimelineItem,
+  MonthlyReturnData,
   useFetchReferencePricesByDate,
+  monthlyReturnsFromTimeline,
 } from './FundMetricsQueries';
 import { Button } from '~/components/Form/Button/Button';
 import { SelectWidget } from '~/components/Form/Select/Select';
@@ -45,156 +46,9 @@ export interface MonthlyReturnTableProps {
   address: string;
 }
 
-interface DisplayData {
-  label?: string;
-  date: Date;
-  return: BigNumber;
-}
-
 interface SelectItem {
-  value: keyof TableData;
+  value: keyof MonthlyReturnData;
   label: string;
-}
-
-interface TableData {
-  ETH: DisplayData[];
-  EUR: DisplayData[];
-  USD: DisplayData[];
-  BITWISE10: DisplayData[];
-  BTC: DisplayData[];
-}
-
-function assembleTableData(
-  today: Date,
-  activeMonths: number,
-  monthsBeforeFund: number,
-  monthsRemaining: number,
-  monthlyReturnData: MonthendTimelineItem[],
-  indexReturnData: BigNumber[][],
-  dayZeroFx: {
-    ethbtc: number;
-    ethusd: number;
-    etheur: number;
-  }
-): TableData {
-  const inactiveMonthReturns: DisplayData[] = new Array(monthsBeforeFund)
-    .fill(null)
-    .map((item, index: number) => {
-      return { date: endOfMonth(subMonths(today, index + activeMonths)), return: new BigNumber('NaN') };
-    })
-    .reverse();
-
-  const monthsRemainingInYear: DisplayData[] = new Array(monthsRemaining).fill(null).map((item, index: number) => {
-    return { date: endOfMonth(addMonths(today, index + 1)), return: new BigNumber('NaN') };
-  });
-
-  const ethActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
-    (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
-      if (index === 0) {
-        return {
-          return: calculateReturn(new BigNumber(item.calculations.price), new BigNumber(1)),
-          date: new Date(item.timestamp * 1000),
-        };
-      }
-      return {
-        return: calculateReturn(
-          new BigNumber(item.calculations.price),
-          new BigNumber(arr[index - 1].calculations.price)
-        ),
-        date: new Date(item.timestamp * 1000),
-      };
-    }
-  );
-
-  const usdActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
-    (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
-      if (index === 0) {
-        return {
-          return: calculateReturn(
-            new BigNumber(dayZeroFx.ethusd),
-            new BigNumber(item.calculations.price * item.references.ethusd)
-          ),
-          date: new Date(item.timestamp * 1000),
-        };
-      }
-      return {
-        return: calculateReturn(
-          new BigNumber(item.calculations.price * item.references.ethusd),
-          new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.ethusd)
-        ),
-        date: new Date(item.timestamp * 1000),
-      };
-    }
-  );
-
-  const eurActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
-    (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
-      if (index === 0) {
-        return {
-          return: calculateReturn(
-            new BigNumber(dayZeroFx.etheur),
-            new BigNumber(item.calculations.price * item.references.etheur)
-          ),
-          date: new Date(item.timestamp * 1000),
-        };
-      }
-      return {
-        // one eth worth of euros invested
-        return: calculateReturn(
-          new BigNumber(item.calculations.price * item.references.etheur),
-          new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.etheur)
-        ),
-        date: new Date(item.timestamp * 1000),
-      };
-    }
-  );
-
-  const btcActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
-    (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
-      if (index === 0) {
-        return {
-          return: calculateReturn(
-            new BigNumber(dayZeroFx.ethbtc),
-            new BigNumber(item.calculations.price * item.references.ethbtc)
-          ),
-          date: new Date(item.timestamp * 1000),
-        };
-      }
-      return {
-        // one eth worth of  invested
-        return: calculateReturn(
-          new BigNumber(item.calculations.price * item.references.ethbtc),
-          new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.ethbtc)
-        ),
-        date: new Date(item.timestamp * 1000),
-      };
-    }
-  );
-
-  const indexActiveMonthReturns: DisplayData[] =
-    usdActiveMonthReturns &&
-    indexReturnData
-      .map((item: any, index: number, arr: any[]) => {
-        return {
-          // gives the index's return over the month. I.e. a dollar invested in the index is now worth $1 + (1*return)
-          return: item.length && calculateReturn(item[0], item[item.length - 1]),
-        };
-      })
-      .map((item: { return: BigNumber }, index: number) => {
-        return {
-          // a dollar's return invested in the fund minus the index's return should be the difference
-          return: usdActiveMonthReturns[index]?.return.minus(item.return),
-          date: endOfMonth(subMonths(today, index)),
-        };
-      });
-
-  return {
-    ETH: inactiveMonthReturns.concat(ethActiveMonthReturns).concat(monthsRemainingInYear),
-    USD: inactiveMonthReturns.concat(usdActiveMonthReturns).concat(monthsRemainingInYear),
-    EUR: inactiveMonthReturns.concat(eurActiveMonthReturns).concat(monthsRemainingInYear),
-    BTC: inactiveMonthReturns.concat(btcActiveMonthReturns).concat(monthsRemainingInYear),
-    BITWISE10: inactiveMonthReturns.concat(indexActiveMonthReturns).concat(monthsRemainingInYear),
-  };
 }
 
 export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ address }) => {
@@ -210,7 +64,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   ];
 
   // Select management
-  const [selectedCurrencies, setSelectedCurrencies] = React.useState<(keyof TableData)[]>([
+  const [selectedCurrencies, setSelectedCurrencies] = React.useState<(keyof MonthlyReturnData)[]>([
     potentialCurrencies[0].value,
   ]);
 
@@ -280,18 +134,18 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     );
   }
 
-  const tableData: TableData =
+  const tableData: MonthlyReturnData =
     fund &&
     monthlyData &&
     historicalIndexPrices &&
-    assembleTableData(
+    monthlyReturnsFromTimeline(
+      monthlyData.data,
+      fxAtInception,
+      historicalIndexPrices,
       today,
       activeMonths,
       monthsBeforeFund,
-      monthsRemaining,
-      monthlyData.data,
-      historicalIndexPrices,
-      fxAtInception
+      monthsRemaining
     );
 
   function toggleYear(direction: 'decrement' | 'increment') {
@@ -302,7 +156,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     }
   }
 
-  function toggleCurrencySelection(value: keyof TableData) {
+  function toggleCurrencySelection(value: keyof MonthlyReturnData) {
     if (!value) {
       return;
     }
@@ -362,17 +216,15 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
                     </Button>{' '}
                     <>Return in {ccy}</>
                   </BodyCell>
-                  {tableData[ccy]
-                    .filter((item) => item.date.getFullYear() === selectedYear)
-                    .map((item, index) => (
-                      <BodyCellRightAlign key={index}>
-                        {!item.return.isNaN() ? (
-                          <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
-                        ) : (
-                          '-'
-                        )}
-                      </BodyCellRightAlign>
-                    ))}
+                  {tableData[ccy]!.filter((item) => item.date.getFullYear() === selectedYear).map((item, index) => (
+                    <BodyCellRightAlign key={index}>
+                      {item.return && !item.return.isNaN() ? (
+                        <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
+                      ) : (
+                        '-'
+                      )}
+                    </BodyCellRightAlign>
+                  ))}
                   <BodyCell>
                     <Button
                       size="extrasmall"
