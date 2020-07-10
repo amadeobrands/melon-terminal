@@ -59,17 +59,16 @@ function calculateSharePricesFromTimelineItem(item: MonthendTimelineItem) {
   };
 }
 
+const comparisonCurrencies: SelectItem[] = [
+  { label: 'ETH', value: 'ETH' },
+  { label: 'BTC', value: 'BTC' },
+  { label: 'EUR', value: 'EUR' },
+  { label: 'USD', value: 'USD' },
+];
+
 export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
-
-  const comparisonCurrencies: SelectItem[] = [
-    { label: 'ETH', value: 'ETH' },
-    { label: 'BTC', value: 'BTC' },
-    { label: 'EUR', value: 'EUR' },
-    { label: 'USD', value: 'USD' },
-  ];
-  // selectedCurrency will dictate which asset prices are passed to the functions that compute returns
 
   const [selectedCurrency, setSelectedCurrency] = React.useState<keyof HoldingPeriodReturns>(
     comparisonCurrencies[0].label
@@ -118,12 +117,12 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
   const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(
     fund.address!
   );
-  console.log(monthlyData);
+
   const monthlyReturns = React.useMemo(() => {
     return monthlyData?.data && fxAtInception && monthlyReturnsFromTimeline(monthlyData.data, fxAtInception);
   }, [monthlyData]);
 
-  const datePrices = React.useMemo(() => {
+  const sharePriceByDate = React.useMemo(() => {
     return {
       mostRecent: {
         ETH: monthlyData?.data && monthlyData.data[monthlyData.data.length - 1].calculations.price,
@@ -169,24 +168,56 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
           calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, quarterStartDate)).BTC,
       },
       yearStart: {
-        ETH: isBefore(fundInceptionDate, yearStartDate)
-          ? calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, yearStartDate)).ETH
-          : 1,
+        ETH:
+          monthlyData && isBefore(yearStartDate, fundInceptionDate)
+            ? calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, yearStartDate)).ETH
+            : 1,
         USD:
-          monthlyData && isBefore(fundInceptionDate, yearStartDate)
+          monthlyData && isBefore(yearStartDate, fundInceptionDate)
             ? calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, yearStartDate)).USD
             : fxAtInception?.ethusd,
         EUR:
-          monthlyData && isBefore(fundInceptionDate, yearStartDate)
+          monthlyData && isBefore(yearStartDate, fundInceptionDate)
             ? calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, yearStartDate)).EUR
             : fxAtInception?.etheur,
         BTC:
-          monthlyData && isBefore(fundInceptionDate, yearStartDate)
+          monthlyData && isBefore(yearStartDate, fundInceptionDate)
             ? calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, yearStartDate)).BTC
             : fxAtInception?.ethbtc,
       },
     };
   }, [monthlyData, historicalData, fxAtMonthStart, fxAtQuarterStart, fxAtYearStart, fxAtInception]);
+
+  const bestMonth = monthlyReturns?.[selectedCurrency].reduce((carry: DisplayData, current: DisplayData) => {
+    if (current.return.isGreaterThan(carry.return)) {
+      return current;
+    }
+    return carry;
+  }, monthlyReturns[selectedCurrency][0]);
+
+  const worstMonth = monthlyReturns?.[selectedCurrency].reduce((carry: DisplayData, current: DisplayData) => {
+    if (current.return.isLessThan(carry.return)) {
+      return current;
+    }
+    return carry;
+  }, monthlyReturns[selectedCurrency][0]);
+
+  const monthlyWinLoss = monthlyReturns?.[selectedCurrency].reduce(
+    (carry: { win: number; lose: number }, current: DisplayData) => {
+      if (current.return.isGreaterThanOrEqualTo(0)) {
+        carry.win++;
+        return carry;
+      }
+      carry.lose++;
+      return carry;
+    },
+    { win: 0, lose: 0 }
+  );
+
+  const mostRecentPrice = sharePriceByDate.mostRecent[selectedCurrency];
+  const quarterStartPrice = sharePriceByDate.quarterStart[selectedCurrency];
+  const monthStartPrice = sharePriceByDate.monthStart[selectedCurrency];
+  const yearStartPrice = sharePriceByDate.yearStart[selectedCurrency];
 
   if (
     !historicalData ||
@@ -211,42 +242,9 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
     );
   }
 
-  const mostRecentPrice = datePrices.mostRecent[selectedCurrency];
-  const quarterStartPrice = datePrices.quarterStart[selectedCurrency];
-  const monthStartPrice = datePrices.monthStart[selectedCurrency];
-  const yearStartPrice = datePrices.yearStart[selectedCurrency];
   const qtdReturn = mostRecentPrice && quarterStartPrice && calculateReturn(mostRecentPrice, quarterStartPrice);
   const mtdReturn = mostRecentPrice && monthStartPrice && calculateReturn(mostRecentPrice, monthStartPrice);
   const ytdReturn = mostRecentPrice && yearStartPrice && calculateReturn(mostRecentPrice, yearStartPrice);
-
-  const bestMonth = monthlyReturns?.[selectedCurrency].reduce((carry: DisplayData, current: DisplayData) => {
-    if (current.return.isGreaterThan(carry.return)) {
-      return current;
-    }
-    return carry;
-  }, monthlyReturns[selectedCurrency][0]);
-
-  const worstMonth = monthlyReturns?.[selectedCurrency].reduce((carry: DisplayData, current: DisplayData) => {
-    if (current.return.isLessThan(carry.return)) {
-      return current;
-    }
-    return carry;
-  }, monthlyReturns[selectedCurrency][0]);
-
-  const monthlyWinLoss = monthlyReturns?.[selectedCurrency].reduce(
-    (carry: { win: number; lose: number }, current: DisplayData) => {
-      if (current.return.isGreaterThanOrEqualTo(0)) {
-        carry.win++;
-        return carry;
-      }
-
-      carry.lose++;
-      return carry;
-    },
-    { win: 0, lose: 0 }
-  );
-
-  console.log(datePrices);
 
   const averageMonthlyReturn = monthlyReturns && average(monthlyReturns[selectedCurrency].map((month) => month.return));
 

@@ -171,15 +171,6 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     return format(addMonths(january, index), 'MMM');
   });
 
-  // you have an array of active years
-  // if there is more than one active year
-  //you want to show a button on the left side of the title if the selectedYear is not the first item in that array
-  // you want that button to decrement the current year by 1
-  // in the middle, you want the title to show the selected year
-  // if there is more than one active year
-  // you want to show a button on the right side of the title if the selected year is not the last item in that array
-  // you want that button to increment the current year by 1
-
   return (
     <Block>
       <SectionTitleContainer>
