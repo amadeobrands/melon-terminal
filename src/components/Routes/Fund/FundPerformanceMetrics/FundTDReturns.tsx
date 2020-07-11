@@ -1,9 +1,9 @@
 import * as React from 'react';
 import BigNumber from 'bignumber.js';
-import { startOfYear, startOfMonth, startOfQuarter, isBefore, subDays } from 'date-fns';
+import { startOfYear, startOfMonth, startOfQuarter, isBefore, subDays, differenceInCalendarDays } from 'date-fns';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { useFund } from '~/hooks/useFund';
-import { calculateReturn, average } from '~/utils/finance';
+import { calculateReturn, average, calculateVolatility } from '~/utils/finance';
 import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
 import { SectionTitle } from '~/storybook/Title/Title';
@@ -241,6 +241,16 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
       </Block>
     );
   }
+  const volSampleTime =
+    differenceInCalendarDays(today, fund.creationTime!) > 20 ? 20 : differenceInCalendarDays(today, fund.creationTime!);
+
+  const sampleVol =
+    historicalData &&
+    calculateVolatility(
+      historicalData.data
+        .slice(volSampleTime, historicalData.data.length - 1)
+        .map((item: RangeTimelineItem) => new BigNumber(item.calculations.price))
+    );
 
   const qtdReturn = mostRecentPrice && quarterStartPrice && calculateReturn(mostRecentPrice, quarterStartPrice);
   const mtdReturn = mostRecentPrice && monthStartPrice && calculateReturn(mostRecentPrice, monthStartPrice);
@@ -314,6 +324,12 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
           ) : (
             'a thing'
           )}
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>{volSampleTime}-day Return Volatility (of Share Price in ETH)</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          {sampleVol ? <FormattedNumber decimals={2} value={sampleVol} suffix={'%'} colorize={true} /> : 'a thing'}
         </DictionaryData>
       </DictionaryEntry>
       <SelectWidget
