@@ -196,17 +196,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
             {selectedCurrencies.map((ccy, index) => {
               return (
                 <BodyRow key={index * Math.random()}>
-                  <BodyCell>
-                    <Button
-                      size="extrasmall"
-                      onClick={() => {
-                        toggleCurrencySelection(ccy);
-                      }}
-                    >
-                      X
-                    </Button>{' '}
-                    <>Return in {ccy}</>
-                  </BodyCell>
+                  <BodyCell>{ccy === 'BITWISE10' ? <>Return vs {ccy}</> : <>Return in {ccy}</>}</BodyCell>
                   {tableData[ccy]!.filter((item) => item.date.getFullYear() === selectedYear).map((item, index) => (
                     <BodyCellRightAlign key={index}>
                       {item.return && !item.return.isNaN() ? (
