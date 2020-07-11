@@ -10,10 +10,9 @@ export interface FundMetricsProps {
 
 export const FundPerformanceMetrics: React.FC<FundMetricsProps> = ({ address }) => {
   return (
-    <Block>
-      <SectionTitle>Various Fund Metrics</SectionTitle>
+    <>
       <FundMonthlyReturnTable address={address} />
       <FundTDReturns address={address} />
-    </Block>
+    </>
   );
 };
