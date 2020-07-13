@@ -20,6 +20,22 @@ export interface RangeTimelineItem {
   };
 }
 
+interface DepthTimelineItem {
+  timestamp: number;
+  rates: {
+    [symbol: string]: number;
+  };
+  holdings: {
+    [symbol: string]: number;
+  };
+  shares: number;
+  calculations: {
+    price: number;
+    gav: number;
+    nav: number;
+  };
+}
+
 export interface MonthendTimelineItem {
   timestamp: number;
   rates: {
@@ -41,6 +57,40 @@ export interface MonthendTimelineItem {
   };
 }
 
+export interface DisplayData {
+  label?: string;
+  date: Date;
+  return: BigNumber;
+}
+
+export interface MonthlyReturnData {
+  ETH: DisplayData[];
+  EUR: DisplayData[];
+  USD: DisplayData[];
+  BTC: DisplayData[];
+  BITWISE10?: DisplayData[];
+}
+
+export type Depth = '1y' | '6m' | '3m' | '1m' | '1w' | '1d';
+
+async function fetchFundPricesByDepth(key: string, fund: string, depth: Depth) {
+  const api = process.env.MELON_METRICS_API;
+  const url = `${api}/api/depth/onchain?address=${fund}&depth=${depth}`;
+  const response = await fetch(url)
+    .then((res) => res.json())
+    .catch((error) => console.log(error));
+  console.log(response);
+  return response;
+}
+
+export function useFetchFundPricesByDepth(fund: string, depth: Depth) {
+  const address = fund.toLowerCase();
+  const key = 'onchainPrices';
+  return useQuery([key, address, depth], fetchFundPricesByDepth, {
+    refetchOnWindowFocus: false,
+  });
+}
+
 async function fetchMonthlyFundPrices(key: string, address: string) {
   const url = process.env.MELON_METRICS_API;
   const queryAddress = `${url}/api/monthend?address=${address}`;
@@ -52,7 +102,8 @@ async function fetchMonthlyFundPrices(key: string, address: string) {
 
 export function useFetchMonthlyFundPrices(fund: string) {
   const address = fund.toLowerCase();
-  return useQuery(['prices', address], fetchMonthlyFundPrices, {
+  const key = 'monthlyPrice';
+  return useQuery([key, address], fetchMonthlyFundPrices, {
     refetchOnWindowFocus: false,
   });
 }
@@ -68,7 +119,8 @@ async function fetchFundPricesByDate(key: string, address: string, from: number,
 
 export function useFetchFundPricesByDate(fund: string, from: number, to: number) {
   const address = fund.toLowerCase();
-  return useQuery([(from + to).toString(), address, from, to], fetchFundPricesByDate, {
+  const key = 'rangeOfPrices';
+  return useQuery([key, address, from, to], fetchFundPricesByDate, {
     refetchOnWindowFocus: false,
   });
 }
@@ -124,23 +176,10 @@ async function fetchReferencePricesByDate(key: string, date: number) {
 
 export function useFetchReferencePricesByDate(date: Date) {
   const day = findCorrectToTime(date);
-  return useQuery(['fetchReferencePrices', day], fetchReferencePricesByDate, {
+  const key = 'referencePricesByDate';
+  return useQuery([key, day], fetchReferencePricesByDate, {
     refetchOnWindowFocus: false,
   });
-}
-
-export interface DisplayData {
-  label?: string;
-  date: Date;
-  return: BigNumber;
-}
-
-export interface MonthlyReturnData {
-  ETH: DisplayData[];
-  EUR: DisplayData[];
-  USD: DisplayData[];
-  BTC: DisplayData[];
-  BITWISE10?: DisplayData[];
 }
 
 /**
