@@ -22,6 +22,7 @@ import {
   startOfMonth,
   getMonth,
   addMonths,
+  differenceInCalendarDays,
 } from 'date-fns';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { useFund } from '~/hooks/useFund';
@@ -72,7 +73,10 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     return potentialCurrencies.filter((ccy) => !selectedCurrencies.includes(ccy.value));
   }, [selectedCurrencies]);
 
-  // Display year state management
+  if (fund.creationTime && differenceInCalendarDays(today, fund.creationTime) < 7) {
+    return null;
+  }
+
   const fundInception = fund.creationTime!;
 
   // find all years in which the fund has existed and put them in an array
@@ -196,7 +200,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
             {selectedCurrencies.map((ccy, index) => {
               return (
                 <BodyRow key={index * Math.random()}>
-                  <BodyCell>{ccy === 'BITWISE10' ? <>Return vs {ccy}</> : <>Return in {ccy}</>}</BodyCell>
+                  <BodyCell>{ccy === 'BITWISE10' ? <>Return in USD vs {ccy}</> : <>Return in {ccy}</>}</BodyCell>
                   {tableData[ccy]!.filter((item) => item.date.getFullYear() === selectedYear).map((item, index) => (
                     <BodyCellRightAlign key={index}>
                       {item.return && !item.return.isNaN() ? (

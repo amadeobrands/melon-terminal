@@ -10,9 +10,10 @@ import { SectionTitle } from '~/storybook/Title/Title';
 import {
   useFetchMonthlyFundPrices,
   useFetchFundPricesByDate,
+  useFetchReferencePricesByDate,
+  useFetchFundPricesByDepth,
   RangeTimelineItem,
   MonthendTimelineItem,
-  useFetchReferencePricesByDate,
   monthlyReturnsFromTimeline,
   DisplayData,
 } from './FundMetricsQueries';
@@ -47,6 +48,7 @@ function findTimeLineItemByDate(timeline: MonthendTimelineItem[], date: Date) {
   }, timeline[0]);
   return targetDate;
 }
+
 function calculateSharePricesFromTimelineItem(item: MonthendTimelineItem) {
   const usd = item.calculations.price * item.references.ethusd;
   const eur = item.calculations.price * item.references.etheur;
@@ -66,7 +68,7 @@ const comparisonCurrencies: SelectItem[] = [
   { label: 'USD', value: 'USD' },
 ];
 
-export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
+export const FundTDReturns: React.FC<FundTDReturnsProps> = (props) => {
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
 
@@ -79,10 +81,31 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
   }, [selectedCurrency]);
 
   const fundInceptionDate = findCorrectFromTime(fund.creationTime!);
+
+  if (fund.creationTime && differenceInCalendarDays(today, fund.creationTime) < 7) {
+    return null;
+  }
+
   const monthStartDate = subDays(startOfMonth(today), 1);
   const quarterStartDate = subDays(startOfQuarter(today), 1);
   const yearStartDate = subDays(startOfYear(today), 1);
   const toToday = findCorrectToTime(today);
+
+  const {
+    data: historicalData,
+    error: historicalDataError,
+    isFetching: historicalDataFetching,
+  } = useFetchFundPricesByDate(fund.address!, fundInceptionDate, toToday);
+
+  const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(
+    fund.address!
+  );
+
+  const {
+    data: fundPricesByDepth,
+    error: fundPricesByDepthError,
+    isFetching: fundPricesByDepthFetching,
+  } = useFetchFundPricesByDepth(props.address, '1m');
 
   const {
     data: fxAtInception,
@@ -107,16 +130,6 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = () => {
     error: fxAtYearStartError,
     isFetching: fxAtYearStartFetching,
   } = useFetchReferencePricesByDate(yearStartDate);
-
-  const {
-    data: historicalData,
-    error: historicalDataError,
-    isFetching: historicalDataFetching,
-  } = useFetchFundPricesByDate(fund.address!, fundInceptionDate, toToday);
-
-  const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(
-    fund.address!
-  );
 
   const monthlyReturns = React.useMemo(() => {
     return monthlyData?.data && fxAtInception && monthlyReturnsFromTimeline(monthlyData.data, fxAtInception);
