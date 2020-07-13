@@ -1,6 +1,5 @@
 import * as React from 'react';
 import BigNumber from 'bignumber.js';
-import styled from 'styled-components';
 import {
   Table,
   HeaderRow,
@@ -20,28 +19,21 @@ import {
   endOfMonth,
   endOfYear,
   startOfMonth,
-  getMonth,
   addMonths,
   differenceInCalendarDays,
 } from 'date-fns';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { useFund } from '~/hooks/useFund';
-import { calculateReturn } from '~/utils/finance';
 import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
-import { SectionTitle, Title } from '~/storybook/Title/Title';
-import {
-  useFetchMonthlyFundPrices,
-  fetchMultipleIndexPrices,
-  MonthlyReturnData,
-  useFetchReferencePricesByDate,
-  monthlyReturnsFromTimeline,
-} from './FundMetricsQueries';
+import { Title } from '~/storybook/Title/Title';
+import { useFetchFundPricesByMonthEnd } from '~/hooks/metricsService/useFetchFundPricesByMonthEnd';
+import { useFetchReferencePricesByDate } from '~/hooks/metricsService/useFetchReferencePricesByDate';
+import { fetchMultipleIndexPrices, MonthlyReturnData, monthlyReturnsFromTimeline } from './FundMetricsUtilFunctions';
 import { Button } from '~/components/Form/Button/Button';
 import { SelectWidget } from '~/components/Form/Select/Select';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { SectionTitleContainer } from '~/storybook/Title/Title.styles';
-import { useAsync } from 'react-use';
 
 export interface MonthlyReturnTableProps {
   address: string;
@@ -52,19 +44,18 @@ interface SelectItem {
   label: string;
 }
 
+const potentialCurrencies: SelectItem[] = [
+  { label: 'ETH', value: 'ETH' },
+  { label: 'BTC', value: 'BTC' },
+  { label: 'EUR', value: 'EUR' },
+  { label: 'USD', value: 'USD' },
+  { label: 'BITWISE10', value: 'BITWISE10' },
+];
+
 export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ address }) => {
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
 
-  const potentialCurrencies: SelectItem[] = [
-    { label: 'ETH', value: 'ETH' },
-    { label: 'BTC', value: 'BTC' },
-    { label: 'EUR', value: 'EUR' },
-    { label: 'USD', value: 'USD' },
-    { label: 'BITWISE10', value: 'BITWISE10' },
-  ];
-
-  // Select management
   const [selectedCurrencies, setSelectedCurrencies] = React.useState<(keyof MonthlyReturnData)[]>([
     potentialCurrencies[0].value,
   ]);
@@ -79,7 +70,6 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
 
   const fundInception = fund.creationTime!;
 
-  // find all years in which the fund has existed and put them in an array
   const activeYears =
     fund &&
     new Array(differenceInCalendarYears(today, fundInception) + 1)
@@ -87,12 +77,10 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
       .map((item, index) => subYears(today, index))
       .reverse();
 
-  // set state equal to current year
   const [selectedYear, setSelectedYear] = React.useState(activeYears[activeYears.length - 1].getFullYear());
-
-  // Data Fetching
   const [historicalIndexPrices, sethistoricalIndexPrices] = React.useState<BigNumber[][] | undefined>(undefined);
-  const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(address);
+
+  const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchFundPricesByMonthEnd(address);
 
   const {
     data: fxAtInception,
@@ -102,7 +90,6 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
 
   const monthsBeforeFund = differenceInCalendarMonths(fundInception, startOfYear(activeYears[0]));
   const monthsRemaining = differenceInCalendarMonths(endOfYear(today), today);
-
   const activeMonths = fund && differenceInCalendarMonths(today, fundInception) + 1;
 
   const activeMonthDates = new Array(activeMonths)
@@ -123,19 +110,16 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     sethistoricalIndexPrices(prices);
   }, [fund]);
 
-  if (
-    !monthlyData ||
-    monthlyFetching ||
-    !historicalIndexPrices ||
-    monthlyError ||
-    !fxAtInception ||
-    fxAtInceptionFetching
-  ) {
+  if (!monthlyData || monthlyFetching || !historicalIndexPrices || !fxAtInception || fxAtInceptionFetching) {
     return (
       <Block>
         <Spinner />
       </Block>
     );
+  }
+
+  if (monthlyError || fxAtInceptionError) {
+    return <Block>ERROR</Block>;
   }
 
   const tableData: MonthlyReturnData =
@@ -179,11 +163,11 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     <Block>
       <SectionTitleContainer>
         {activeYears.length > 1 && selectedYear !== activeYears[0].getFullYear() ? (
-          <FaChevronLeft onClick={() => toggleYear('decrement')} />
+          <FaChevronLeft cursor="pointer" onClick={() => toggleYear('decrement')} />
         ) : null}
         <Title>{selectedYear} Monthly Returns </Title>
         {activeYears.length > 1 && selectedYear !== activeYears[activeYears.length - 1].getFullYear() ? (
-          <FaChevronRight onClick={() => toggleYear('increment')} />
+          <FaChevronRight cursor="pointer" onClick={() => toggleYear('increment')} />
         ) : null}
       </SectionTitleContainer>
 

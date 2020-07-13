@@ -79,13 +79,12 @@ async function fetchFundPricesByDepth(key: string, fund: string, depth: Depth) {
   const response = await fetch(url)
     .then((res) => res.json())
     .catch((error) => console.log(error));
-  console.log(response);
   return response;
 }
 
 export function useFetchFundPricesByDepth(fund: string, depth: Depth) {
   const address = fund.toLowerCase();
-  const key = 'onchainPrices';
+  const key = 'pricesByDepth';
   return useQuery([key, address, depth], fetchFundPricesByDepth, {
     refetchOnWindowFocus: false,
   });

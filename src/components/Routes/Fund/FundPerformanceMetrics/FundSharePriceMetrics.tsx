@@ -8,20 +8,17 @@ import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
 import { SectionTitle } from '~/storybook/Title/Title';
 import {
-  useFetchMonthlyFundPrices,
-  useFetchFundPricesByDate,
-  useFetchReferencePricesByDate,
-  useFetchFundPricesByDepth,
-  RangeTimelineItem,
+  useFetchFundPricesByMonthEnd,
   MonthendTimelineItem,
-  monthlyReturnsFromTimeline,
-  DisplayData,
-} from './FundMetricsQueries';
+} from '~/hooks/metricsService/useFetchFundPricesByMonthEnd';
+import { useFetchFundPricesByRange, RangeTimelineItem } from '~/hooks/metricsService/useFetchFundPricesByRange';
+import { useFetchReferencePricesByDate } from '~/hooks/metricsService/useFetchReferencePricesByDate';
+import { monthlyReturnsFromTimeline, DisplayData } from './FundMetricsUtilFunctions';
 import { findCorrectFromTime, findCorrectToTime } from '~/utils/priceServiceDates';
 import { Dictionary, DictionaryEntry, DictionaryLabel, DictionaryData } from '~/storybook/Dictionary/Dictionary';
 import { SelectWidget } from '~/components/Form/Select/Select';
 
-export interface FundTDReturnsProps {
+export interface FundSharePriceMetricsProps {
   address: string;
 }
 
@@ -68,7 +65,7 @@ const comparisonCurrencies: SelectItem[] = [
   { label: 'USD', value: 'USD' },
 ];
 
-export const FundTDReturns: React.FC<FundTDReturnsProps> = (props) => {
+export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (props) => {
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
 
@@ -80,12 +77,11 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (props) => {
     return comparisonCurrencies.filter((ccy) => ccy.label !== selectedCurrency);
   }, [selectedCurrency]);
 
-  const fundInceptionDate = findCorrectFromTime(fund.creationTime!);
-
   if (fund.creationTime && differenceInCalendarDays(today, fund.creationTime) < 7) {
     return null;
   }
 
+  const fundInceptionDate = findCorrectFromTime(fund.creationTime!);
   const monthStartDate = subDays(startOfMonth(today), 1);
   const quarterStartDate = subDays(startOfQuarter(today), 1);
   const yearStartDate = subDays(startOfYear(today), 1);
@@ -95,17 +91,11 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (props) => {
     data: historicalData,
     error: historicalDataError,
     isFetching: historicalDataFetching,
-  } = useFetchFundPricesByDate(fund.address!, fundInceptionDate, toToday);
+  } = useFetchFundPricesByRange(fund.address!, fundInceptionDate, toToday);
 
-  const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchMonthlyFundPrices(
+  const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchFundPricesByMonthEnd(
     fund.address!
   );
-
-  const {
-    data: fundPricesByDepth,
-    error: fundPricesByDepthError,
-    isFetching: fundPricesByDepthFetching,
-  } = useFetchFundPricesByDepth(props.address, '1m');
 
   const {
     data: fxAtInception,
@@ -137,6 +127,7 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (props) => {
 
   const sharePriceByDate = React.useMemo(() => {
     return {
+      random: {},
       mostRecent: {
         ETH: monthlyData?.data && monthlyData.data[monthlyData.data.length - 1].calculations.price,
         USD:
@@ -201,6 +192,51 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (props) => {
     };
   }, [monthlyData, historicalData, fxAtMonthStart, fxAtQuarterStart, fxAtYearStart, fxAtInception]);
 
+  if (
+    !historicalData ||
+    historicalDataFetching ||
+    !monthlyData ||
+    monthlyFetching ||
+    !fxAtInception ||
+    fxAtInceptionFetching ||
+    !fxAtMonthStart ||
+    fxAtMonthStartFetching ||
+    !fxAtQuarterStart ||
+    fxAtQuarterStartFetching ||
+    !fxAtYearStart ||
+    fxAtYearStartFetching
+  ) {
+    return (
+      <Block>
+        <Spinner />
+      </Block>
+    );
+  }
+
+  if (
+    historicalDataError ||
+    monthlyError ||
+    fxAtInceptionError ||
+    fxAtMonthStartError ||
+    fxAtQuarterStartError ||
+    fxAtYearStartError
+  ) {
+    return (
+      <Block>
+        <>ERROR</>
+      </Block>
+    );
+  }
+
+  const mostRecentPrice = sharePriceByDate.mostRecent[selectedCurrency];
+  const quarterStartPrice = sharePriceByDate.quarterStart[selectedCurrency];
+  const monthStartPrice = sharePriceByDate.monthStart[selectedCurrency];
+  const yearStartPrice = sharePriceByDate.yearStart[selectedCurrency];
+
+  const qtdReturn = mostRecentPrice && quarterStartPrice && calculateReturn(mostRecentPrice, quarterStartPrice);
+  const mtdReturn = mostRecentPrice && monthStartPrice && calculateReturn(mostRecentPrice, monthStartPrice);
+  const ytdReturn = mostRecentPrice && yearStartPrice && calculateReturn(mostRecentPrice, yearStartPrice);
+
   const bestMonth = monthlyReturns?.[selectedCurrency].reduce((carry: DisplayData, current: DisplayData) => {
     if (current.return.isGreaterThan(carry.return)) {
       return current;
@@ -227,33 +263,9 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (props) => {
     { win: 0, lose: 0 }
   );
 
-  const mostRecentPrice = sharePriceByDate.mostRecent[selectedCurrency];
-  const quarterStartPrice = sharePriceByDate.quarterStart[selectedCurrency];
-  const monthStartPrice = sharePriceByDate.monthStart[selectedCurrency];
-  const yearStartPrice = sharePriceByDate.yearStart[selectedCurrency];
+  const averageMonthlyReturn = monthlyReturns && average(monthlyReturns[selectedCurrency].map((month) => month.return));
+  const positiveMonthRatio = monthlyWinLoss && (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
 
-  if (
-    !historicalData ||
-    historicalDataFetching ||
-    !monthlyData ||
-    monthlyFetching ||
-    !fxAtInception ||
-    fxAtInceptionFetching
-  ) {
-    return (
-      <Block>
-        <Spinner />
-      </Block>
-    );
-  }
-
-  if (historicalDataError || monthlyError || fxAtInceptionError) {
-    return (
-      <Block>
-        <>ERROR</>
-      </Block>
-    );
-  }
   const volSampleTime =
     differenceInCalendarDays(today, fund.creationTime!) > 20 ? 20 : differenceInCalendarDays(today, fund.creationTime!);
 
@@ -265,14 +277,6 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (props) => {
         .map((item: RangeTimelineItem) => new BigNumber(item.calculations.price))
     );
 
-  const qtdReturn = mostRecentPrice && quarterStartPrice && calculateReturn(mostRecentPrice, quarterStartPrice);
-  const mtdReturn = mostRecentPrice && monthStartPrice && calculateReturn(mostRecentPrice, monthStartPrice);
-  const ytdReturn = mostRecentPrice && yearStartPrice && calculateReturn(mostRecentPrice, yearStartPrice);
-
-  const averageMonthlyReturn = monthlyReturns && average(monthlyReturns[selectedCurrency].map((month) => month.return));
-
-  const positiveMonthRatio = monthlyWinLoss && (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
-
   function toggleCurrencySelection(value: keyof HoldingPeriodReturns) {
     if (!value) {
       return;
@@ -283,7 +287,7 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (props) => {
 
   return (
     <Dictionary>
-      <SectionTitle>Various Metrics in {selectedCurrency} (Share Price)</SectionTitle>
+      <SectionTitle>Share Price Metrics in {selectedCurrency}</SectionTitle>
 
       <DictionaryEntry>
         <DictionaryLabel>MTD Return</DictionaryLabel>
@@ -294,13 +298,13 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (props) => {
       <DictionaryEntry>
         <DictionaryLabel>QTD Return</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          {qtdReturn ? <FormattedNumber decimals={2} value={qtdReturn} suffix={'%'} colorize={true} /> : 'a thing'}
+          {qtdReturn ? <FormattedNumber decimals={2} value={qtdReturn} suffix={'%'} colorize={true} /> : '...loading'}
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>YTD Return</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          {ytdReturn ? <FormattedNumber decimals={2} value={ytdReturn} suffix={'%'} colorize={true} /> : 'a thing'}
+          {ytdReturn ? <FormattedNumber decimals={2} value={ytdReturn} suffix={'%'} colorize={true} /> : '...loading'}
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
@@ -309,7 +313,7 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (props) => {
           {bestMonth ? (
             <FormattedNumber decimals={2} value={bestMonth.return} suffix={'%'} colorize={true} />
           ) : (
-            'a thing'
+            '...loading'
           )}
         </DictionaryData>
       </DictionaryEntry>
@@ -319,14 +323,14 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (props) => {
           {worstMonth ? (
             <FormattedNumber decimals={2} value={worstMonth?.return} suffix={'%'} colorize={true} />
           ) : (
-            'a thing'
+            '...loading'
           )}
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>% Months with Gain</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          {positiveMonthRatio ? <FormattedNumber decimals={2} value={positiveMonthRatio} suffix={'%'} /> : 'a thing'}
+          {positiveMonthRatio ? <FormattedNumber decimals={2} value={positiveMonthRatio} suffix={'%'} /> : '...loading'}
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
@@ -335,14 +339,14 @@ export const FundTDReturns: React.FC<FundTDReturnsProps> = (props) => {
           {averageMonthlyReturn ? (
             <FormattedNumber decimals={2} value={averageMonthlyReturn} colorize={true} suffix={'%'} />
           ) : (
-            'a thing'
+            '...loading'
           )}
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>{volSampleTime}-day Return Volatility (of Share Price in ETH)</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          {sampleVol ? <FormattedNumber decimals={2} value={sampleVol} suffix={'%'} colorize={true} /> : 'a thing'}
+          {sampleVol ? <FormattedNumber decimals={2} value={sampleVol} suffix={'%'} colorize={true} /> : '...loading'}
         </DictionaryData>
       </DictionaryEntry>
       <SelectWidget
