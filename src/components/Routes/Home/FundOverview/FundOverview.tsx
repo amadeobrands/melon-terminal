@@ -650,7 +650,7 @@ export const FundOverview: React.FC = () => {
       columns: columns(prefix || '', history),
       initialState: {
         hiddenColumns: ['age', 'top20AUM'],
-        pageSize: 20,
+        pageSize: 10,
       },
       data,
       rowProps: (row) => ({ onClick: () => history.push(`/${prefix}/fund/${row.original.address}`) }),

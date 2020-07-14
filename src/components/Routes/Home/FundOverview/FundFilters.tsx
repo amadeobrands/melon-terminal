@@ -169,7 +169,7 @@ export function TableGlobalFilter<TData extends object>(props: TableGlobalFilter
     { value: 'underperformingFund', label: 'Underperforming fund', icon: <GiIcarus color="rgb(255,141,136)" /> },
   ];
 
-  const pageSizeOptions = [10, 20, 50, 100].map((option) => ({ value: option, label: `${option} funds` }));
+  const pageSizeOptions = [5, 10, 20, 50].map((option) => ({ value: option, label: `${option} funds` }));
   const defaultPageSizeOption = pageSizeOptions.find((option) => option.value === props.table.state.pageSize);
 
   return (
