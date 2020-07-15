@@ -42,6 +42,13 @@ export const Fund: React.FC = () => {
       <RequiresFundSetupComplete fallback={false}>
         <RequiresFundManager fallback={false}>
           <FundNavigation prefix={match.url} address={match.params.address} />
+          <NotificationBar kind="error">
+            <NotificationContent>
+              Augur is introducing a new REP token (REPv2) on July 28, 2020. Melon will stop supporting REP on August
+              15, 2020. Please sell any REP tokens that your fund owns as soon as possible. If your fund owns REP tokens
+              after August 15, 2020, no investments into your fund will be possible.
+            </NotificationContent>
+          </NotificationBar>
         </RequiresFundManager>
       </RequiresFundSetupComplete>
       <Container>
