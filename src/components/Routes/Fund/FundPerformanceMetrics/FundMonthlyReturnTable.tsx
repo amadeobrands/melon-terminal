@@ -49,20 +49,11 @@ const potentialCurrencies: SelectItem[] = [
   { label: 'BTC', value: 'BTC' },
   { label: 'EUR', value: 'EUR' },
   { label: 'USD', value: 'USD' },
-  { label: 'BITWISE10', value: 'BITWISE10' },
 ];
 
 export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ address }) => {
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
-
-  const [selectedCurrencies, setSelectedCurrencies] = React.useState<(keyof MonthlyReturnData)[]>([
-    potentialCurrencies[0].value,
-  ]);
-
-  const unselectedCurrencies = React.useMemo(() => {
-    return potentialCurrencies.filter((ccy) => !selectedCurrencies.includes(ccy.value));
-  }, [selectedCurrencies]);
 
   if (fund.creationTime && differenceInCalendarDays(today, fund.creationTime) < 7) {
     return null;
@@ -121,7 +112,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   if (monthlyError || fxAtInceptionError) {
     return <Block>ERROR</Block>;
   }
-
+  // add check that data that comes back from metrics service - first date == same month as fundINception
   const tableData: MonthlyReturnData =
     fund &&
     monthlyData &&
@@ -129,7 +120,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     monthlyReturnsFromTimeline(
       monthlyData.data,
       fxAtInception,
-      historicalIndexPrices,
+
       today,
       activeMonths,
       monthsBeforeFund,
@@ -144,16 +135,6 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     }
   }
 
-  function toggleCurrencySelection(value: keyof MonthlyReturnData) {
-    if (!value) {
-      return;
-    }
-    if (selectedCurrencies.includes(value)) {
-      setSelectedCurrencies(selectedCurrencies.filter((ccy) => ccy !== value));
-    } else {
-      setSelectedCurrencies(selectedCurrencies.concat([value]));
-    }
-  }
   const months = new Array(12).fill(null).map((item, index) => {
     const january = startOfYear(today);
     return format(addMonths(january, index), 'MMM');
@@ -179,44 +160,28 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
               {months.map((month, index) => (
                 <HeaderCellRightAlign key={index}>{month}</HeaderCellRightAlign>
               ))}
-              <HeaderCellRightAlign>{null}</HeaderCellRightAlign>
             </HeaderRow>
-            {selectedCurrencies.map((ccy, index) => {
+            {potentialCurrencies.map((ccy, index) => {
               return (
                 <BodyRow key={index * Math.random()}>
-                  <BodyCell>{ccy === 'BITWISE10' ? <>Return in USD vs {ccy}</> : <>Return in {ccy}</>}</BodyCell>
-                  {tableData[ccy]!.filter((item) => item.date.getFullYear() === selectedYear).map((item, index) => (
-                    <BodyCellRightAlign key={index}>
-                      {item.return && !item.return.isNaN() ? (
-                        <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
-                      ) : (
-                        '-'
-                      )}
-                    </BodyCellRightAlign>
-                  ))}
-                  <BodyCell>
-                    <Button
-                      size="extrasmall"
-                      onClick={() => {
-                        toggleCurrencySelection(ccy);
-                      }}
-                    >
-                      X
-                    </Button>
-                  </BodyCell>
+                  <BodyCell>Return in {ccy.label}</BodyCell>
+                  {tableData[ccy.value]!.filter((item) => item.date.getFullYear() === selectedYear).map(
+                    (item, index) => (
+                      <BodyCellRightAlign key={index}>
+                        {item.return && !item.return.isNaN() ? (
+                          <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
+                        ) : (
+                          '-'
+                        )}
+                      </BodyCellRightAlign>
+                    )
+                  )}
                 </BodyRow>
               );
             })}
           </tbody>
         </Table>
       </ScrollableTable>
-      <SelectWidget
-        name="Comparison Currency"
-        placeholder="Select a currency to view returns"
-        options={unselectedCurrencies}
-        onChange={(value) => value && toggleCurrencySelection((value as any).value)}
-        value={null}
-      />
     </Block>
   );
 };
