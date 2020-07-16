@@ -16,7 +16,7 @@ import { useFetchReferencePricesByDate } from '~/hooks/metricsService/useFetchRe
 import { monthlyReturnsFromTimeline, DisplayData } from './FundMetricsUtilFunctions';
 import { findCorrectFromTime, findCorrectToTime } from '~/utils/priceServiceDates';
 import { Dictionary, DictionaryEntry, DictionaryLabel, DictionaryData } from '~/storybook/Dictionary/Dictionary';
-import { SelectWidget } from '~/components/Form/Select/Select';
+import { SelectWidget, SelectField } from '~/components/Form/Select/Select';
 
 export interface FundSharePriceMetricsProps {
   address: string;
@@ -123,7 +123,7 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
 
   const monthlyReturns = React.useMemo(() => {
     return monthlyData?.data && fxAtInception && monthlyReturnsFromTimeline(monthlyData.data, fxAtInception);
-  }, [monthlyData]);
+  }, [monthlyData?.data, fxAtInception]);
 
   const sharePriceByDate = React.useMemo(() => {
     return {
@@ -261,10 +261,10 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
       return carry;
     },
     { win: 0, lose: 0 }
-  );
+  ) || { win: 0, lose: 0 };
 
   const averageMonthlyReturn = monthlyReturns && average(monthlyReturns[selectedCurrency].map((month) => month.return));
-  const positiveMonthRatio = monthlyWinLoss && (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
+  const positiveMonthRatio = (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
 
   const volSampleTime =
     differenceInCalendarDays(today, fund.creationTime!) > 20 ? 20 : differenceInCalendarDays(today, fund.creationTime!);
@@ -286,8 +286,17 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
   }
 
   return (
+    // add
     <Dictionary>
-      <SectionTitle>Share Price Metrics in {selectedCurrency}</SectionTitle>
+      <SectionTitle>
+        Share Price Metrics in {selectedCurrency}{' '}
+        <SelectField
+          name="Comparison Currency"
+          defaultValue={comparisonCurrencies[0]}
+          options={comparisonCurrencies}
+          onChange={(value) => value && toggleCurrencySelection((value as any).value)}
+        />
+      </SectionTitle>
 
       <DictionaryEntry>
         <DictionaryLabel>MTD Return</DictionaryLabel>
@@ -328,9 +337,11 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
-        <DictionaryLabel>% Months with Gain</DictionaryLabel>
+        <DictionaryLabel>Months With Gain</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          {positiveMonthRatio ? <FormattedNumber decimals={2} value={positiveMonthRatio} suffix={'%'} /> : '...loading'}
+          <FormattedNumber value={monthlyWinLoss.win} decimals={0} />/{' '}
+          <FormattedNumber value={monthlyWinLoss.win + monthlyWinLoss.lose} decimals={0} />
+          {/* <FormattedNumber decimals={2} value={positiveMonthRatio} suffix={'%'} /> */}
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
@@ -349,13 +360,6 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
           {sampleVol ? <FormattedNumber decimals={2} value={sampleVol} suffix={'%'} colorize={true} /> : '...loading'}
         </DictionaryData>
       </DictionaryEntry>
-      <SelectWidget
-        name="Comparison Currency"
-        placeholder="Select a currency to view returns"
-        options={unselectedCurrencies}
-        onChange={(value) => value && toggleCurrencySelection((value as any).value)}
-        value={null}
-      />
     </Dictionary>
   );
 };
