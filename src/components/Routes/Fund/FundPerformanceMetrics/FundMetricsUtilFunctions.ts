@@ -200,7 +200,7 @@ export function monthlyReturnsFromTimeline(
     ethusd: number;
     etheur: number;
   },
-  indexReturnData?: BigNumber[][],
+
   today?: Date,
   activeMonths?: number,
   monthsBeforeFund?: number,
@@ -287,24 +287,6 @@ export function monthlyReturnsFromTimeline(
     }
   );
 
-  const indexActiveMonthReturns: DisplayData[] | undefined =
-    usdActiveMonthReturns && indexReturnData && today
-      ? indexReturnData
-          .map((item: any, index: number, arr: any[]) => {
-            return {
-              // gives the index's return over the month. I.e. a dollar invested in the index is now worth $1 + (1*return)
-              return: item.length && calculateReturn(item[0], item[item.length - 1]),
-            };
-          })
-          .map((item: { return: BigNumber }, index: number) => {
-            return {
-              // a dollar's return invested in the fund minus the index's return should be the difference
-              return: usdActiveMonthReturns[index]?.return.minus(item.return),
-              date: endOfMonth(subMonths(today, index)),
-            } as DisplayData;
-          })
-      : undefined;
-
   const inactiveMonthReturns: DisplayData[] | undefined =
     today && monthsBeforeFund && activeMonths
       ? new Array(monthsBeforeFund)
@@ -344,15 +326,5 @@ export function monthlyReturnsFromTimeline(
         : btcActiveMonthReturns,
   };
 
-  if (indexReturnData) {
-    return {
-      BITWISE10:
-        inactiveMonthReturns &&
-        monthsRemainingInYear &&
-        indexActiveMonthReturns &&
-        inactiveMonthReturns.concat(indexActiveMonthReturns).concat(monthsRemainingInYear),
-      ...aggregatedMonthlyReturns,
-    };
-  }
   return aggregatedMonthlyReturns;
 }

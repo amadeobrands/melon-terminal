@@ -14,8 +14,11 @@ export interface FundOverviewProps {
 export const FundOverview: React.FC<FundOverviewProps> = ({ address }) => (
   <Grid>
     <GridRow>
-      <GridCol xs={12} sm={12}>
+      <GridCol sm={12} md={8} lg={8}>
         <NewFundPerformanceChart address={address} />
+      </GridCol>
+      <GridCol sm={12} md={4} lg={4}>
+        <FundSharePriceMetrics address={address} />
       </GridCol>
     </GridRow>
     <GridRow>
@@ -25,14 +28,6 @@ export const FundOverview: React.FC<FundOverviewProps> = ({ address }) => (
     </GridRow>
     <GridRow>
       <GridCol>
-        <FundPerformanceTable address={address} />
-      </GridCol>
-    </GridRow>
-    <GridRow>
-      <GridCol md={12} lg={4}>
-        <FundSharePriceMetrics address={address} />
-      </GridCol>
-      <GridCol md={12} lg={8}>
         <FundHoldings address={address} />
       </GridCol>
     </GridRow>
