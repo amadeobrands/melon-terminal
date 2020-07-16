@@ -27,7 +27,6 @@ import { calculateChangeFromSharePrice } from '~/utils/calculateChangeFromShareP
 import { useFundOverviewQuery } from './FundOverview.query';
 import { getNetworkName } from '~/config';
 import { useConnectionState } from '~/hooks/useConnectionState';
-import { useVersionQuery } from '~/components/Layout/Version.query';
 import {
   GiCaesar,
   GiStorkDelivery,
@@ -46,6 +45,7 @@ import { FundSharePriceChart } from './FundSharePriceChart';
 import { Icons, IconName } from '~/storybook/Icons/Icons';
 import { Tooltip } from '~/storybook/Tooltip/Tooltip';
 import { startOfMonth, startOfYear, getUnixTime } from 'date-fns';
+import { sameAddress } from '@melonproject/melonjs';
 
 export type RowData = {
   rank: number;
@@ -98,6 +98,10 @@ const columns = (prefix: string, history: any): Column<RowData>[] => {
         style: {
           textAlign: 'left',
           verticalAlign: 'top',
+          maxWidth: '250px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         },
       },
 
@@ -381,7 +385,7 @@ export function useTableData() {
   const result = useFundOverviewQuery(startOfMonthDate, startOfYearDate);
   const rates = useRatesOrThrow();
   const environment = useEnvironment()!;
-  const [version] = useVersionQuery();
+  const version = environment?.deployment.melon.addr.Version;
 
   const data = React.useMemo(() => {
     const funds = result.data?.funds ?? [];
@@ -424,7 +428,7 @@ export function useTableData() {
       );
 
       const userWhitelist = !!item.policyManager.policies.find((policy) => policy.identifier === 'UserWhitelist');
-      const closed = item.isShutdown || item.version?.name !== version?.name;
+      const closed = item.isShutdown || !sameAddress(item.version?.id, version);
 
       const investments = item.investments.length;
 
@@ -646,9 +650,9 @@ export const FundOverview: React.FC = () => {
       columns: columns(prefix || '', history),
       initialState: {
         hiddenColumns: ['age', 'top20AUM'],
+        pageSize: 10,
       },
       data,
-      pageCount: Math.ceil(data.length % 10),
       rowProps: (row) => ({ onClick: () => history.push(`/${prefix}/fund/${row.original.address}`) }),
       filterTypes,
       globalFilter: 'custom',

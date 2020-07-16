@@ -147,7 +147,7 @@ export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
       {(shares?.balanceOf?.isZero() || !shares?.balanceOf) && <>You don't own any shares.</>}
       <TransactionModal transaction={transaction}>
         <TransactionDescription title="Redeem shares">
-          You are redeeming
+          You are redeeming{' '}
           {formik.values.redeemAll ? (
             <>
               all your <FormattedNumber value={shares?.balanceOf} />
@@ -155,10 +155,10 @@ export const FundRedeem: React.FC<FundRedeemProps> = ({ address }) => {
             </>
           ) : (
             <>
-              <TokenValueDisplay value={formik.values.shareQuantity} /> shares (of your total of
+              <TokenValueDisplay value={formik.values.shareQuantity} /> shares (of your total of{' '}
               <FormattedNumber value={shares?.balanceOf} /> shares)
             </>
-          )}
+          )}{' '}
           of the fund &laquo;{fund.name}.&raquo; You will receive a slice of the fund's assets.
         </TransactionDescription>
       </TransactionModal>

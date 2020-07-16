@@ -61,6 +61,7 @@ export const ConnectionButton: React.FC<ConnectionButtonProps> = ({
           name="account"
           options={accounts}
           value={selected}
+          isSearchable={true}
           onChange={(value) => value && connection.switch((value as any).value)}
         />
       )) ||

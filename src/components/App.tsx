@@ -19,9 +19,8 @@ import { method as fortmatic } from './Layout/ConnectionSelector/Fortmatic/Fortm
 import { method as anonymous } from './Layout/ConnectionSelector/Anonymous/Anonymous';
 import { method as walletconnect } from './Layout/ConnectionSelector/WalletConnect/WalletConnect';
 
-const common = [metamask, dapper, coinbase, frame, walletconnect, fortmatic];
+let methods = [ganache, metamask, dapper, coinbase, frame, walletconnect, fortmatic];
 let start = anonymous;
-let methods = process.env.MELON_TESTNET ? [ganache, ...common] : common;
 let switchable = true;
 
 if (coinbase.supported()) {

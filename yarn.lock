@@ -2080,10 +2080,10 @@
   resolved "https://registry.yarnpkg.com/@mdx-js/util/-/util-1.6.0.tgz#896eace2b34238320521c0a92180c349942cd8f6"
   integrity sha512-zzGMtKnc28voDQ4LZFczZzwkm5VwwF7ZbC5iePaWFaF+kD+ekPVdronJEOMFK9SUEKUbmc31Bz81rtS6264z4w==
 
-"@melonproject/melongql@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@melonproject/melongql/-/melongql-1.0.1.tgz#8e45f4090a598d6fccd410fb151363805efd3323"
-  integrity sha512-ia7DrOwfSMxjH5bEuX6EAkW22uRsl9KP07ew/cjEcCIu8XZQxnRmYMKVXzHxLVM3U6QFeVoJ9XoiJPnlOasJjg==
+"@melonproject/melongql@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@melonproject/melongql/-/melongql-1.0.2.tgz#b1fcf576e3065bc29eccc5a559410849e88baefc"
+  integrity sha512-9mRjkuI1DTJZkt6iFDxh6eHuu0bNBcNdaB5VYiulGQgO3kU3Ok8aesWzX8UJtjEMGHIub6bgYIPeP+51OW6rDg==
   dependencies:
     "@melonproject/melonjs" "^1.0.5"
     apollo-link "^1.2.14"

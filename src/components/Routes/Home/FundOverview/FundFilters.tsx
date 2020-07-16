@@ -29,15 +29,16 @@ const Search = styled.div`
   margin-right: 10px;
 `;
 
-const FilterAndSort = styled.div`
+const Filter = styled.div`
   float: left;
   display: inline-block;
   vertical-align: top;
   height: 40px;
   text-align: center;
+  margin-right: 20px;
 `;
 
-const SortLabel = styled.div`
+const Label = styled.div`
   float: left;
   padding: 10px 10px 10px 0;
   display: inline-block;
@@ -81,6 +82,17 @@ const SelectionFilter = styled.div`
 const BadgeFilter = styled.div`
   min-width: 200px;
   float: left;
+`;
+
+const FundsPerPage = styled.div`
+  float: right;
+  min-width: 200px;
+`;
+
+const FundsPerPageSelection = styled.div`
+  min-width: 150px;
+  float: left;
+  margin-bottom: 5px;
 `;
 
 export interface TableGlobalFilterProps<TData extends object = any> extends CommonTableProps<TData> {}
@@ -157,10 +169,13 @@ export function TableGlobalFilter<TData extends object>(props: TableGlobalFilter
     { value: 'underperformingFund', label: 'Underperforming fund', icon: <GiIcarus color="rgb(255,141,136)" /> },
   ];
 
+  const pageSizeOptions = [5, 10, 20, 50].map((option) => ({ value: option, label: `${option} funds` }));
+  const defaultPageSizeOption = pageSizeOptions.find((option) => option.value === props.table.state.pageSize);
+
   return (
     <>
       <Toolbar>
-        <SortLabel>Search: </SortLabel>
+        <Label>Search: </Label>
         <Search>
           <InputField
             name="search"
@@ -172,8 +187,9 @@ export function TableGlobalFilter<TData extends object>(props: TableGlobalFilter
             placeholder="Search fund..."
           />
         </Search>
-        <FilterAndSort>
-          <SortLabel>Filters: </SortLabel>
+
+        <Filter>
+          <Label>Filters: </Label>
           <FilterIcon>
             <FaFilter onClick={() => setShowFilters(!showFilters)} size="1.5rem" />
           </FilterIcon>
@@ -191,7 +207,21 @@ export function TableGlobalFilter<TData extends object>(props: TableGlobalFilter
             />
           </Sort>
           <SortLabel>Sort by: </SortLabel> */}
-        </FilterAndSort>
+        </Filter>
+
+        <FundsPerPage>
+          <Label>Show:</Label>
+          <FundsPerPageSelection>
+            <SelectField
+              name="pageSize"
+              defaultValue={defaultPageSizeOption}
+              options={pageSizeOptions}
+              onChange={(e) => {
+                props.table.setPageSize((e as any)?.value);
+              }}
+            />
+          </FundsPerPageSelection>
+        </FundsPerPage>
       </Toolbar>
 
       {showFilters && (

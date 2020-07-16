@@ -12,17 +12,14 @@ import {
 } from '~/components/Contexts/Connection/Connection';
 import { SectionTitle } from '~/storybook/Title/Title';
 import { Button } from '~/components/Form/Button/Button';
-import { getConfig } from '~/config';
-import { NetworkEnum } from '~/types';
 
 interface Resource extends Rx.Unsubscribable {
   eth: Eth;
 }
 
 const connect = (): Rx.Observable<ConnectionAction> => {
-  const config = getConfig(NetworkEnum.TESTNET)!;
   const create = (): Resource => {
-    const provider = new HttpProvider(config.provider);
+    const provider = new HttpProvider('http://127.0.0.1:8545');
     const eth = new Eth(provider, undefined, {
       transactionConfirmationBlocks: 1,
     });
@@ -36,7 +33,13 @@ const connect = (): Rx.Observable<ConnectionAction> => {
     const connection$ = Rx.defer(async () => {
       const [id, accounts] = await Promise.all([eth.net.getId(), eth.getAccounts()]);
       const network = networkFromId(id);
-      return connectionEstablished(eth, network, accounts);
+
+      // NOTE: Use this to register custom unlocked accounts for simulation.
+      const unlocked: string[] = [
+        // '0xC0c82081f2Ad248391cd1483ae211d56c280887a'
+      ];
+
+      return connectionEstablished(eth, network, unlocked.concat(accounts));
     }).pipe(retryWhen((error) => error.pipe(delay(1000))));
 
     return Rx.concat(connection$, Rx.NEVER);
@@ -63,7 +66,7 @@ export const Ganache: React.FC<ConnectionMethodProps> = ({ connect, disconnect, 
 
 export const method: ConnectionMethod = {
   connect,
-  supported: () => !!getConfig(NetworkEnum.TESTNET),
+  supported: () => window.location.hostname === 'localhost',
   component: Ganache,
   icon: 'GANACHE',
   name: 'ganache',

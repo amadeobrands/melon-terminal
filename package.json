@@ -33,7 +33,7 @@
     "@0x/order-utils-v2": "npm:@0x/order-utils@8.4.0",
     "@0x/orderbook": "^2.2.1",
     "@apollo/react-hooks": "^3.1.5",
-    "@melonproject/melongql": "^1.0.1",
+    "@melonproject/melongql": "^1.0.2",
     "@melonproject/melonjs": "^1.0.5",
     "@popperjs/core": "^2.3.3",
     "@styled-icons/fa-solid": "^10.0.0",
