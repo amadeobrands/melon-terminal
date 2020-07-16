@@ -6,7 +6,7 @@ import { useFund } from '~/hooks/useFund';
 import { calculateReturn, average, calculateVolatility } from '~/utils/finance';
 import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
-import { SectionTitle } from '~/storybook/Title/Title';
+import { SectionTitle, Title } from '~/storybook/Title/Title';
 import {
   useFetchFundPricesByMonthEnd,
   MonthendTimelineItem,
@@ -17,6 +17,8 @@ import { monthlyReturnsFromTimeline, DisplayData } from './FundMetricsUtilFuncti
 import { findCorrectFromTime, findCorrectToTime } from '~/utils/priceServiceDates';
 import { Dictionary, DictionaryEntry, DictionaryLabel, DictionaryData } from '~/storybook/Dictionary/Dictionary';
 import { SelectWidget, SelectField } from '~/components/Form/Select/Select';
+import styled from 'styled-components';
+import { SectionTitleContainer } from '~/storybook/Title/Title.styles';
 
 export interface FundSharePriceMetricsProps {
   address: string;
@@ -69,13 +71,7 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
 
-  const [selectedCurrency, setSelectedCurrency] = React.useState<keyof HoldingPeriodReturns>(
-    comparisonCurrencies[0].label
-  );
-
-  const unselectedCurrencies = React.useMemo(() => {
-    return comparisonCurrencies.filter((ccy) => ccy.label !== selectedCurrency);
-  }, [selectedCurrency]);
+  const [selectedCurrency, setSelectedCurrency] = React.useState<SelectItem>(comparisonCurrencies[0]);
 
   if (fund.creationTime && differenceInCalendarDays(today, fund.creationTime) < 7) {
     return null;
@@ -228,30 +224,30 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
     );
   }
 
-  const mostRecentPrice = sharePriceByDate.mostRecent[selectedCurrency];
-  const quarterStartPrice = sharePriceByDate.quarterStart[selectedCurrency];
-  const monthStartPrice = sharePriceByDate.monthStart[selectedCurrency];
-  const yearStartPrice = sharePriceByDate.yearStart[selectedCurrency];
+  const mostRecentPrice = sharePriceByDate.mostRecent[selectedCurrency.value];
+  const quarterStartPrice = sharePriceByDate.quarterStart[selectedCurrency.value];
+  const monthStartPrice = sharePriceByDate.monthStart[selectedCurrency.value];
+  const yearStartPrice = sharePriceByDate.yearStart[selectedCurrency.value];
 
   const qtdReturn = mostRecentPrice && quarterStartPrice && calculateReturn(mostRecentPrice, quarterStartPrice);
   const mtdReturn = mostRecentPrice && monthStartPrice && calculateReturn(mostRecentPrice, monthStartPrice);
   const ytdReturn = mostRecentPrice && yearStartPrice && calculateReturn(mostRecentPrice, yearStartPrice);
 
-  const bestMonth = monthlyReturns?.[selectedCurrency].reduce((carry: DisplayData, current: DisplayData) => {
+  const bestMonth = monthlyReturns?.[selectedCurrency.value].reduce((carry: DisplayData, current: DisplayData) => {
     if (current.return.isGreaterThan(carry.return)) {
       return current;
     }
     return carry;
-  }, monthlyReturns[selectedCurrency][0]);
+  }, monthlyReturns[selectedCurrency.value][0]);
 
-  const worstMonth = monthlyReturns?.[selectedCurrency].reduce((carry: DisplayData, current: DisplayData) => {
+  const worstMonth = monthlyReturns?.[selectedCurrency.value].reduce((carry: DisplayData, current: DisplayData) => {
     if (current.return.isLessThan(carry.return)) {
       return current;
     }
     return carry;
-  }, monthlyReturns[selectedCurrency][0]);
+  }, monthlyReturns[selectedCurrency.value][0]);
 
-  const monthlyWinLoss = monthlyReturns?.[selectedCurrency].reduce(
+  const monthlyWinLoss = monthlyReturns?.[selectedCurrency.value].reduce(
     (carry: { win: number; lose: number }, current: DisplayData) => {
       if (current.return.isGreaterThanOrEqualTo(0)) {
         carry.win++;
@@ -263,8 +259,8 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
     { win: 0, lose: 0 }
   ) || { win: 0, lose: 0 };
 
-  const averageMonthlyReturn = monthlyReturns && average(monthlyReturns[selectedCurrency].map((month) => month.return));
-  const positiveMonthRatio = (monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100;
+  const averageMonthlyReturn =
+    monthlyReturns && average(monthlyReturns[selectedCurrency.value].map((month) => month.return));
 
   const volSampleTime =
     differenceInCalendarDays(today, fund.creationTime!) > 20 ? 20 : differenceInCalendarDays(today, fund.creationTime!);
@@ -282,21 +278,29 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
       return;
     }
     const newCurrency = comparisonCurrencies.filter((item) => item.value == value)[0];
-    setSelectedCurrency(newCurrency.value);
+    setSelectedCurrency(newCurrency);
   }
+
+  const CurrencySelect = styled.div`
+    min-width: 100px;
+    float: left;
+    // margin-bottom: 5px;
+  `;
 
   return (
     // add
     <Dictionary>
-      <SectionTitle>
-        Share Price Metrics in {selectedCurrency}{' '}
-        <SelectField
-          name="Comparison Currency"
-          defaultValue={comparisonCurrencies[0]}
-          options={comparisonCurrencies}
-          onChange={(value) => value && toggleCurrencySelection((value as any).value)}
-        />
-      </SectionTitle>
+      <SectionTitleContainer>
+        <Title>Share Price Metrics in</Title>{' '}
+        <CurrencySelect>
+          <SelectField
+            name="Comparison Currency"
+            defaultValue={selectedCurrency}
+            options={comparisonCurrencies}
+            onChange={(value) => value && toggleCurrencySelection((value as any).value)}
+          />
+        </CurrencySelect>
+      </SectionTitleContainer>
 
       <DictionaryEntry>
         <DictionaryLabel>MTD Return</DictionaryLabel>

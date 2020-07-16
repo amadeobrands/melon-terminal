@@ -46,3 +46,5 @@ export const SectionTitleContainer = styled.div`
   flex-wrap: wrap;
   align-items: baseline;
 `;
+
+export const ComponentContainer = styled.div``;

@@ -3,10 +3,11 @@ import * as S from './Title.styles';
 import { TooltipContainer } from '../Tooltip/Tooltip.styles';
 import { Tooltip } from '../Tooltip/Tooltip';
 import { FaRegQuestionCircle } from 'react-icons/fa';
+import { SelectProps, SelectField } from '~/components/Form/Select/Select';
 
 interface SectionTitleProps {
   tooltip?: string;
-
+  select?: SelectProps;
   placement?:
     | 'auto'
     | 'left'
@@ -29,9 +30,7 @@ interface SectionTitleProps {
 export const SectionTitle: React.FC<SectionTitleProps> = (props) => {
   return (
     <>
-      {!props.tooltip ? (
-        <S.SectionTitle>{props.children}</S.SectionTitle>
-      ) : (
+      {props.tooltip ? (
         <S.SectionTitleContainer>
           <S.Title>{props.children}</S.Title>
           <TooltipContainer>
@@ -40,6 +39,8 @@ export const SectionTitle: React.FC<SectionTitleProps> = (props) => {
             </Tooltip>
           </TooltipContainer>
         </S.SectionTitleContainer>
+      ) : (
+        <S.SectionTitle>{props.children}</S.SectionTitle>
       )}
     </>
   );
