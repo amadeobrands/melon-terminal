@@ -36,6 +36,21 @@ interface SelectItem {
   value: keyof HoldingPeriodReturns;
 }
 
+const CurrencySelect = styled.div`
+  min-width: 100px;
+  float: left;
+  margin-bottom: 5px;
+`;
+
+const TitleContainerWithSelect = styled.div`
+  border-bottom: ${(props) => props.theme.border.borderSecondary};
+  margin-bottom: ${(props) => props.theme.spaceUnits.m};
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: 'baseline';
+`;
+
 function findTimeLineItemByDate(timeline: MonthendTimelineItem[], date: Date) {
   const startOfDay = findCorrectFromTime(date);
   const endOfDay = findCorrectToTime(date);
@@ -281,17 +296,11 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
     setSelectedCurrency(newCurrency);
   }
 
-  const CurrencySelect = styled.div`
-    min-width: 100px;
-    float: left;
-    // margin-bottom: 5px;
-  `;
-
   return (
     // add
     <Dictionary>
-      <SectionTitleContainer>
-        <Title>Share Price Metrics in</Title>{' '}
+      <TitleContainerWithSelect>
+        <Title>Share Price Metrics</Title>{' '}
         <CurrencySelect>
           <SelectField
             name="Comparison Currency"
@@ -300,7 +309,7 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
             onChange={(value) => value && toggleCurrencySelection((value as any).value)}
           />
         </CurrencySelect>
-      </SectionTitleContainer>
+      </TitleContainerWithSelect>
 
       <DictionaryEntry>
         <DictionaryLabel>MTD Return</DictionaryLabel>
