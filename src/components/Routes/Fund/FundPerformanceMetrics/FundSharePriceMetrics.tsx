@@ -39,9 +39,6 @@ interface SelectItem {
 const CurrencySelect = styled.div`
   min-width: 100px;
   float: left;
-<<<<<<< HEAD
-  // margin-bottom: 5px;
-=======
   margin-bottom: 5px;
 `;
 
@@ -52,7 +49,6 @@ const TitleContainerWithSelect = styled.div`
   justify-content: space-between;
   flex-wrap: wrap;
   align-items: 'baseline';
->>>>>>> bd6299c10c644ff9e97b1dfe42f5416f7a55e0fb
 `;
 
 function findTimeLineItemByDate(timeline: MonthendTimelineItem[], date: Date) {

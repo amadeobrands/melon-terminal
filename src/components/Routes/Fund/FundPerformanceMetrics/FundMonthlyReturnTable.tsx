@@ -27,8 +27,6 @@ import { Title } from '~/storybook/Title/Title';
 import { useFetchFundPricesByMonthEnd } from '~/hooks/metricsService/useFetchFundPricesByMonthEnd';
 import { useFetchReferencePricesByDate } from '~/hooks/metricsService/useFetchReferencePricesByDate';
 import { MonthlyReturnData, monthlyReturnsFromTimeline } from './FundMetricsUtilFunctions';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import { SectionTitleContainer } from '~/storybook/Title/Title.styles';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 import styled from 'styled-components';
 
