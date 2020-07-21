@@ -23,7 +23,7 @@ import { Button } from '~/components/Form/Button/Button';
 import { useFund } from '~/hooks/useFund';
 import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
-import { Title } from '~/storybook/Title/Title';
+import { Title, SectionTitle } from '~/storybook/Title/Title';
 import { useFetchFundPricesByMonthEnd } from '~/hooks/metricsService/useFetchFundPricesByMonthEnd';
 import { useFetchReferencePricesByDate } from '~/hooks/metricsService/useFetchReferencePricesByDate';
 import { MonthlyReturnData, monthlyReturnsFromTimeline } from './FundMetricsUtilFunctions';
@@ -60,7 +60,14 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   const fund = useFund();
 
   if (fund.creationTime && differenceInCalendarDays(today, fund.creationTime) < 7) {
-    return null;
+    return (
+      <Block>
+        <SectionTitle>Monthly Returns</SectionTitle>
+        <NotificationBar kind="neutral">
+          <NotificationContent>Statistics are not available for funds younger than one week.</NotificationContent>
+        </NotificationBar>
+      </Block>
+    );
   }
 
   const fundInception = fund.creationTime!;
@@ -89,18 +96,20 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   if (!monthlyData || monthlyFetching || !fxAtInception || fxAtInceptionFetching) {
     return (
       <Block>
+        <SectionTitle>Monthly Returns</SectionTitle>
         <Spinner />
       </Block>
     );
   }
 
-  if (monthlyError || fxAtInceptionError) {
+  if (monthlyError || fxAtInceptionError || monthlyData?.errors) {
     return <Block>ERROR</Block>;
   }
 
   const tableData: MonthlyReturnData =
     fund &&
     monthlyData &&
+    fxAtInception &&
     monthlyReturnsFromTimeline(monthlyData.data, fxAtInception, today, activeMonths, monthsBeforeFund, monthsRemaining);
 
   const validDataLengthCheck = tableData && tableData.ETH.length === monthsBeforeFund + activeMonths + monthsRemaining;

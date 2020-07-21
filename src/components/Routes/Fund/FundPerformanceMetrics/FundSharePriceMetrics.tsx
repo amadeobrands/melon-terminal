@@ -18,7 +18,8 @@ import { findCorrectFromTime, findCorrectToTime } from '~/utils/priceServiceDate
 import { Dictionary, DictionaryEntry, DictionaryLabel, DictionaryData } from '~/storybook/Dictionary/Dictionary';
 import { SelectWidget, SelectField } from '~/components/Form/Select/Select';
 import styled from 'styled-components';
-import { SectionTitleContainer } from '~/storybook/Title/Title.styles';
+import { SectionTitleContainer, SectionTitle } from '~/storybook/Title/Title.styles';
+import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 
 export interface FundSharePriceMetricsProps {
   address: string;
@@ -48,7 +49,7 @@ const TitleContainerWithSelect = styled.div`
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  align-items: 'baseline';
+  align-items: flex-end;
 `;
 
 function findTimeLineItemByDate(timeline: MonthendTimelineItem[], date: Date) {
@@ -88,8 +89,16 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
 
   const [selectedCurrency, setSelectedCurrency] = React.useState<SelectItem>(comparisonCurrencies[0]);
 
+  // TODO -
   if (fund.creationTime && differenceInCalendarDays(today, fund.creationTime) < 7) {
-    return null;
+    return (
+      <Block>
+        <SectionTitle>Share Price Metrics</SectionTitle>
+        <NotificationBar kind="neutral">
+          <NotificationContent>Statistics are not available for funds younger than one week.</NotificationContent>
+        </NotificationBar>
+      </Block>
+    );
   }
 
   const fundInceptionDate = findCorrectFromTime(fund.creationTime!);
@@ -156,47 +165,47 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
       },
       monthStart: {
         ETH:
-          monthlyData &&
+          monthlyData?.data &&
           calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, monthStartDate)).ETH,
         USD:
-          monthlyData &&
+          monthlyData?.data &&
           calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, monthStartDate)).USD,
         EUR:
-          monthlyData &&
+          monthlyData?.data &&
           calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, monthStartDate)).EUR,
         BTC:
-          monthlyData &&
+          monthlyData?.data &&
           calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, monthStartDate)).BTC,
       },
       quarterStart: {
         ETH:
-          monthlyData &&
+          monthlyData?.data &&
           calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, quarterStartDate)).ETH,
         USD:
-          monthlyData &&
+          monthlyData?.data &&
           calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, quarterStartDate)).USD,
         EUR:
-          monthlyData &&
+          monthlyData?.data &&
           calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, quarterStartDate)).EUR,
         BTC:
-          monthlyData &&
+          monthlyData?.data &&
           calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, quarterStartDate)).BTC,
       },
       yearStart: {
         ETH:
-          monthlyData && isBefore(yearStartDate, fundInceptionDate)
+          monthlyData?.data && isBefore(yearStartDate, fundInceptionDate)
             ? calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, yearStartDate)).ETH
             : 1,
         USD:
-          monthlyData && isBefore(yearStartDate, fundInceptionDate)
+          monthlyData?.data && isBefore(yearStartDate, fundInceptionDate)
             ? calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, yearStartDate)).USD
             : fxAtInception?.ethusd,
         EUR:
-          monthlyData && isBefore(yearStartDate, fundInceptionDate)
+          monthlyData?.data && isBefore(yearStartDate, fundInceptionDate)
             ? calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, yearStartDate)).EUR
             : fxAtInception?.etheur,
         BTC:
-          monthlyData && isBefore(yearStartDate, fundInceptionDate)
+          monthlyData?.data && isBefore(yearStartDate, fundInceptionDate)
             ? calculateSharePricesFromTimelineItem(findTimeLineItemByDate(monthlyData.data, yearStartDate)).BTC
             : fxAtInception?.ethbtc,
       },
@@ -213,7 +222,34 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
   ) {
     return (
       <Block>
+        <TitleContainerWithSelect>
+          <Title>Share Price Metrics</Title>
+        </TitleContainerWithSelect>
         <>ERROR</>
+      </Block>
+    );
+  }
+
+  if (
+    !historicalData ||
+    historicalDataFetching ||
+    !monthlyData ||
+    monthlyFetching ||
+    !fxAtInception ||
+    fxAtInceptionFetching ||
+    !fxAtMonthStart ||
+    fxAtMonthStartFetching ||
+    !fxAtQuarterStart ||
+    fxAtQuarterStartFetching ||
+    !fxAtYearStart ||
+    fxAtYearStartFetching
+  ) {
+    return (
+      <Block>
+        <TitleContainerWithSelect>
+          <Title>Share Price Metrics</Title>
+        </TitleContainerWithSelect>
+        <Spinner />
       </Block>
     );
   }
@@ -288,96 +324,69 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
           />
         </CurrencySelect>
       </TitleContainerWithSelect>
-      {historicalData ||
-      !historicalDataFetching ||
-      monthlyData ||
-      !monthlyFetching ||
-      fxAtInception ||
-      !fxAtInceptionFetching ||
-      fxAtMonthStart ||
-      !fxAtMonthStartFetching ||
-      fxAtQuarterStart ||
-      !fxAtQuarterStartFetching ||
-      fxAtYearStart ||
-      !fxAtYearStartFetching ? (
-        <Dictionary>
-          <DictionaryEntry>
-            <DictionaryLabel>MTD Return</DictionaryLabel>
-            <DictionaryData textAlign={'right'}>
-              <FormattedNumber decimals={2} value={mtdReturn} suffix={'%'} colorize={true} />
-            </DictionaryData>
-          </DictionaryEntry>
-          <DictionaryEntry>
-            <DictionaryLabel>QTD Return</DictionaryLabel>
-            <DictionaryData textAlign={'right'}>
-              {qtdReturn ? (
-                <FormattedNumber decimals={2} value={qtdReturn} suffix={'%'} colorize={true} />
-              ) : (
-                '...loading'
-              )}
-            </DictionaryData>
-          </DictionaryEntry>
-          <DictionaryEntry>
-            <DictionaryLabel>YTD Return</DictionaryLabel>
-            <DictionaryData textAlign={'right'}>
-              {ytdReturn ? (
-                <FormattedNumber decimals={2} value={ytdReturn} suffix={'%'} colorize={true} />
-              ) : (
-                '...loading'
-              )}
-            </DictionaryData>
-          </DictionaryEntry>
-          <DictionaryEntry>
-            <DictionaryLabel>Best Month</DictionaryLabel>
-            <DictionaryData textAlign={'right'}>
-              {bestMonth ? (
-                <FormattedNumber decimals={2} value={bestMonth.return} suffix={'%'} colorize={true} />
-              ) : (
-                '...loading'
-              )}
-            </DictionaryData>
-          </DictionaryEntry>
-          <DictionaryEntry>
-            <DictionaryLabel>Worst Month</DictionaryLabel>
-            <DictionaryData textAlign={'right'}>
-              {worstMonth ? (
-                <FormattedNumber decimals={2} value={worstMonth?.return} suffix={'%'} colorize={true} />
-              ) : (
-                '...loading'
-              )}
-            </DictionaryData>
-          </DictionaryEntry>
-          <DictionaryEntry>
-            <DictionaryLabel>Months With Gain</DictionaryLabel>
-            <DictionaryData textAlign={'right'}>
-              <FormattedNumber value={monthlyWinLoss.win} decimals={0} />/{' '}
-              <FormattedNumber value={monthlyWinLoss.win + monthlyWinLoss.lose} decimals={0} />
-            </DictionaryData>
-          </DictionaryEntry>
-          <DictionaryEntry>
-            <DictionaryLabel>Average Monthly Return</DictionaryLabel>
-            <DictionaryData textAlign={'right'}>
-              {averageMonthlyReturn ? (
-                <FormattedNumber decimals={2} value={averageMonthlyReturn} colorize={true} suffix={'%'} />
-              ) : (
-                '...loading'
-              )}
-            </DictionaryData>
-          </DictionaryEntry>
-          <DictionaryEntry>
-            <DictionaryLabel>{volSampleTime}-day Return Volatility (of Share Price in ETH)</DictionaryLabel>
-            <DictionaryData textAlign={'right'}>
-              {sampleVol ? (
-                <FormattedNumber decimals={2} value={sampleVol} suffix={'%'} colorize={true} />
-              ) : (
-                '...loading'
-              )}
-            </DictionaryData>
-          </DictionaryEntry>
-        </Dictionary>
-      ) : (
-        <Spinner />
-      )}
+      <Dictionary>
+        <DictionaryEntry>
+          <DictionaryLabel>MTD Return</DictionaryLabel>
+          <DictionaryData textAlign={'right'}>
+            <FormattedNumber decimals={2} value={mtdReturn} suffix={'%'} colorize={true} />
+          </DictionaryData>
+        </DictionaryEntry>
+        <DictionaryEntry>
+          <DictionaryLabel>QTD Return</DictionaryLabel>
+          <DictionaryData textAlign={'right'}>
+            {qtdReturn ? <FormattedNumber decimals={2} value={qtdReturn} suffix={'%'} colorize={true} /> : '...loading'}
+          </DictionaryData>
+        </DictionaryEntry>
+        <DictionaryEntry>
+          <DictionaryLabel>YTD Return</DictionaryLabel>
+          <DictionaryData textAlign={'right'}>
+            {ytdReturn ? <FormattedNumber decimals={2} value={ytdReturn} suffix={'%'} colorize={true} /> : '...loading'}
+          </DictionaryData>
+        </DictionaryEntry>
+        <DictionaryEntry>
+          <DictionaryLabel>Best Month</DictionaryLabel>
+          <DictionaryData textAlign={'right'}>
+            {bestMonth ? (
+              <FormattedNumber decimals={2} value={bestMonth.return} suffix={'%'} colorize={true} />
+            ) : (
+              '...loading'
+            )}
+          </DictionaryData>
+        </DictionaryEntry>
+        <DictionaryEntry>
+          <DictionaryLabel>Worst Month</DictionaryLabel>
+          <DictionaryData textAlign={'right'}>
+            {worstMonth ? (
+              <FormattedNumber decimals={2} value={worstMonth?.return} suffix={'%'} colorize={true} />
+            ) : (
+              '...loading'
+            )}
+          </DictionaryData>
+        </DictionaryEntry>
+        <DictionaryEntry>
+          <DictionaryLabel>Months With Gain</DictionaryLabel>
+          <DictionaryData textAlign={'right'}>
+            <FormattedNumber value={monthlyWinLoss.win} decimals={0} />/{' '}
+            <FormattedNumber value={monthlyWinLoss.win + monthlyWinLoss.lose} decimals={0} />
+          </DictionaryData>
+        </DictionaryEntry>
+        <DictionaryEntry>
+          <DictionaryLabel>Average Monthly Return</DictionaryLabel>
+          <DictionaryData textAlign={'right'}>
+            {averageMonthlyReturn ? (
+              <FormattedNumber decimals={2} value={averageMonthlyReturn} colorize={true} suffix={'%'} />
+            ) : (
+              '...loading'
+            )}
+          </DictionaryData>
+        </DictionaryEntry>
+        <DictionaryEntry>
+          <DictionaryLabel>{volSampleTime}-day Return Volatility (of Share Price in ETH)</DictionaryLabel>
+          <DictionaryData textAlign={'right'}>
+            {sampleVol ? <FormattedNumber decimals={2} value={sampleVol} suffix={'%'} colorize={true} /> : '...loading'}
+          </DictionaryData>
+        </DictionaryEntry>
+      </Dictionary>
     </Block>
   );
 };
