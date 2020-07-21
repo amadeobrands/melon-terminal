@@ -6,7 +6,7 @@ import { useFund } from '~/hooks/useFund';
 import { calculateReturn, average, calculateVolatility } from '~/utils/finance';
 import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
-import { SectionTitle, Title } from '~/storybook/Title/Title';
+import { Title } from '~/storybook/Title/Title';
 import {
   useFetchFundPricesByMonthEnd,
   MonthendTimelineItem,
@@ -35,6 +35,12 @@ interface SelectItem {
   label: keyof HoldingPeriodReturns;
   value: keyof HoldingPeriodReturns;
 }
+
+const CurrencySelect = styled.div`
+  min-width: 100px;
+  float: left;
+  // margin-bottom: 5px;
+`;
 
 function findTimeLineItemByDate(timeline: MonthendTimelineItem[], date: Date) {
   const startOfDay = findCorrectFromTime(date);
@@ -189,27 +195,6 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
   }, [monthlyData, historicalData, fxAtMonthStart, fxAtQuarterStart, fxAtYearStart, fxAtInception]);
 
   if (
-    !historicalData ||
-    historicalDataFetching ||
-    !monthlyData ||
-    monthlyFetching ||
-    !fxAtInception ||
-    fxAtInceptionFetching ||
-    !fxAtMonthStart ||
-    fxAtMonthStartFetching ||
-    !fxAtQuarterStart ||
-    fxAtQuarterStartFetching ||
-    !fxAtYearStart ||
-    fxAtYearStartFetching
-  ) {
-    return (
-      <Block>
-        <Spinner />
-      </Block>
-    );
-  }
-
-  if (
     historicalDataError ||
     monthlyError ||
     fxAtInceptionError ||
@@ -281,15 +266,8 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
     setSelectedCurrency(newCurrency);
   }
 
-  const CurrencySelect = styled.div`
-    min-width: 100px;
-    float: left;
-    // margin-bottom: 5px;
-  `;
-
   return (
-    // add
-    <Dictionary>
+    <Block>
       <SectionTitleContainer>
         <Title>Share Price Metrics in</Title>{' '}
         <CurrencySelect>
@@ -301,69 +279,96 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
           />
         </CurrencySelect>
       </SectionTitleContainer>
-
-      <DictionaryEntry>
-        <DictionaryLabel>MTD Return</DictionaryLabel>
-        <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} value={mtdReturn} suffix={'%'} colorize={true} />
-        </DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>QTD Return</DictionaryLabel>
-        <DictionaryData textAlign={'right'}>
-          {qtdReturn ? <FormattedNumber decimals={2} value={qtdReturn} suffix={'%'} colorize={true} /> : '...loading'}
-        </DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>YTD Return</DictionaryLabel>
-        <DictionaryData textAlign={'right'}>
-          {ytdReturn ? <FormattedNumber decimals={2} value={ytdReturn} suffix={'%'} colorize={true} /> : '...loading'}
-        </DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Best Month</DictionaryLabel>
-        <DictionaryData textAlign={'right'}>
-          {bestMonth ? (
-            <FormattedNumber decimals={2} value={bestMonth.return} suffix={'%'} colorize={true} />
-          ) : (
-            '...loading'
-          )}
-        </DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Worst Month</DictionaryLabel>
-        <DictionaryData textAlign={'right'}>
-          {worstMonth ? (
-            <FormattedNumber decimals={2} value={worstMonth?.return} suffix={'%'} colorize={true} />
-          ) : (
-            '...loading'
-          )}
-        </DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Months With Gain</DictionaryLabel>
-        <DictionaryData textAlign={'right'}>
-          <FormattedNumber value={monthlyWinLoss.win} decimals={0} />/{' '}
-          <FormattedNumber value={monthlyWinLoss.win + monthlyWinLoss.lose} decimals={0} />
-          {/* <FormattedNumber decimals={2} value={positiveMonthRatio} suffix={'%'} /> */}
-        </DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>Average Monthly Return</DictionaryLabel>
-        <DictionaryData textAlign={'right'}>
-          {averageMonthlyReturn ? (
-            <FormattedNumber decimals={2} value={averageMonthlyReturn} colorize={true} suffix={'%'} />
-          ) : (
-            '...loading'
-          )}
-        </DictionaryData>
-      </DictionaryEntry>
-      <DictionaryEntry>
-        <DictionaryLabel>{volSampleTime}-day Return Volatility (of Share Price in ETH)</DictionaryLabel>
-        <DictionaryData textAlign={'right'}>
-          {sampleVol ? <FormattedNumber decimals={2} value={sampleVol} suffix={'%'} colorize={true} /> : '...loading'}
-        </DictionaryData>
-      </DictionaryEntry>
-    </Dictionary>
+      {historicalData ||
+      !historicalDataFetching ||
+      monthlyData ||
+      !monthlyFetching ||
+      fxAtInception ||
+      !fxAtInceptionFetching ||
+      fxAtMonthStart ||
+      !fxAtMonthStartFetching ||
+      fxAtQuarterStart ||
+      !fxAtQuarterStartFetching ||
+      fxAtYearStart ||
+      !fxAtYearStartFetching ? (
+        <Dictionary>
+          <DictionaryEntry>
+            <DictionaryLabel>MTD Return</DictionaryLabel>
+            <DictionaryData textAlign={'right'}>
+              <FormattedNumber decimals={2} value={mtdReturn} suffix={'%'} colorize={true} />
+            </DictionaryData>
+          </DictionaryEntry>
+          <DictionaryEntry>
+            <DictionaryLabel>QTD Return</DictionaryLabel>
+            <DictionaryData textAlign={'right'}>
+              {qtdReturn ? (
+                <FormattedNumber decimals={2} value={qtdReturn} suffix={'%'} colorize={true} />
+              ) : (
+                '...loading'
+              )}
+            </DictionaryData>
+          </DictionaryEntry>
+          <DictionaryEntry>
+            <DictionaryLabel>YTD Return</DictionaryLabel>
+            <DictionaryData textAlign={'right'}>
+              {ytdReturn ? (
+                <FormattedNumber decimals={2} value={ytdReturn} suffix={'%'} colorize={true} />
+              ) : (
+                '...loading'
+              )}
+            </DictionaryData>
+          </DictionaryEntry>
+          <DictionaryEntry>
+            <DictionaryLabel>Best Month</DictionaryLabel>
+            <DictionaryData textAlign={'right'}>
+              {bestMonth ? (
+                <FormattedNumber decimals={2} value={bestMonth.return} suffix={'%'} colorize={true} />
+              ) : (
+                '...loading'
+              )}
+            </DictionaryData>
+          </DictionaryEntry>
+          <DictionaryEntry>
+            <DictionaryLabel>Worst Month</DictionaryLabel>
+            <DictionaryData textAlign={'right'}>
+              {worstMonth ? (
+                <FormattedNumber decimals={2} value={worstMonth?.return} suffix={'%'} colorize={true} />
+              ) : (
+                '...loading'
+              )}
+            </DictionaryData>
+          </DictionaryEntry>
+          <DictionaryEntry>
+            <DictionaryLabel>Months With Gain</DictionaryLabel>
+            <DictionaryData textAlign={'right'}>
+              <FormattedNumber value={monthlyWinLoss.win} decimals={0} />/{' '}
+              <FormattedNumber value={monthlyWinLoss.win + monthlyWinLoss.lose} decimals={0} />
+            </DictionaryData>
+          </DictionaryEntry>
+          <DictionaryEntry>
+            <DictionaryLabel>Average Monthly Return</DictionaryLabel>
+            <DictionaryData textAlign={'right'}>
+              {averageMonthlyReturn ? (
+                <FormattedNumber decimals={2} value={averageMonthlyReturn} colorize={true} suffix={'%'} />
+              ) : (
+                '...loading'
+              )}
+            </DictionaryData>
+          </DictionaryEntry>
+          <DictionaryEntry>
+            <DictionaryLabel>{volSampleTime}-day Return Volatility (of Share Price in ETH)</DictionaryLabel>
+            <DictionaryData textAlign={'right'}>
+              {sampleVol ? (
+                <FormattedNumber decimals={2} value={sampleVol} suffix={'%'} colorize={true} />
+              ) : (
+                '...loading'
+              )}
+            </DictionaryData>
+          </DictionaryEntry>
+        </Dictionary>
+      ) : (
+        <Spinner />
+      )}
+    </Block>
   );
 };

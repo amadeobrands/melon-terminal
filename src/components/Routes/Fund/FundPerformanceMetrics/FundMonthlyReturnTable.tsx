@@ -1,5 +1,4 @@
 import * as React from 'react';
-import BigNumber from 'bignumber.js';
 import {
   Table,
   HeaderRow,
@@ -10,15 +9,12 @@ import {
   HeaderCellRightAlign,
 } from '~/storybook/Table/Table';
 import {
-  subMonths,
   subYears,
   format,
   differenceInCalendarMonths,
   startOfYear,
   differenceInCalendarYears,
-  endOfMonth,
   endOfYear,
-  startOfMonth,
   addMonths,
   differenceInCalendarDays,
 } from 'date-fns';
@@ -29,11 +25,10 @@ import { Spinner } from '~/storybook/Spinner/Spinner.styles';
 import { Title } from '~/storybook/Title/Title';
 import { useFetchFundPricesByMonthEnd } from '~/hooks/metricsService/useFetchFundPricesByMonthEnd';
 import { useFetchReferencePricesByDate } from '~/hooks/metricsService/useFetchReferencePricesByDate';
-import { fetchMultipleIndexPrices, MonthlyReturnData, monthlyReturnsFromTimeline } from './FundMetricsUtilFunctions';
-import { Button } from '~/components/Form/Button/Button';
-import { SelectWidget } from '~/components/Form/Select/Select';
+import { MonthlyReturnData, monthlyReturnsFromTimeline } from './FundMetricsUtilFunctions';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { SectionTitleContainer } from '~/storybook/Title/Title.styles';
+import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 
 export interface MonthlyReturnTableProps {
   address: string;
@@ -69,7 +64,6 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
       .reverse();
 
   const [selectedYear, setSelectedYear] = React.useState(activeYears[activeYears.length - 1].getFullYear());
-  const [historicalIndexPrices, sethistoricalIndexPrices] = React.useState<BigNumber[][] | undefined>(undefined);
 
   const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchFundPricesByMonthEnd(address);
 
@@ -83,25 +77,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   const monthsRemaining = differenceInCalendarMonths(endOfYear(today), today);
   const activeMonths = fund && differenceInCalendarMonths(today, fundInception) + 1;
 
-  const activeMonthDates = new Array(activeMonths)
-    .fill(null)
-    .map((item, index: number, arr: null[]) => {
-      if (index === arr.length - 1) {
-        const targetMonth = subMonths(today, index);
-        return [fund.creationTime!, endOfMonth(targetMonth)] as [Date, Date];
-      } else {
-        const targetMonth = subMonths(today, index);
-        return [startOfMonth(targetMonth), endOfMonth(targetMonth)] as [Date, Date];
-      }
-    })
-    .reverse();
-
-  React.useMemo(async () => {
-    const prices = await fetchMultipleIndexPrices(activeMonthDates);
-    sethistoricalIndexPrices(prices);
-  }, [fund]);
-
-  if (!monthlyData || monthlyFetching || !historicalIndexPrices || !fxAtInception || fxAtInceptionFetching) {
+  if (!monthlyData || monthlyFetching || !fxAtInception || fxAtInceptionFetching) {
     return (
       <Block>
         <Spinner />
@@ -112,20 +88,13 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   if (monthlyError || fxAtInceptionError) {
     return <Block>ERROR</Block>;
   }
-  // add check that data that comes back from metrics service - first date == same month as fundINception
+
   const tableData: MonthlyReturnData =
     fund &&
     monthlyData &&
-    historicalIndexPrices &&
-    monthlyReturnsFromTimeline(
-      monthlyData.data,
-      fxAtInception,
+    monthlyReturnsFromTimeline(monthlyData.data, fxAtInception, today, activeMonths, monthsBeforeFund, monthsRemaining);
 
-      today,
-      activeMonths,
-      monthsBeforeFund,
-      monthsRemaining
-    );
+  const validDataLengthCheck = tableData && tableData.ETH.length === monthsBeforeFund + activeMonths + monthsRemaining;
 
   function toggleYear(direction: 'decrement' | 'increment') {
     if (direction === 'decrement') {
@@ -142,46 +111,56 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
 
   return (
     <Block>
-      <SectionTitleContainer>
-        {activeYears.length > 1 && selectedYear !== activeYears[0].getFullYear() ? (
-          <FaChevronLeft cursor="pointer" onClick={() => toggleYear('decrement')} />
-        ) : null}
-        <Title>{selectedYear} Monthly Returns </Title>
-        {activeYears.length > 1 && selectedYear !== activeYears[activeYears.length - 1].getFullYear() ? (
-          <FaChevronRight cursor="pointer" onClick={() => toggleYear('increment')} />
-        ) : null}
-      </SectionTitleContainer>
+      {validDataLengthCheck ? (
+        <>
+          <SectionTitleContainer>
+            {activeYears.length > 1 && selectedYear !== activeYears[0].getFullYear() ? (
+              <FaChevronLeft cursor="pointer" onClick={() => toggleYear('decrement')} />
+            ) : null}
+            <Title>{selectedYear} Monthly Returns </Title>
+            {activeYears.length > 1 && selectedYear !== activeYears[activeYears.length - 1].getFullYear() ? (
+              <FaChevronRight cursor="pointer" onClick={() => toggleYear('increment')} />
+            ) : null}
+          </SectionTitleContainer>
 
-      <ScrollableTable>
-        <Table>
-          <tbody>
-            <HeaderRow>
-              <HeaderCellRightAlign>{'             '}</HeaderCellRightAlign>
-              {months.map((month, index) => (
-                <HeaderCellRightAlign key={index}>{month}</HeaderCellRightAlign>
-              ))}
-            </HeaderRow>
-            {potentialCurrencies.map((ccy, index) => {
-              return (
-                <BodyRow key={index * Math.random()}>
-                  <BodyCell>Return in {ccy.label}</BodyCell>
-                  {tableData[ccy.value]!.filter((item) => item.date.getFullYear() === selectedYear).map(
-                    (item, index) => (
-                      <BodyCellRightAlign key={index}>
-                        {item.return && !item.return.isNaN() ? (
-                          <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
-                        ) : (
-                          '-'
-                        )}
-                      </BodyCellRightAlign>
-                    )
-                  )}
-                </BodyRow>
-              );
-            })}
-          </tbody>
-        </Table>
-      </ScrollableTable>
+          <ScrollableTable>
+            <Table>
+              <tbody>
+                <HeaderRow>
+                  <HeaderCellRightAlign>{'             '}</HeaderCellRightAlign>
+                  {months.map((month, index) => (
+                    <HeaderCellRightAlign key={index}>{month}</HeaderCellRightAlign>
+                  ))}
+                </HeaderRow>
+
+                {potentialCurrencies.map((ccy, index) => (
+                  <BodyRow key={index * Math.random()}>
+                    <BodyCell>Return in {ccy.label}</BodyCell>
+                    {tableData[ccy.value]!.filter((item) => item.date.getFullYear() === selectedYear).map(
+                      (item, index) => (
+                        <BodyCellRightAlign key={index}>
+                          {item.return && !item.return.isNaN() ? (
+                            <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
+                          ) : (
+                            '-'
+                          )}
+                        </BodyCellRightAlign>
+                      )
+                    )}
+                  </BodyRow>
+                ))}
+              </tbody>
+            </Table>
+          </ScrollableTable>
+        </>
+      ) : (
+        <NotificationBar kind="error">
+          <NotificationContent>
+            There is a known issue where funds created in February 2020 cannot query their monthly returns. This is a
+            temporary error message while we fix this issue.
+          </NotificationContent>
+        </NotificationBar>
+      )}
     </Block>
   );
 };
