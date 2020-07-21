@@ -39,7 +39,20 @@ interface SelectItem {
 const CurrencySelect = styled.div`
   min-width: 100px;
   float: left;
+<<<<<<< HEAD
   // margin-bottom: 5px;
+=======
+  margin-bottom: 5px;
+`;
+
+const TitleContainerWithSelect = styled.div`
+  border-bottom: ${(props) => props.theme.border.borderSecondary};
+  margin-bottom: ${(props) => props.theme.spaceUnits.m};
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: 'baseline';
+>>>>>>> bd6299c10c644ff9e97b1dfe42f5416f7a55e0fb
 `;
 
 function findTimeLineItemByDate(timeline: MonthendTimelineItem[], date: Date) {
@@ -268,8 +281,8 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
 
   return (
     <Block>
-      <SectionTitleContainer>
-        <Title>Share Price Metrics in</Title>{' '}
+      <TitleContainerWithSelect>
+        <Title>Share Price Metrics</Title>{' '}
         <CurrencySelect>
           <SelectField
             name="Comparison Currency"
@@ -278,7 +291,7 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
             onChange={(value) => value && toggleCurrencySelection((value as any).value)}
           />
         </CurrencySelect>
-      </SectionTitleContainer>
+      </TitleContainerWithSelect>
       {historicalData ||
       !historicalDataFetching ||
       monthlyData ||

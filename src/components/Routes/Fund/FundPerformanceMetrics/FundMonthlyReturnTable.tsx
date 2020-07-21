@@ -19,6 +19,7 @@ import {
   differenceInCalendarDays,
 } from 'date-fns';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
+import { Button } from '~/components/Form/Button/Button';
 import { useFund } from '~/hooks/useFund';
 import { Block } from '~/storybook/Block/Block';
 import { Spinner } from '~/storybook/Spinner/Spinner.styles';
@@ -29,6 +30,7 @@ import { MonthlyReturnData, monthlyReturnsFromTimeline } from './FundMetricsUtil
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { SectionTitleContainer } from '~/storybook/Title/Title.styles';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
+import styled from 'styled-components';
 
 export interface MonthlyReturnTableProps {
   address: string;
@@ -41,10 +43,19 @@ interface SelectItem {
 
 const potentialCurrencies: SelectItem[] = [
   { label: 'ETH', value: 'ETH' },
-  { label: 'BTC', value: 'BTC' },
-  { label: 'EUR', value: 'EUR' },
   { label: 'USD', value: 'USD' },
+  { label: 'EUR', value: 'EUR' },
+  { label: 'BTC', value: 'BTC' },
 ];
+
+const TitleContainerWithButton = styled.div`
+  border-bottom: ${(props) => props.theme.border.borderSecondary};
+  margin-bottom: ${(props) => props.theme.spaceUnits.m};
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: 'baseline';
+`;
 
 export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ address }) => {
   const today = React.useMemo(() => new Date(), []);
@@ -113,16 +124,29 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     <Block>
       {validDataLengthCheck ? (
         <>
-          <SectionTitleContainer>
-            {activeYears.length > 1 && selectedYear !== activeYears[0].getFullYear() ? (
-              <FaChevronLeft cursor="pointer" onClick={() => toggleYear('decrement')} />
-            ) : null}
+          <TitleContainerWithButton>
             <Title>{selectedYear} Monthly Returns </Title>
-            {activeYears.length > 1 && selectedYear !== activeYears[activeYears.length - 1].getFullYear() ? (
-              <FaChevronRight cursor="pointer" onClick={() => toggleYear('increment')} />
+            {activeYears.length > 1 ? (
+              <div>
+                <Button
+                  onClick={() => toggleYear('decrement')}
+                  disabled={selectedYear == activeYears[0].getFullYear()}
+                  size="extrasmall"
+                  kind="secondary"
+                >
+                  {'<'}
+                </Button>
+                <Button
+                  onClick={() => toggleYear('increment')}
+                  disabled={selectedYear == activeYears[activeYears.length - 1].getFullYear()}
+                  size="extrasmall"
+                  kind="secondary"
+                >
+                  {'>'}
+                </Button>
+              </div>
             ) : null}
-          </SectionTitleContainer>
-
+          </TitleContainerWithButton>
           <ScrollableTable>
             <Table>
               <tbody>
@@ -132,23 +156,24 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
                     <HeaderCellRightAlign key={index}>{month}</HeaderCellRightAlign>
                   ))}
                 </HeaderRow>
-
-                {potentialCurrencies.map((ccy, index) => (
-                  <BodyRow key={index * Math.random()}>
-                    <BodyCell>Return in {ccy.label}</BodyCell>
-                    {tableData[ccy.value]!.filter((item) => item.date.getFullYear() === selectedYear).map(
-                      (item, index) => (
-                        <BodyCellRightAlign key={index}>
-                          {item.return && !item.return.isNaN() ? (
-                            <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
-                          ) : (
-                            '-'
-                          )}
-                        </BodyCellRightAlign>
-                      )
-                    )}
-                  </BodyRow>
-                ))}
+                {potentialCurrencies.map((ccy, index) => {
+                  return (
+                    <BodyRow key={index * Math.random()}>
+                      <BodyCell>Return in {ccy.label}</BodyCell>
+                      {tableData[ccy.value]!.filter((item) => item.date.getFullYear() === selectedYear).map(
+                        (item, index) => (
+                          <BodyCellRightAlign key={index}>
+                            {item.return && !item.return.isNaN() ? (
+                              <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
+                            ) : (
+                              '-'
+                            )}
+                          </BodyCellRightAlign>
+                        )
+                      )}
+                    </BodyRow>
+                  );
+                })}
               </tbody>
             </Table>
           </ScrollableTable>
