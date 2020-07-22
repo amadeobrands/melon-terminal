@@ -202,11 +202,21 @@ export const FundOrderbookMarketForm: React.FC<FundOrderbookMarketFormProps> = (
       ?.decimalPlaces(4)
       .toString()} ${quote.symbol} (through ${exchange})`;
 
+  const presets = React.useMemo(
+    () => [
+      {
+        label: 'Max',
+        value: takerBalance.integer ?? 0,
+      },
+    ],
+    [takerBalance]
+  );
+
   return (
     <Form formik={formik}>
       {order && (
         <>
-          <TokenValueInput label="Sell" name="taker" onChange={changeTakerAmount} />
+          <TokenValueInput label="Sell" name="taker" onChange={changeTakerAmount} presets={presets} />
           <TokenValueInput label="Buy" name="maker" onChange={changeMakerAmount} />
 
           {description && (

@@ -187,6 +187,16 @@ const FundLiquidityProviderTradingForm: React.FC<FundLiquidityProviderTradingFor
     })
     .filter((value) => !!value) as [ExchangeDefinition, React.ElementType][];
 
+  const presets = React.useMemo(
+    () => [
+      {
+        label: 'Max',
+        value: takerBalance,
+      },
+    ],
+    [takerBalance]
+  );
+
   return (
     <Form formik={formik}>
       <Grid>
@@ -199,6 +209,7 @@ const FundLiquidityProviderTradingForm: React.FC<FundLiquidityProviderTradingFor
               baseTokens={takerOptions}
               quoteName="maker"
               quoteTokens={makerOptions}
+              presets={presets}
             ></TokenSwap>
           </GridCol>
 

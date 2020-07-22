@@ -1,5 +1,17 @@
 import styled from 'styled-components';
 
+export const NumberInputWrapper = styled.div`
+  width: 100%;
+  position: relative;
+`;
+
+export const InputPresetWrapper = styled.div`
+  z-index: 100;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+`;
+
 export const InputContainer = styled.div`
   display: flex;
   margin-bottom: 10px;

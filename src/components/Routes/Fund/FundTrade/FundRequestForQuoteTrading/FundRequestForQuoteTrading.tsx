@@ -174,6 +174,19 @@ export const FundRequestForQuoteTrading: React.FC<FundRequestForQuoteTradingProp
   const amount = formik.values.taker?.value;
   const ready = !!(formik.isValid && market && amount && !amount.isNaN());
 
+  const presets = React.useMemo(() => {
+    if (loading) {
+      return [];
+    }
+
+    return [
+      {
+        label: 'Max',
+        value: takerBalance,
+      },
+    ];
+  }, [loading, takerBalance]);
+
   if (!takerCandidates.length) {
     return (
       <Block>
@@ -201,6 +214,7 @@ export const FundRequestForQuoteTrading: React.FC<FundRequestForQuoteTradingProp
                 quoteTokens={makerCandidates}
                 onChange={handleTokenSwapChange}
                 disabled={loading}
+                presets={presets}
               ></TokenSwap>
             </GridCol>
 

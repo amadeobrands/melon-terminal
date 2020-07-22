@@ -88,6 +88,16 @@ const WalletWrapEtherForm: React.FC<WalletWrapEtherFormProps> = ({ transaction, 
     !account.eth?.isLessThan(toTokenBaseUnit(amount, 18)) &&
     account.eth?.minus(toTokenBaseUnit(amount, 18)).isLessThan(new BigNumber('1e16'));
 
+  const presets = React.useMemo(
+    () => [
+      {
+        label: 'Max',
+        value: account.eth || 0,
+      },
+    ],
+    [account.eth]
+  );
+
   return (
     <>
       <Form formik={formik}>
@@ -96,7 +106,8 @@ const WalletWrapEtherForm: React.FC<WalletWrapEtherFormProps> = ({ transaction, 
             Your ETH balance: <TokenValueDisplay value={account.eth!} symbol="ETH" />
           </S.WalletWrapEtherBalance>
         </S.WalletWrapEtherBalances>
-        <TokenValueInput name="quantityEth" label="Quantity" />
+
+        <TokenValueInput presets={presets} name="quantityEth" label="Quantity" />
 
         {showNotification && (
           <NotificationBar kind="warning">

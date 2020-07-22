@@ -19,8 +19,17 @@ const ButtonBase = css`
   white-space: nowrap;
   cursor: pointer;
   transition: ${(props) => props.theme.transition.defaultAll};
+
   a {
     text-decoration: none;
+  }
+
+  & + & {
+    margin-left: ${(props) => props.theme.spaceUnits.m};
+  }
+
+  svg {
+    margin-left: ${(props) => props.theme.spaceUnits.xs};
   }
 `;
 
@@ -75,23 +84,25 @@ export const Button = styled.button<ButtonProps>`
     props.size === 'small' &&
     css`
       height: 32px;
+      padding: 0px ${(props) => props.theme.spaceUnits.s};
+      & + & {
+        margin-left: ${(props) => props.theme.spaceUnits.s};
+      }
     `}
     ${(props) =>
       props.size === 'extrasmall' &&
       css`
         height: 24px;
+        padding: 0px ${(props) => props.theme.spaceUnits.xs};
+        & + & {
+          margin-left: ${(props) => props.theme.spaceUnits.xs};
+        }
       `}
     ${(props) =>
       props.length === 'stretch' &&
       css`
         width: 100%;
       `}
-  & + & {
-    margin-left: ${(props) => props.theme.spaceUnits.m};
-  }
-  svg {
-    margin-left: ${(props) => props.theme.spaceUnits.xs};
-  }
 `;
 
 export const LinkButton = styled(Button).attrs({

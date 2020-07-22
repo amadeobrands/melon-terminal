@@ -77,6 +77,16 @@ const WalletUnwrapEtherForm: React.FC<WalletUnwrapEtherFormProps> = ({ transacti
     return formik.values.quantityWeth.value;
   }, [formik.values.quantityWeth]);
 
+  const presets = React.useMemo(
+    () => [
+      {
+        label: 'Max',
+        value: account.weth || 0,
+      },
+    ],
+    [account.eth]
+  );
+
   return (
     <>
       <Form formik={formik}>
@@ -85,7 +95,7 @@ const WalletUnwrapEtherForm: React.FC<WalletUnwrapEtherFormProps> = ({ transacti
             Your WETH Balance: <TokenValueDisplay value={account.weth!} symbol="WETH" />
           </S.WalletUnwrapEtherBalance>
         </S.WalletUnwrapEtherBalances>
-        <TokenValueInput name="quantityWeth" label="Quantity" />
+        <TokenValueInput presets={presets} name="quantityWeth" label="Quantity" />
         <BlockActions>
           <Button type="submit">Unwrap Ether</Button>
         </BlockActions>

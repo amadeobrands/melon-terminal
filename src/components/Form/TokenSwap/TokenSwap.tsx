@@ -5,6 +5,7 @@ import {
   TokenSelectOption,
   TokenSelectTrigger,
   TokenSelectInput,
+  TokenValueSelectPreset,
 } from '../TokenValueSelect/TokenValueSelect';
 import { TokenValue } from '~/TokenValue';
 import { useField } from 'formik';
@@ -22,6 +23,7 @@ export interface TokenSwapProps {
   label?: string;
   disabled?: boolean;
   placeholder?: string;
+  presets?: TokenValueSelectPreset[];
   onChange?: (
     after: { base?: TokenValue; quote?: TokenDefinition },
     before: { base?: TokenValue; quote?: TokenDefinition }
@@ -40,6 +42,7 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({
   label,
   placeholder,
   disabled,
+  presets,
   onChange,
 }) => {
   const [{ onChange: _, ...fieldBase }, metaBase, helpersBase] = useField<TokenValue | undefined>(baseName);
@@ -140,6 +143,7 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({
         tokens={baseTokens}
         placeholder={placeholder}
         inputRef={inputRef}
+        presets={presets}
         onChange={handleBaseTokenChange}
       >
         <S.TokenSwapButton disabled={!(quoteSwitch && baseSwitch)} onClick={handleTokenSwap}>

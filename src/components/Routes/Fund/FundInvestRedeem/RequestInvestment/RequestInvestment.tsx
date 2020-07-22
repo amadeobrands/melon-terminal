@@ -232,6 +232,16 @@ export const RequestInvestment = React.forwardRef(
       investmentAmount.value?.dividedBy(requestedShares.value!)
     );
 
+    const presets = React.useMemo(
+      () => [
+        {
+          label: 'Max',
+          value: tokenBalance,
+        },
+      ],
+      [tokenBalance]
+    );
+
     return (
       <Form formik={formik}>
         <>
@@ -251,6 +261,7 @@ export const RequestInvestment = React.forwardRef(
         </>
         <TokenValueSelect
           name="investmentAmount"
+          presets={presets}
           label={
             <FormLabelWithTooltip
               label={

@@ -9,12 +9,20 @@ import { useField, Wrapper, Error, Label, FormikFieldProps } from '~/components/
 import { TokenValue } from '~/TokenValue';
 import { useClickOutside } from '~/hooks/useClickOutside';
 import * as S from './TokenValueSelect.styles';
+import { Button } from '~/components/Form/Button/Button';
+
+export interface TokenValueSelectPreset {
+  label: string;
+  value: TokenValue;
+  disabled?: boolean;
+}
 
 export interface TokenValueSelectProps {
   name: string;
   label?: string | JSX.Element;
   tokens: TokenDefinition[];
   disabled?: boolean;
+  presets?: TokenValueSelectPreset[];
   placeholder?: string;
   onChange?: (after: TokenValue, before?: TokenValue) => void;
 }
@@ -50,6 +58,7 @@ export const TokenValueSelectField: React.FC<TokenValueSelectFieldProps> = ({
   setTouched,
   setError,
   onChange,
+  presets,
   inputRef: providedInputRef,
   ...props
 }) => {
@@ -121,16 +130,36 @@ export const TokenValueSelectField: React.FC<TokenValueSelectFieldProps> = ({
   return (
     <>
       <S.InputContainer>
-        <BigNumberInputField
-          {...props}
-          getInputRef={inputRef}
-          value={number}
-          decimalScale={value?.token.decimals}
-          onValueChange={handleNumberChange}
-          isAllowed={isAllowed}
-          disabled={!value || props.disabled}
-          placeholder={value ? (props.placeholder ? props.placeholder : 'Enter a value ...') : undefined}
-        />
+        <S.NumberInputWrapper>
+          {!!presets?.length && (
+            <S.InputPresetWrapper>
+              {presets.map((preset) => (
+                <Button
+                  type="button"
+                  size="extrasmall"
+                  disabled={preset.disabled}
+                  onClick={() => {
+                    setValue(preset.value);
+                    onChange?.(preset.value, value);
+                  }}
+                >
+                  {preset.label}
+                </Button>
+              ))}
+            </S.InputPresetWrapper>
+          )}
+
+          <BigNumberInputField
+            {...props}
+            getInputRef={inputRef}
+            value={number}
+            decimalScale={value?.token.decimals}
+            onValueChange={handleNumberChange}
+            isAllowed={isAllowed}
+            disabled={!value || props.disabled}
+            placeholder={value ? (props.placeholder ? props.placeholder : 'Enter a value ...') : undefined}
+          />
+        </S.NumberInputWrapper>
 
         <TokenSelectTrigger
           triggerRef={triggerRef}

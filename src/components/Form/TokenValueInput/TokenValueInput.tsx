@@ -7,17 +7,30 @@ import { SelectLabel } from '~/components/Form/Select/Select';
 import { BigNumberInputField } from '~/components/Form/BigNumberInput/BigNumberInput';
 import { TokenValue } from '~/TokenValue';
 import * as S from './TokenValueInput.styles';
+import { Button } from '~/components/Form/Button/Button';
+
+export interface TokenValueInputPreset {
+  label: string;
+  value: BigNumber.Value;
+  disabled?: boolean;
+}
 
 export interface TokenValueInputProps {
   name: string;
   label?: string | JSX.Element;
+  presets?: TokenValueInputPreset[];
   // token: TokenDefinition;
   disabled?: boolean;
   noIcon?: boolean;
   onChange?: (value: TokenValue, before?: TokenValue) => void;
 }
 
-export const TokenValueInput: React.FC<TokenValueInputProps> = ({ label, onChange: onChangeFeedback, ...props }) => {
+export const TokenValueInput: React.FC<TokenValueInputProps> = ({
+  label,
+  presets,
+  onChange: onChangeFeedback,
+  ...props
+}) => {
   const [{ onChange, ...field }, meta, { setValue }] = useField<TokenValue | undefined>(props.name);
 
   const number = React.useMemo(() => {
@@ -51,16 +64,39 @@ export const TokenValueInput: React.FC<TokenValueInputProps> = ({ label, onChang
   return (
     <Wrapper>
       <Label>{label}</Label>
+
       <S.InputContainer>
-        <BigNumberInputField
-          {...meta}
-          {...field}
-          {...props}
-          value={number}
-          decimalScale={token.decimals}
-          onValueChange={onValueChange}
-          placeholder={field.value ? 'Enter a value ...' : undefined}
-        />
+        <S.NumberInputWrapper>
+          {!!presets?.length && (
+            <S.InputPresetWrapper>
+              {presets.map((preset) => (
+                <Button
+                  type="button"
+                  size="extrasmall"
+                  disabled={preset.disabled}
+                  onClick={() => {
+                    const value = TokenValue.fromToken(token, preset.value);
+
+                    setValue(value);
+                    onChangeFeedback?.(value, field.value);
+                  }}
+                >
+                  {preset.label}
+                </Button>
+              ))}
+            </S.InputPresetWrapper>
+          )}
+
+          <BigNumberInputField
+            {...meta}
+            {...field}
+            {...props}
+            value={number}
+            decimalScale={token.decimals}
+            onValueChange={onValueChange}
+            placeholder={field.value ? 'Enter a value ...' : undefined}
+          />
+        </S.NumberInputWrapper>
 
         {props.noIcon || (
           <S.TokenWrapper>
