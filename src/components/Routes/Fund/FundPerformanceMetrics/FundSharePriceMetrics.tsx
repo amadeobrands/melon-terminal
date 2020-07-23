@@ -3,10 +3,6 @@ import BigNumber from 'bignumber.js';
 import { startOfYear, startOfMonth, startOfQuarter, isBefore, subDays, differenceInCalendarDays } from 'date-fns';
 import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNumber';
 import { useFund } from '~/hooks/useFund';
-import { calculateReturn, average, calculateVolatility } from '~/utils/finance';
-import { Block } from '~/storybook/Block/Block';
-import { Spinner } from '~/storybook/Spinner/Spinner.styles';
-import { Title } from '~/storybook/Title/Title';
 import {
   useFetchFundPricesByMonthEnd,
   MonthendTimelineItem,
@@ -14,13 +10,17 @@ import {
 import { useFetchFundPricesByRange, RangeTimelineItem } from '~/hooks/metricsService/useFetchFundPricesByRange';
 import { useFetchReferencePricesByDate } from '~/hooks/metricsService/useFetchReferencePricesByDate';
 import { monthlyReturnsFromTimeline, DisplayData } from './FundMetricsUtilFunctions';
-import { findCorrectFromTime, findCorrectToTime } from '~/utils/priceServiceDates';
-import { DictionaryEntry, DictionaryLabel, DictionaryData } from '~/storybook/Dictionary/Dictionary';
 import { SelectField } from '~/components/Form/Select/Select';
-import styled from 'styled-components';
+import { DictionaryEntry, DictionaryLabel, DictionaryData } from '~/storybook/Dictionary/Dictionary';
 import { SectionTitle } from '~/storybook/Title/Title.styles';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 import { Tooltip } from '~/storybook/Tooltip/Tooltip';
+import { Block } from '~/storybook/Block/Block';
+import { Spinner } from '~/storybook/Spinner/Spinner.styles';
+import { Title } from '~/storybook/Title/Title';
+import { findCorrectFromTime, findCorrectToTime } from '~/utils/priceServiceDates';
+import { calculateReturn, average, calculateVolatility } from '~/utils/finance';
+import styled from 'styled-components';
 
 export interface FundSharePriceMetricsProps {
   address: string;
@@ -368,7 +368,7 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
-        <DictionaryLabel>Average Monthly Return</DictionaryLabel>
+        <DictionaryLabel>Average Month</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
           {averageMonthlyReturn ? (
             <FormattedNumber decimals={2} value={averageMonthlyReturn} colorize={true} suffix={'%'} />

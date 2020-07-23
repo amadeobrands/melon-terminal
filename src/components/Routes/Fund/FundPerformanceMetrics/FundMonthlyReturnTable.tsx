@@ -29,6 +29,7 @@ import { useFetchReferencePricesByDate } from '~/hooks/metricsService/useFetchRe
 import { MonthlyReturnData, monthlyReturnsFromTimeline } from './FundMetricsUtilFunctions';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 import styled from 'styled-components';
+import { numberPadding } from '~/utils/numberPadding';
 
 export interface MonthlyReturnTableProps {
   address: string;
@@ -128,6 +129,8 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     return format(addMonths(january, index), 'MMM');
   });
 
+  console.log(Math.floor(tableData.maxDigits / 2));
+
   return (
     <Block>
       {validDataLengthCheck ? (
@@ -172,9 +175,17 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
                         (item, index) => (
                           <BodyCellRightAlign key={index}>
                             {item.return && !item.return.isNaN() ? (
-                              <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
+                              <>
+                                <span>
+                                  {numberPadding(item.return.toPrecision(2).toString().length, tableData.maxDigits)}
+                                </span>
+                                <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
+                              </>
                             ) : (
-                              <span>{`    `}</span>
+                              <>
+                                <span>{numberPadding(0, tableData.maxDigits + 3)}</span>
+                                <span>-</span>
+                              </>
                             )}
                           </BodyCellRightAlign>
                         )

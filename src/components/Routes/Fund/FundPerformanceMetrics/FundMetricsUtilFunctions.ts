@@ -49,8 +49,8 @@ export function monthlyReturnsFromTimeline(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
         const rtrn = calculateReturn(new BigNumber(item.calculations.price), new BigNumber(1));
-        if (rtrn.toNumber().toString().length > maxDigits) {
-          maxDigits = rtrn.toNumber().toString().length;
+        if (rtrn.toPrecision(2).toString().length > maxDigits) {
+          maxDigits = rtrn.toPrecision(2).toString().length;
         }
         return {
           return: rtrn,
@@ -63,8 +63,8 @@ export function monthlyReturnsFromTimeline(
         new BigNumber(arr[index - 1].calculations.price)
       );
 
-      if (rtrn.toNumber().toString().length > maxDigits) {
-        maxDigits = rtrn.toNumber().toString().length;
+      if (rtrn.toPrecision(2).toString().length > maxDigits) {
+        maxDigits = rtrn.toPrecision(2).toString().length;
       }
 
       return {
@@ -78,8 +78,9 @@ export function monthlyReturnsFromTimeline(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
         const rtrn = calculateReturn(new BigNumber(item.calculations.price), new BigNumber(1));
-        if (rtrn.toString().length > maxDigits) {
-          maxDigits = rtrn.toString().length;
+
+        if (rtrn.toPrecision(2).toString().length > maxDigits) {
+          maxDigits = rtrn.toPrecision(2).toString().length;
         }
         return {
           return: rtrn,
@@ -92,8 +93,8 @@ export function monthlyReturnsFromTimeline(
         new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.ethusd)
       );
 
-      if (rtrn.toString().length > maxDigits) {
-        maxDigits = rtrn.toString().length;
+      if (rtrn.toPrecision(2).toString().length > maxDigits) {
+        maxDigits = rtrn.toPrecision(2).toString().length;
       }
 
       return {
@@ -110,8 +111,8 @@ export function monthlyReturnsFromTimeline(
           new BigNumber(dayZeroFx.etheur),
           new BigNumber(item.calculations.price * item.references.etheur)
         );
-        if (rtrn.toString().length > maxDigits) {
-          maxDigits = rtrn.toString().length;
+        if (rtrn.toPrecision(2).toString().length > maxDigits) {
+          maxDigits = rtrn.toPrecision(2).toString().length;
         }
         return {
           return: rtrn,
@@ -124,8 +125,8 @@ export function monthlyReturnsFromTimeline(
         new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.etheur)
       );
 
-      if (rtrn.toString().length > maxDigits) {
-        maxDigits = rtrn.toString().length;
+      if (rtrn.toPrecision(2).toString().length > maxDigits) {
+        maxDigits = rtrn.toPrecision(2).toString().length;
       }
 
       return {
@@ -142,8 +143,8 @@ export function monthlyReturnsFromTimeline(
           new BigNumber(dayZeroFx.ethbtc),
           new BigNumber(item.calculations.price * item.references.ethbtc)
         );
-        if (rtrn.toString().length > maxDigits) {
-          maxDigits = rtrn.toString().length;
+        if (rtrn.toPrecision(2).toString().length > maxDigits) {
+          maxDigits = rtrn.toPrecision(2).toString().length;
         }
         return {
           return: rtrn,
@@ -156,8 +157,8 @@ export function monthlyReturnsFromTimeline(
         new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.ethbtc)
       );
 
-      if (rtrn.toString().length > maxDigits) {
-        maxDigits = rtrn.toString().length;
+      if (rtrn.toPrecision(2).toString().length > maxDigits) {
+        maxDigits = rtrn.toPrecision(2).toString().length;
       }
 
       return {
@@ -205,6 +206,6 @@ export function monthlyReturnsFromTimeline(
         ? inactiveMonthReturns.concat(btcActiveMonthReturns).concat(monthsRemainingInYear)
         : btcActiveMonthReturns,
   };
-
+  // add 2 to maxDigits to account for % and -
   return { maxDigits: maxDigits, data: aggregatedMonthlyReturns };
 }
