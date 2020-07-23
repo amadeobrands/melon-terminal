@@ -35,7 +35,7 @@ export interface MonthlyReturnTableProps {
 }
 
 interface SelectItem {
-  value: keyof MonthlyReturnData;
+  value: keyof MonthlyReturnData['data'];
   label: string;
 }
 
@@ -112,7 +112,8 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     fxAtInception &&
     monthlyReturnsFromTimeline(monthlyData.data, fxAtInception, today, activeMonths, monthsBeforeFund, monthsRemaining);
 
-  const validDataLengthCheck = tableData && tableData.ETH.length === monthsBeforeFund + activeMonths + monthsRemaining;
+  const validDataLengthCheck =
+    tableData && tableData.data.ETH.length === monthsBeforeFund + activeMonths + monthsRemaining;
 
   function toggleYear(direction: 'decrement' | 'increment') {
     if (direction === 'decrement') {
@@ -167,13 +168,13 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
                   return (
                     <BodyRow key={index * Math.random()}>
                       <BodyCell>Return in {ccy.label}</BodyCell>
-                      {tableData[ccy.value]!.filter((item) => item.date.getFullYear() === selectedYear).map(
+                      {tableData.data[ccy.value]!.filter((item) => item.date.getFullYear() === selectedYear).map(
                         (item, index) => (
                           <BodyCellRightAlign key={index}>
                             {item.return && !item.return.isNaN() ? (
                               <FormattedNumber suffix={'%'} value={item.return} decimals={2} colorize={true} />
                             ) : (
-                              '-'
+                              <span>{`    `}</span>
                             )}
                           </BodyCellRightAlign>
                         )

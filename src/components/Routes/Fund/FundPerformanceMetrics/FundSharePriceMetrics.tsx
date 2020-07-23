@@ -15,11 +15,12 @@ import { useFetchFundPricesByRange, RangeTimelineItem } from '~/hooks/metricsSer
 import { useFetchReferencePricesByDate } from '~/hooks/metricsService/useFetchReferencePricesByDate';
 import { monthlyReturnsFromTimeline, DisplayData } from './FundMetricsUtilFunctions';
 import { findCorrectFromTime, findCorrectToTime } from '~/utils/priceServiceDates';
-import { Dictionary, DictionaryEntry, DictionaryLabel, DictionaryData } from '~/storybook/Dictionary/Dictionary';
-import { SelectWidget, SelectField } from '~/components/Form/Select/Select';
+import { DictionaryEntry, DictionaryLabel, DictionaryData } from '~/storybook/Dictionary/Dictionary';
+import { SelectField } from '~/components/Form/Select/Select';
 import styled from 'styled-components';
-import { SectionTitleContainer, SectionTitle } from '~/storybook/Title/Title.styles';
+import { SectionTitle } from '~/storybook/Title/Title.styles';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
+import { Tooltip } from '~/storybook/Tooltip/Tooltip';
 
 export interface FundSharePriceMetricsProps {
   address: string;
@@ -50,6 +51,10 @@ const TitleContainerWithSelect = styled.div`
   justify-content: space-between;
   flex-wrap: wrap;
   align-items: flex-end;
+`;
+
+const BlockWithSelect = styled(Block)`
+  padding-top: ${(props) => props.theme.spaceUnits.xs};
 `;
 
 function findTimeLineItemByDate(timeline: MonthendTimelineItem[], date: Date) {
@@ -263,21 +268,21 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
   const mtdReturn = mostRecentPrice && monthStartPrice && calculateReturn(mostRecentPrice, monthStartPrice);
   const ytdReturn = mostRecentPrice && yearStartPrice && calculateReturn(mostRecentPrice, yearStartPrice);
 
-  const bestMonth = monthlyReturns?.[selectedCurrency.value].reduce((carry: DisplayData, current: DisplayData) => {
+  const bestMonth = monthlyReturns?.data[selectedCurrency.value].reduce((carry: DisplayData, current: DisplayData) => {
     if (current.return.isGreaterThan(carry.return)) {
       return current;
     }
     return carry;
-  }, monthlyReturns[selectedCurrency.value][0]);
+  }, monthlyReturns.data[selectedCurrency.value][0]);
 
-  const worstMonth = monthlyReturns?.[selectedCurrency.value].reduce((carry: DisplayData, current: DisplayData) => {
+  const worstMonth = monthlyReturns?.data[selectedCurrency.value].reduce((carry: DisplayData, current: DisplayData) => {
     if (current.return.isLessThan(carry.return)) {
       return current;
     }
     return carry;
-  }, monthlyReturns[selectedCurrency.value][0]);
+  }, monthlyReturns.data[selectedCurrency.value][0]);
 
-  const monthlyWinLoss = monthlyReturns?.[selectedCurrency.value].reduce(
+  const monthlyWinLoss = monthlyReturns?.data[selectedCurrency.value].reduce(
     (carry: { win: number; lose: number }, current: DisplayData) => {
       if (current.return.isGreaterThanOrEqualTo(0)) {
         carry.win++;
@@ -290,7 +295,7 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
   ) || { win: 0, lose: 0 };
 
   const averageMonthlyReturn =
-    monthlyReturns && average(monthlyReturns[selectedCurrency.value].map((month) => month.return));
+    monthlyReturns && average(monthlyReturns.data[selectedCurrency.value].map((month) => month.return));
 
   const volSampleTime =
     differenceInCalendarDays(today, fund.creationTime!) > 20 ? 20 : differenceInCalendarDays(today, fund.creationTime!);
@@ -312,7 +317,7 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
   }
 
   return (
-    <Block>
+    <BlockWithSelect>
       <TitleContainerWithSelect>
         <Title>Share Price Metrics</Title>{' '}
         <CurrencySelect>
@@ -324,69 +329,79 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
           />
         </CurrencySelect>
       </TitleContainerWithSelect>
-      <Dictionary>
+
+      <DictionaryEntry>
+        <DictionaryLabel>MTD</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          <FormattedNumber decimals={2} value={mtdReturn} suffix={'%'} colorize={true} />
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>QTD</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          {qtdReturn ? <FormattedNumber decimals={2} value={qtdReturn} suffix={'%'} colorize={true} /> : '...loading'}
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>YTD</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          {ytdReturn ? <FormattedNumber decimals={2} value={ytdReturn} suffix={'%'} colorize={true} /> : '...loading'}
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>Best Month</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          {bestMonth ? (
+            <FormattedNumber decimals={2} value={bestMonth.return} suffix={'%'} colorize={true} />
+          ) : (
+            '...loading'
+          )}
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>Worst Month</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          {worstMonth ? (
+            <FormattedNumber decimals={2} value={worstMonth?.return} suffix={'%'} colorize={true} />
+          ) : (
+            '...loading'
+          )}
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>Average Monthly Return</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          {averageMonthlyReturn ? (
+            <FormattedNumber decimals={2} value={averageMonthlyReturn} colorize={true} suffix={'%'} />
+          ) : (
+            '...loading'
+          )}
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>Positive Months</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          <FormattedNumber
+            value={(monthlyWinLoss.win / (monthlyWinLoss.win + monthlyWinLoss.lose)) * 100}
+            suffix={'%'}
+            decimals={2}
+          />
+        </DictionaryData>
+      </DictionaryEntry>
+      <DictionaryEntry>
+        <DictionaryLabel>Track Record</DictionaryLabel>
+        <DictionaryData textAlign={'right'}>
+          <FormattedNumber value={monthlyWinLoss.win + monthlyWinLoss.lose} decimals={0} /> months
+        </DictionaryData>
+      </DictionaryEntry>
+      <Tooltip placement="auto" value={`${volSampleTime}-day volatility of fund share price in ETH`}>
         <DictionaryEntry>
-          <DictionaryLabel>MTD Return</DictionaryLabel>
-          <DictionaryData textAlign={'right'}>
-            <FormattedNumber decimals={2} value={mtdReturn} suffix={'%'} colorize={true} />
-          </DictionaryData>
-        </DictionaryEntry>
-        <DictionaryEntry>
-          <DictionaryLabel>QTD Return</DictionaryLabel>
-          <DictionaryData textAlign={'right'}>
-            {qtdReturn ? <FormattedNumber decimals={2} value={qtdReturn} suffix={'%'} colorize={true} /> : '...loading'}
-          </DictionaryData>
-        </DictionaryEntry>
-        <DictionaryEntry>
-          <DictionaryLabel>YTD Return</DictionaryLabel>
-          <DictionaryData textAlign={'right'}>
-            {ytdReturn ? <FormattedNumber decimals={2} value={ytdReturn} suffix={'%'} colorize={true} /> : '...loading'}
-          </DictionaryData>
-        </DictionaryEntry>
-        <DictionaryEntry>
-          <DictionaryLabel>Best Month</DictionaryLabel>
-          <DictionaryData textAlign={'right'}>
-            {bestMonth ? (
-              <FormattedNumber decimals={2} value={bestMonth.return} suffix={'%'} colorize={true} />
-            ) : (
-              '...loading'
-            )}
-          </DictionaryData>
-        </DictionaryEntry>
-        <DictionaryEntry>
-          <DictionaryLabel>Worst Month</DictionaryLabel>
-          <DictionaryData textAlign={'right'}>
-            {worstMonth ? (
-              <FormattedNumber decimals={2} value={worstMonth?.return} suffix={'%'} colorize={true} />
-            ) : (
-              '...loading'
-            )}
-          </DictionaryData>
-        </DictionaryEntry>
-        <DictionaryEntry>
-          <DictionaryLabel>Months With Gain</DictionaryLabel>
-          <DictionaryData textAlign={'right'}>
-            <FormattedNumber value={monthlyWinLoss.win} decimals={0} />/{' '}
-            <FormattedNumber value={monthlyWinLoss.win + monthlyWinLoss.lose} decimals={0} />
-          </DictionaryData>
-        </DictionaryEntry>
-        <DictionaryEntry>
-          <DictionaryLabel>Average Monthly Return</DictionaryLabel>
-          <DictionaryData textAlign={'right'}>
-            {averageMonthlyReturn ? (
-              <FormattedNumber decimals={2} value={averageMonthlyReturn} colorize={true} suffix={'%'} />
-            ) : (
-              '...loading'
-            )}
-          </DictionaryData>
-        </DictionaryEntry>
-        <DictionaryEntry>
-          <DictionaryLabel>{volSampleTime}-day Return Volatility (of Share Price in ETH)</DictionaryLabel>
+          <DictionaryLabel>Volatility</DictionaryLabel>
           <DictionaryData textAlign={'right'}>
             {sampleVol ? <FormattedNumber decimals={2} value={sampleVol} suffix={'%'} colorize={true} /> : '...loading'}
           </DictionaryData>
         </DictionaryEntry>
-      </Dictionary>
-    </Block>
+      </Tooltip>
+    </BlockWithSelect>
   );
 };

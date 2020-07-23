@@ -3,6 +3,7 @@ import { BigNumber } from 'bignumber.js';
 import { endOfMonth, subMonths, addMonths } from 'date-fns';
 import { calculateReturn } from '~/utils/finance';
 import { MonthendTimelineItem } from '~/hooks/metricsService/useFetchFundPricesByMonthEnd';
+import { kMaxLength } from 'buffer';
 
 export interface DisplayData {
   label?: string;
@@ -11,11 +12,14 @@ export interface DisplayData {
 }
 
 export interface MonthlyReturnData {
-  ETH: DisplayData[];
-  EUR: DisplayData[];
-  USD: DisplayData[];
-  BTC: DisplayData[];
-  BITWISE10?: DisplayData[];
+  maxDigits: number;
+  data: {
+    ETH: DisplayData[];
+    EUR: DisplayData[];
+    USD: DisplayData[];
+    BTC: DisplayData[];
+    BITWISE10?: DisplayData[];
+  };
 }
 
 /**
@@ -41,19 +45,32 @@ export function monthlyReturnsFromTimeline(
   monthsBeforeFund?: number,
   monthsRemaining?: number
 ): MonthlyReturnData {
+  let maxDigits = 0;
+
   const ethActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
+        const rtrn = calculateReturn(new BigNumber(item.calculations.price), new BigNumber(1));
+        if (rtrn.toNumber().toString().length > maxDigits) {
+          maxDigits = rtrn.toNumber().toString().length;
+        }
         return {
-          return: calculateReturn(new BigNumber(item.calculations.price), new BigNumber(1)),
+          return: rtrn,
           date: new Date(item.timestamp * 1000),
         };
       }
+
+      const rtrn = calculateReturn(
+        new BigNumber(item.calculations.price),
+        new BigNumber(arr[index - 1].calculations.price)
+      );
+
+      if (rtrn.toNumber().toString().length > maxDigits) {
+        maxDigits = rtrn.toNumber().toString().length;
+      }
+
       return {
-        return: calculateReturn(
-          new BigNumber(item.calculations.price),
-          new BigNumber(arr[index - 1].calculations.price)
-        ),
+        return: rtrn,
         date: new Date(item.timestamp * 1000),
       };
     }
@@ -62,19 +79,27 @@ export function monthlyReturnsFromTimeline(
   const usdActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
+        const rtrn = calculateReturn(new BigNumber(item.calculations.price), new BigNumber(1));
+        if (rtrn.toString().length > maxDigits) {
+          maxDigits = rtrn.toString().length;
+        }
         return {
-          return: calculateReturn(
-            new BigNumber(dayZeroFx.ethusd),
-            new BigNumber(item.calculations.price * item.references.ethusd)
-          ),
+          return: rtrn,
           date: new Date(item.timestamp * 1000),
         };
       }
+
+      const rtrn = calculateReturn(
+        new BigNumber(item.calculations.price * item.references.ethusd),
+        new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.ethusd)
+      );
+
+      if (rtrn.toString().length > maxDigits) {
+        maxDigits = rtrn.toString().length;
+      }
+
       return {
-        return: calculateReturn(
-          new BigNumber(item.calculations.price * item.references.ethusd),
-          new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.ethusd)
-        ),
+        return: rtrn,
         date: new Date(item.timestamp * 1000),
       };
     }
@@ -83,19 +108,30 @@ export function monthlyReturnsFromTimeline(
   const eurActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
+        const rtrn = calculateReturn(
+          new BigNumber(dayZeroFx.etheur),
+          new BigNumber(item.calculations.price * item.references.etheur)
+        );
+        if (rtrn.toString().length > maxDigits) {
+          maxDigits = rtrn.toString().length;
+        }
         return {
-          return: calculateReturn(
-            new BigNumber(dayZeroFx.etheur),
-            new BigNumber(item.calculations.price * item.references.etheur)
-          ),
+          return: rtrn,
           date: new Date(item.timestamp * 1000),
         };
       }
+
+      const rtrn = calculateReturn(
+        new BigNumber(item.calculations.price * item.references.etheur),
+        new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.etheur)
+      );
+
+      if (rtrn.toString().length > maxDigits) {
+        maxDigits = rtrn.toString().length;
+      }
+
       return {
-        return: calculateReturn(
-          new BigNumber(item.calculations.price * item.references.etheur),
-          new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.etheur)
-        ),
+        return: rtrn,
         date: new Date(item.timestamp * 1000),
       };
     }
@@ -104,19 +140,30 @@ export function monthlyReturnsFromTimeline(
   const btcActiveMonthReturns: DisplayData[] = monthlyReturnData.map(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       if (index === 0) {
+        const rtrn = calculateReturn(
+          new BigNumber(dayZeroFx.ethbtc),
+          new BigNumber(item.calculations.price * item.references.ethbtc)
+        );
+        if (rtrn.toString().length > maxDigits) {
+          maxDigits = rtrn.toString().length;
+        }
         return {
-          return: calculateReturn(
-            new BigNumber(dayZeroFx.ethbtc),
-            new BigNumber(item.calculations.price * item.references.ethbtc)
-          ),
+          return: rtrn,
           date: new Date(item.timestamp * 1000),
         };
       }
+
+      const rtrn = calculateReturn(
+        new BigNumber(item.calculations.price * item.references.ethbtc),
+        new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.ethbtc)
+      );
+
+      if (rtrn.toString().length > maxDigits) {
+        maxDigits = rtrn.toString().length;
+      }
+
       return {
-        return: calculateReturn(
-          new BigNumber(item.calculations.price * item.references.ethbtc),
-          new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.ethbtc)
-        ),
+        return: rtrn,
         date: new Date(item.timestamp * 1000),
       };
     }
@@ -161,5 +208,5 @@ export function monthlyReturnsFromTimeline(
         : btcActiveMonthReturns,
   };
 
-  return aggregatedMonthlyReturns;
+  return { maxDigits: maxDigits, data: aggregatedMonthlyReturns };
 }
