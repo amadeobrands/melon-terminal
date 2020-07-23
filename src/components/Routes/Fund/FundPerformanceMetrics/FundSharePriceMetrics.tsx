@@ -94,7 +94,6 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
 
   const [selectedCurrency, setSelectedCurrency] = React.useState<SelectItem>(comparisonCurrencies[0]);
 
-  // TODO -
   if (fund.creationTime && differenceInCalendarDays(today, fund.creationTime) < 7) {
     return (
       <Block>

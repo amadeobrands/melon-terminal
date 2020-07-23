@@ -1,9 +1,7 @@
-import { useQuery } from 'react-query';
 import { BigNumber } from 'bignumber.js';
 import { endOfMonth, subMonths, addMonths } from 'date-fns';
 import { calculateReturn } from '~/utils/finance';
 import { MonthendTimelineItem } from '~/hooks/metricsService/useFetchFundPricesByMonthEnd';
-import { kMaxLength } from 'buffer';
 
 export interface DisplayData {
   label?: string;
