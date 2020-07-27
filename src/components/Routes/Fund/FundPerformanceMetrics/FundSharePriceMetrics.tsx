@@ -332,46 +332,38 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
       <DictionaryEntry>
         <DictionaryLabel>MTD</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          <FormattedNumber decimals={2} value={mtdReturn} suffix={'%'} colorize={true} />
+          <FormattedNumber decimals={2} value={mtdReturn} suffix={'%'} />
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>QTD</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          {qtdReturn ? <FormattedNumber decimals={2} value={qtdReturn} suffix={'%'} colorize={true} /> : '...loading'}
+          {qtdReturn ? <FormattedNumber decimals={2} value={qtdReturn} suffix={'%'} /> : '...loading'}
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>YTD</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          {ytdReturn ? <FormattedNumber decimals={2} value={ytdReturn} suffix={'%'} colorize={true} /> : '...loading'}
+          {ytdReturn ? <FormattedNumber decimals={2} value={ytdReturn} suffix={'%'} /> : '...loading'}
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Best Month</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          {bestMonth ? (
-            <FormattedNumber decimals={2} value={bestMonth.return} suffix={'%'} colorize={true} />
-          ) : (
-            '...loading'
-          )}
+          {bestMonth ? <FormattedNumber decimals={2} value={bestMonth.return} suffix={'%'} /> : '...loading'}
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Worst Month</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
-          {worstMonth ? (
-            <FormattedNumber decimals={2} value={worstMonth?.return} suffix={'%'} colorize={true} />
-          ) : (
-            '...loading'
-          )}
+          {worstMonth ? <FormattedNumber decimals={2} value={worstMonth?.return} suffix={'%'} /> : '...loading'}
         </DictionaryData>
       </DictionaryEntry>
       <DictionaryEntry>
         <DictionaryLabel>Average Month</DictionaryLabel>
         <DictionaryData textAlign={'right'}>
           {averageMonthlyReturn ? (
-            <FormattedNumber decimals={2} value={averageMonthlyReturn} colorize={true} suffix={'%'} />
+            <FormattedNumber decimals={2} value={averageMonthlyReturn} suffix={'%'} />
           ) : (
             '...loading'
           )}
@@ -397,7 +389,7 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
         <DictionaryEntry>
           <DictionaryLabel>Volatility</DictionaryLabel>
           <DictionaryData textAlign={'right'}>
-            {sampleVol ? <FormattedNumber decimals={2} value={sampleVol} suffix={'%'} colorize={true} /> : '...loading'}
+            {sampleVol ? <FormattedNumber decimals={2} value={sampleVol} suffix={'%'} /> : '...loading'}
           </DictionaryData>
         </DictionaryEntry>
       </Tooltip>
