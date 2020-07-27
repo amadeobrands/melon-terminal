@@ -16,7 +16,7 @@ import { SectionTitle } from '~/storybook/Title/Title.styles';
 import { NotificationBar, NotificationContent } from '~/storybook/NotificationBar/NotificationBar';
 import { Tooltip } from '~/storybook/Tooltip/Tooltip';
 import { Block } from '~/storybook/Block/Block';
-import { Spinner } from '~/storybook/Spinner/Spinner.styles';
+import { Spinner } from '~/storybook/Spinner/Spinner';
 import { Title } from '~/storybook/Title/Title';
 import { findCorrectFromTime, findCorrectToTime } from '~/utils/priceServiceDates';
 import { calculateReturn, average, calculateVolatility } from '~/utils/finance';
@@ -93,17 +93,6 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
   const fund = useFund();
 
   const [selectedCurrency, setSelectedCurrency] = React.useState<SelectItem>(comparisonCurrencies[0]);
-
-  if (fund.creationTime && differenceInCalendarDays(today, fund.creationTime) < 7) {
-    return (
-      <Block>
-        <SectionTitle>Share Price Metrics</SectionTitle>
-        <NotificationBar kind="neutral">
-          <NotificationContent>Statistics are not available for funds younger than one week.</NotificationContent>
-        </NotificationBar>
-      </Block>
-    );
-  }
 
   const fundInceptionDate = findCorrectFromTime(fund.creationTime!);
   const monthStartDate = subDays(startOfMonth(today), 1);
@@ -216,20 +205,114 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
     };
   }, [monthlyData, historicalData, fxAtMonthStart, fxAtQuarterStart, fxAtYearStart, fxAtInception]);
 
+  const mostRecentPrice = sharePriceByDate.mostRecent[selectedCurrency.value];
+  const quarterStartPrice = sharePriceByDate.quarterStart[selectedCurrency.value];
+  const monthStartPrice = sharePriceByDate.monthStart[selectedCurrency.value];
+  const yearStartPrice = sharePriceByDate.yearStart[selectedCurrency.value];
+
+  const qtdReturn = mostRecentPrice && quarterStartPrice && calculateReturn(mostRecentPrice, quarterStartPrice);
+  const mtdReturn = mostRecentPrice && monthStartPrice && calculateReturn(mostRecentPrice, monthStartPrice);
+  const ytdReturn = mostRecentPrice && yearStartPrice && calculateReturn(mostRecentPrice, yearStartPrice);
+
+  const bestMonth = React.useMemo(() => {
+    return monthlyReturns?.data[selectedCurrency.value].reduce((carry: DisplayData, current: DisplayData) => {
+      if (current.return.isGreaterThan(carry.return)) {
+        return current;
+      }
+      return carry;
+    }, monthlyReturns.data[selectedCurrency.value][0]);
+  }, [monthlyReturns, selectedCurrency]);
+
+  const worstMonth = React.useMemo(() => {
+    return monthlyReturns?.data[selectedCurrency.value].reduce((carry: DisplayData, current: DisplayData) => {
+      if (current.return.isLessThan(carry.return)) {
+        return current;
+      }
+      return carry;
+    }, monthlyReturns.data[selectedCurrency.value][0]);
+  }, [monthlyReturns, selectedCurrency]);
+
+  const monthlyWinLoss = React.useMemo(() => {
+    return (
+      monthlyReturns?.data[selectedCurrency.value].reduce(
+        (carry: { win: number; lose: number }, current: DisplayData) => {
+          if (current.return.isGreaterThanOrEqualTo(0)) {
+            carry.win++;
+            return carry;
+          }
+          carry.lose++;
+          return carry;
+        },
+        { win: 0, lose: 0 }
+      ) || { win: 0, lose: 0 }
+    );
+  }, [monthlyReturns, selectedCurrency]);
+
+  const averageMonthlyReturn = React.useMemo(() => {
+    return monthlyReturns && average(monthlyReturns.data[selectedCurrency.value].map((month) => month.return));
+  }, [monthlyReturns, selectedCurrency]);
+
+  const volSampleTime =
+    differenceInCalendarDays(today, fund.creationTime!) > 20 ? 20 : differenceInCalendarDays(today, fund.creationTime!);
+
+  const sampleVol = React.useMemo(() => {
+    return (
+      historicalData &&
+      volSampleTime &&
+      calculateVolatility(
+        historicalData.data
+          .slice(volSampleTime, historicalData.data.length - 1)
+          .map((item: RangeTimelineItem) => new BigNumber(item.calculations.price))
+      )
+    );
+  }, [volSampleTime, historicalData]);
+
+  function toggleCurrencySelection(value: keyof HoldingPeriodReturns) {
+    if (!value) {
+      return;
+    }
+    const newCurrency = comparisonCurrencies.filter((item) => item.value == value)[0];
+    setSelectedCurrency(newCurrency);
+  }
+
+  if (fund.creationTime && differenceInCalendarDays(today, fund.creationTime) < 7) {
+    return (
+      <Block>
+        <SectionTitle>Share Price Metrics</SectionTitle>
+        <NotificationBar kind="neutral">
+          <NotificationContent>Statistics are not available for funds younger than one week.</NotificationContent>
+        </NotificationBar>
+      </Block>
+    );
+  }
+
   if (
     historicalDataError ||
     monthlyError ||
     fxAtInceptionError ||
     fxAtMonthStartError ||
     fxAtQuarterStartError ||
-    fxAtYearStartError
+    fxAtYearStartError ||
+    monthlyData?.errors?.length
   ) {
     return (
       <Block>
-        <TitleContainerWithSelect>
-          <Title>Share Price Metrics</Title>
-        </TitleContainerWithSelect>
-        <>ERROR</>
+        <SectionTitle>Share Price Metrics</SectionTitle>
+        <NotificationBar kind="error">
+          <NotificationContent>
+            There was an error fetching fund data.
+            {historicalDataError ||
+              monthlyError ||
+              fxAtInceptionError ||
+              fxAtMonthStartError ||
+              fxAtQuarterStartError ||
+              fxAtYearStartError}
+          </NotificationContent>
+          {monthlyData?.errors.length &&
+            monthlyData.errors.map((error: string) => {
+              return <NotificationContent>There was an error fetching fund data. {error}</NotificationContent>;
+            })}
+        </NotificationBar>
       </Block>
     );
   }
@@ -250,69 +333,10 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
   ) {
     return (
       <Block>
-        <TitleContainerWithSelect>
-          <Title>Share Price Metrics</Title>
-        </TitleContainerWithSelect>
+        <SectionTitle>Share Price Metrics</SectionTitle>
         <Spinner />
       </Block>
     );
-  }
-
-  const mostRecentPrice = sharePriceByDate.mostRecent[selectedCurrency.value];
-  const quarterStartPrice = sharePriceByDate.quarterStart[selectedCurrency.value];
-  const monthStartPrice = sharePriceByDate.monthStart[selectedCurrency.value];
-  const yearStartPrice = sharePriceByDate.yearStart[selectedCurrency.value];
-
-  const qtdReturn = mostRecentPrice && quarterStartPrice && calculateReturn(mostRecentPrice, quarterStartPrice);
-  const mtdReturn = mostRecentPrice && monthStartPrice && calculateReturn(mostRecentPrice, monthStartPrice);
-  const ytdReturn = mostRecentPrice && yearStartPrice && calculateReturn(mostRecentPrice, yearStartPrice);
-
-  const bestMonth = monthlyReturns?.data[selectedCurrency.value].reduce((carry: DisplayData, current: DisplayData) => {
-    if (current.return.isGreaterThan(carry.return)) {
-      return current;
-    }
-    return carry;
-  }, monthlyReturns.data[selectedCurrency.value][0]);
-
-  const worstMonth = monthlyReturns?.data[selectedCurrency.value].reduce((carry: DisplayData, current: DisplayData) => {
-    if (current.return.isLessThan(carry.return)) {
-      return current;
-    }
-    return carry;
-  }, monthlyReturns.data[selectedCurrency.value][0]);
-
-  const monthlyWinLoss = monthlyReturns?.data[selectedCurrency.value].reduce(
-    (carry: { win: number; lose: number }, current: DisplayData) => {
-      if (current.return.isGreaterThanOrEqualTo(0)) {
-        carry.win++;
-        return carry;
-      }
-      carry.lose++;
-      return carry;
-    },
-    { win: 0, lose: 0 }
-  ) || { win: 0, lose: 0 };
-
-  const averageMonthlyReturn =
-    monthlyReturns && average(monthlyReturns.data[selectedCurrency.value].map((month) => month.return));
-
-  const volSampleTime =
-    differenceInCalendarDays(today, fund.creationTime!) > 20 ? 20 : differenceInCalendarDays(today, fund.creationTime!);
-
-  const sampleVol =
-    historicalData &&
-    calculateVolatility(
-      historicalData.data
-        .slice(volSampleTime, historicalData.data.length - 1)
-        .map((item: RangeTimelineItem) => new BigNumber(item.calculations.price))
-    );
-
-  function toggleCurrencySelection(value: keyof HoldingPeriodReturns) {
-    if (!value) {
-      return;
-    }
-    const newCurrency = comparisonCurrencies.filter((item) => item.value == value)[0];
-    setSelectedCurrency(newCurrency);
   }
 
   return (

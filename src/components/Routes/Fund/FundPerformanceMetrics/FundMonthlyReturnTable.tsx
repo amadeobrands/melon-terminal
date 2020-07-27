@@ -22,7 +22,7 @@ import { FormattedNumber } from '~/components/Common/FormattedNumber/FormattedNu
 import { Button } from '~/components/Form/Button/Button';
 import { useFund } from '~/hooks/useFund';
 import { Block } from '~/storybook/Block/Block';
-import { Spinner } from '~/storybook/Spinner/Spinner.styles';
+import { Spinner } from '~/storybook/Spinner/Spinner';
 import { Title, SectionTitle } from '~/storybook/Title/Title';
 import { useFetchFundPricesByMonthEnd } from '~/hooks/metricsService/useFetchFundPricesByMonthEnd';
 import { useFetchReferencePricesByDate } from '~/hooks/metricsService/useFetchReferencePricesByDate';
@@ -62,18 +62,14 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
 
   const fundInception = fund.creationTime!;
 
-  const activeYears =
-    fund &&
-    React.useMemo(
-      () =>
-        new Array(differenceInCalendarYears(today, fundInception) + 1)
-          .fill(null)
-          .map((item, index) => subYears(today, index))
-          .reverse(),
-      []
-    );
+  const activeYears = React.useMemo(() => {
+    return new Array(differenceInCalendarYears(today, fundInception) + 1)
+      .fill(null)
+      .map((item, index) => subYears(today, index))
+      .reverse();
+  }, [fund]);
 
-  const [selectedYear, setSelectedYear] = React.useState(activeYears[activeYears.length - 1].getFullYear());
+  const [selectedYear, setSelectedYear] = React.useState(today.getFullYear());
 
   const { data: monthlyData, error: monthlyError, isFetching: monthlyFetching } = useFetchFundPricesByMonthEnd(address);
 
@@ -89,9 +85,11 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
 
   const tableData: MonthlyReturnData | undefined = React.useMemo(() => {
     if (!monthlyData || !fxAtInception || !fund) {
-      return;
+      return undefined;
     }
-
+    if (fund.creationTime && differenceInCalendarDays(today, fund.creationTime) < 7) {
+      return undefined;
+    }
     return monthlyReturnsFromTimeline(
       monthlyData && monthlyData.data,
       fxAtInception,
@@ -108,6 +106,17 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
       return format(addMonths(january, index), 'MMM');
     });
   }, []);
+
+  const validDataLengthCheck =
+    tableData && tableData.data.ETH.length === monthsBeforeFund + activeMonths + monthsRemaining;
+
+  function toggleYear(direction: 'decrement' | 'increment') {
+    if (direction === 'decrement') {
+      setSelectedYear(selectedYear - 1);
+    } else {
+      setSelectedYear(selectedYear + 1);
+    }
+  }
 
   if (fund.creationTime && differenceInCalendarDays(today, fund.creationTime) < 7) {
     return (
@@ -130,18 +139,20 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   }
 
   if (monthlyError || fxAtInceptionError || monthlyData?.errors) {
-    return <Block>ERROR</Block>;
-  }
-
-  const validDataLengthCheck =
-    tableData && tableData.data.ETH.length === monthsBeforeFund + activeMonths + monthsRemaining;
-
-  function toggleYear(direction: 'decrement' | 'increment') {
-    if (direction === 'decrement') {
-      setSelectedYear(selectedYear - 1);
-    } else {
-      setSelectedYear(selectedYear + 1);
-    }
+    return (
+      <Block>
+        <SectionTitle>Monthly Returns</SectionTitle>
+        <NotificationBar kind="error">
+          <NotificationContent>
+            There was an error fetching fund data. {monthlyError || fxAtInceptionError}
+          </NotificationContent>
+          {monthlyData?.errors.length &&
+            monthlyData.errors.map((error: string) => {
+              return <NotificationContent>There was an error fetching fund data. {error}</NotificationContent>;
+            })}
+        </NotificationBar>{' '}
+      </Block>
+    );
   }
 
   return (
