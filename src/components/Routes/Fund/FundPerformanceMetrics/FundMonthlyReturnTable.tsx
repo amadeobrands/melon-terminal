@@ -60,25 +60,18 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   const today = React.useMemo(() => new Date(), []);
   const fund = useFund();
 
-  if (fund.creationTime && differenceInCalendarDays(today, fund.creationTime) < 7) {
-    return (
-      <Block>
-        <SectionTitle>Monthly Returns</SectionTitle>
-        <NotificationBar kind="neutral">
-          <NotificationContent>Statistics are not available for funds younger than one week.</NotificationContent>
-        </NotificationBar>
-      </Block>
-    );
-  }
-
   const fundInception = fund.creationTime!;
 
   const activeYears =
     fund &&
-    new Array(differenceInCalendarYears(today, fundInception) + 1)
-      .fill(null)
-      .map((item, index) => subYears(today, index))
-      .reverse();
+    React.useMemo(
+      () =>
+        new Array(differenceInCalendarYears(today, fundInception) + 1)
+          .fill(null)
+          .map((item, index) => subYears(today, index))
+          .reverse(),
+      []
+    );
 
   const [selectedYear, setSelectedYear] = React.useState(activeYears[activeYears.length - 1].getFullYear());
 
@@ -94,7 +87,40 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
   const monthsRemaining = differenceInCalendarMonths(endOfYear(today), today);
   const activeMonths = fund && differenceInCalendarMonths(today, fundInception) + 1;
 
-  if (!monthlyData || monthlyFetching || !fxAtInception || fxAtInceptionFetching) {
+  const tableData: MonthlyReturnData | undefined = React.useMemo(() => {
+    if (!monthlyData || !fxAtInception || !fund) {
+      return;
+    }
+
+    return monthlyReturnsFromTimeline(
+      monthlyData && monthlyData.data,
+      fxAtInception,
+      today,
+      activeMonths,
+      monthsBeforeFund,
+      monthsRemaining
+    );
+  }, [fund, monthlyData, fxAtInception]);
+
+  const months = React.useMemo(() => {
+    return new Array(12).fill(null).map((item, index) => {
+      const january = startOfYear(today);
+      return format(addMonths(january, index), 'MMM');
+    });
+  }, []);
+
+  if (fund.creationTime && differenceInCalendarDays(today, fund.creationTime) < 7) {
+    return (
+      <Block>
+        <SectionTitle>Monthly Returns</SectionTitle>
+        <NotificationBar kind="neutral">
+          <NotificationContent>Statistics are not available for funds younger than one week.</NotificationContent>
+        </NotificationBar>
+      </Block>
+    );
+  }
+
+  if (!tableData) {
     return (
       <Block>
         <SectionTitle>Monthly Returns</SectionTitle>
@@ -107,12 +133,6 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
     return <Block>ERROR</Block>;
   }
 
-  const tableData: MonthlyReturnData =
-    fund &&
-    monthlyData &&
-    fxAtInception &&
-    monthlyReturnsFromTimeline(monthlyData.data, fxAtInception, today, activeMonths, monthsBeforeFund, monthsRemaining);
-
   const validDataLengthCheck =
     tableData && tableData.data.ETH.length === monthsBeforeFund + activeMonths + monthsRemaining;
 
@@ -123,13 +143,6 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
       setSelectedYear(selectedYear + 1);
     }
   }
-
-  const months = new Array(12).fill(null).map((item, index) => {
-    const january = startOfYear(today);
-    return format(addMonths(january, index), 'MMM');
-  });
-
-  console.log(Math.floor(tableData.maxDigits / 2));
 
   return (
     <Block>

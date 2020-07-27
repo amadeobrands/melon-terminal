@@ -65,7 +65,7 @@ export function monthlyReturnsFromTimeline(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       const previous =
         index === 0
-          ? new BigNumber(1)
+          ? new BigNumber(dayZeroFx.ethusd)
           : new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.ethusd);
 
       const rtrn = calculateReturn(new BigNumber(item.calculations.price * item.references.ethusd), previous);
@@ -85,7 +85,7 @@ export function monthlyReturnsFromTimeline(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       const previous =
         index === 0
-          ? new BigNumber(1)
+          ? new BigNumber(dayZeroFx.etheur)
           : new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.etheur);
       const rtrn = calculateReturn(new BigNumber(item.calculations.price * item.references.etheur), previous);
 
@@ -104,7 +104,7 @@ export function monthlyReturnsFromTimeline(
     (item: MonthendTimelineItem, index: number, arr: MonthendTimelineItem[]) => {
       const previous =
         index === 0
-          ? new BigNumber(1)
+          ? new BigNumber(dayZeroFx.ethbtc)
           : new BigNumber(arr[index - 1].calculations.price * arr[index - 1].references.ethbtc);
 
       const rtrn = calculateReturn(new BigNumber(item.calculations.price * item.references.ethbtc), previous);

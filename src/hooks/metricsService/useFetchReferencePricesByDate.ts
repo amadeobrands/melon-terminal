@@ -20,7 +20,6 @@ async function fetchReferencePricesByDate(key: string, date: number) {
       etheur: eurResponse.data.rate,
     };
   } catch (error) {
-    console.log(error);
     throw error;
   }
 }

@@ -22,25 +22,14 @@ export function standardDeviation(values: number[]) {
  */
 function calculateLogReturns(data: number[] | BigNumber[]): BigNumber[] {
   return (data as any[]).map((item, index, array) => {
-    if (!BigNumber.isBigNumber(item)) {
-      const returnSinceLastPriceUpdate =
-        index > 0 ? new BigNumber(item).dividedBy(new BigNumber(array[index - 1])).toNumber() - 1 : 0;
-
-      let dailyReturn = returnSinceLastPriceUpdate;
-      if (dailyReturn > 100 || dailyReturn <= -1) {
-        dailyReturn = 0;
-      }
-      const logReturn = index > 0 ? new BigNumber(Math.log(1 + dailyReturn)) : new BigNumber(0);
-      return logReturn;
-    } else {
-      const returnSinceLastPriceUpdate = index > 0 ? item.dividedBy(array[index - 1]).toNumber() - 1 : 0;
-      let dailyReturn = returnSinceLastPriceUpdate;
-      if (dailyReturn > 100 || dailyReturn <= -1) {
-        dailyReturn = 0;
-      }
-      const logReturn = index > 0 ? new BigNumber(Math.log(1 + dailyReturn)) : new BigNumber(0);
-      return logReturn;
+    const bn = new BigNumber(item);
+    const returnSinceLastPriceUpdate = index > 0 ? bn.dividedBy(array[index - 1]).toNumber() - 1 : 0;
+    let dailyReturn = returnSinceLastPriceUpdate;
+    if (dailyReturn > 100 || dailyReturn <= -1) {
+      dailyReturn = 0;
     }
+    const logReturn = index > 0 ? new BigNumber(Math.log(1 + dailyReturn)) : new BigNumber(0);
+    return logReturn;
   });
 }
 
