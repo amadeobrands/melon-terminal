@@ -24,9 +24,8 @@ export interface MonthendTimelineItem {
 async function fetchFundPricesByMonthEnd(key: string, address: string) {
   const url = process.env.MELON_METRICS_API;
   const queryAddress = `${url}/api/monthend?address=${address}`;
-  const response = await fetch(queryAddress)
-    .then((response) => response.json())
-    .catch((error) => console.log(error));
+  const response = await fetch(queryAddress).then((response) => response.json());
+
   return response;
 }
 

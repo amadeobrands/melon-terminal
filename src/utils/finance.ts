@@ -76,20 +76,6 @@ export function calculateStdDev(values: BigNumber[]): BigNumber {
  * @returns an object with two properties - lowZ and highZ - which are both BigNumbers. LowZ represents the
  * maximum expected drawdown per period one can expect in 95% of outcomes. HighZ is 99%.
  */
-export function calculateVAR(values: BigNumber[] | undefined) {
-  if (typeof values == 'undefined') {
-    return {
-      lowZ: 'Fetching Data',
-      highZ: 'Fetching Data',
-    };
-  } else {
-    const stdDev = calculateStdDev(values);
-    return {
-      lowZ: stdDev.multipliedBy(1.645).multipliedBy(100),
-      highZ: stdDev.multipliedBy(2.33).multipliedBy(100),
-    };
-  }
-}
 
 export function calculateVolatility(values: BigNumber[]): BigNumber {
   return calculateStdDev(calculateLogReturns(values)).multipliedBy(Math.sqrt(values.length)).multipliedBy(100);

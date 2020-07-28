@@ -299,19 +299,7 @@ export const FundSharePriceMetrics: React.FC<FundSharePriceMetricsProps> = (prop
       <Block>
         <SectionTitle>Share Price Metrics</SectionTitle>
         <NotificationBar kind="error">
-          <NotificationContent>
-            There was an error fetching fund data.
-            {historicalDataError ||
-              monthlyError ||
-              fxAtInceptionError ||
-              fxAtMonthStartError ||
-              fxAtQuarterStartError ||
-              fxAtYearStartError}
-          </NotificationContent>
-          {monthlyData?.errors.length &&
-            monthlyData.errors.map((error: string) => {
-              return <NotificationContent>There was an error fetching fund data. {error}</NotificationContent>;
-            })}
+          <NotificationContent>There was an unexpected error fetching fund data.</NotificationContent>
         </NotificationBar>
       </Block>
     );

@@ -91,7 +91,7 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
       return undefined;
     }
     return monthlyReturnsFromTimeline(
-      monthlyData && monthlyData.data,
+      monthlyData.data,
       fxAtInception,
       today,
       activeMonths,
@@ -143,14 +143,8 @@ export const FundMonthlyReturnTable: React.FC<MonthlyReturnTableProps> = ({ addr
       <Block>
         <SectionTitle>Monthly Returns</SectionTitle>
         <NotificationBar kind="error">
-          <NotificationContent>
-            There was an error fetching fund data. {monthlyError || fxAtInceptionError}
-          </NotificationContent>
-          {monthlyData?.errors.length &&
-            monthlyData.errors.map((error: string) => {
-              return <NotificationContent>There was an error fetching fund data. {error}</NotificationContent>;
-            })}
-        </NotificationBar>{' '}
+          <NotificationContent>There was an unexpected error fetching fund data.</NotificationContent>
+        </NotificationBar>
       </Block>
     );
   }
